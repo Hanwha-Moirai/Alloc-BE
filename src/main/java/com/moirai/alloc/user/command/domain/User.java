@@ -51,7 +51,7 @@ public class User {
     private Status status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "auth")
+    @Column(name = "auth", nullable = false)
     private Auth auth;
 
     @Column(name = "profile_img", length = 100)
