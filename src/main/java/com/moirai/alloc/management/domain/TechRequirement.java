@@ -12,5 +12,14 @@ public class TechRequirement {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "req_level")
-    private TechReqLevel TechLevel;
+    private TechReqLevel techLevel;
+
+    protected TechRequirement() {
+    }
+    public TechRequirement(Long techId, TechReqLevel techLevel) {
+        if (techId == null) throw new IllegalArgumentException("techId 필수");
+        if (techLevel ==null) throw new IllegalArgumentException("level 선택 필수");
+        this.techId = techId;
+        this.techLevel = techLevel;
+    }
 }
