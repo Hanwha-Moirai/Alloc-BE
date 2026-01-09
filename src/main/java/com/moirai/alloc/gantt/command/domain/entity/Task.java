@@ -1,5 +1,6 @@
 package com.moirai.alloc.gantt.command.domain.entity;
 
+import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import com.moirai.alloc.user.command.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,13 +20,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "task")
-public class Task {
+public class Task extends BaseTimeEntity {
 
     public enum TaskCategory { DEVELOPMENT, TESTING, BUGFIXING, DISTRIBUTION }
     public enum TaskStatus { TODO, INPROGRESS, DONE }
@@ -58,12 +57,6 @@ public class Task {
     @Column(name = "task_status")
     private TaskStatus taskStatus = TaskStatus.TODO;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
@@ -83,8 +76,6 @@ public class Task {
                  String taskName,
                  String taskDescription,
                  TaskStatus taskStatus,
-                 LocalDateTime createdAt,
-                 LocalDateTime updatedAt,
                  LocalDate startDate,
                  LocalDate endDate,
                  Boolean isCompleted,
@@ -95,8 +86,6 @@ public class Task {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.taskStatus = (taskStatus == null) ? TaskStatus.TODO : taskStatus;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.startDate = startDate;
         this.endDate = endDate;
         this.isCompleted = (isCompleted == null) ? false : isCompleted;

@@ -1,5 +1,6 @@
 package com.moirai.alloc.gantt.command.domain.entity;
 
+import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import com.moirai.alloc.project.command.domain.Project;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,13 +17,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "milestone")
-public class Milestone {
+public class Milestone extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,12 +34,6 @@ public class Milestone {
 
     @Column(name = "milestone_name", nullable = false, length = 150)
     private String milestoneName;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -57,16 +50,12 @@ public class Milestone {
     @Builder
     private Milestone(Project project,
                       String milestoneName,
-                      LocalDateTime createdAt,
-                      LocalDateTime updatedAt,
                       LocalDate startDate,
                       LocalDate endDate,
                       Long achievementRate,
                       Boolean isDeleted) {
         this.project = project;
         this.milestoneName = milestoneName;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.startDate = startDate;
         this.endDate = endDate;
         this.achievementRate = achievementRate;
