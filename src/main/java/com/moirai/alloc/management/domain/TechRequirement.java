@@ -4,14 +4,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Getter;
 
+@Getter
 @Embeddable
 public class TechRequirement {
-    @Column(name = "tech_id")
+    @Column(name = "tech_id", nullable = false)
     private Long techId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "req_level")
+    @Column(name = "req_level", nullable = false)
     private TechReqLevel techLevel;
 
     protected TechRequirement() {
@@ -22,9 +24,5 @@ public class TechRequirement {
         this.techId = techId;
         this.techLevel = techLevel;
     }
-    public Long getTechId() { return techId; }
 
-    public TechReqLevel getTechLevel() {
-        return techLevel;
-    }
 }
