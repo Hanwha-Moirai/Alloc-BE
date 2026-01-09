@@ -2,12 +2,12 @@ package com.moirai.alloc.calendar.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
         name = "events",
@@ -37,7 +37,7 @@ public class Events extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_state", nullable = false)
-    private EventState eventState = EventState.IN_PROGRESS;
+    private EventState eventState;
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
@@ -47,7 +47,7 @@ public class Events extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "event_type")
-    private EventType eventType = EventType.PRIVATE;
+    private EventType eventType;
 
     @Column(name = "event_place", length = 150)
     private String eventPlace;
@@ -55,4 +55,38 @@ public class Events extends BaseTimeEntity {
     @Lob
     @Column(name = "event_description", nullable = false)
     private String eventDescription;
+
+    /** DDL: is_deleted BOOLEAN NOT NULL DEFAULT FALSE */
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
+
+    @Builder
+    private Events(
+            Long projectId,
+            Long ownerUserId,
+            String eventName,
+            EventState eventState,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            EventType eventType,
+            String eventPlace,
+            String eventDescription,
+            Boolean deleted
+    ) {
+        this.projectId = projectId;
+        this.ownerUserId = ownerUserId;
+        this.eventName = eventName;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.eventPlace = eventPlace;
+        this.eventDescription = eventDescription;
+
+        this.eventState = (eventState == null) ? EventState.IN_PROGRESS : eventState;
+        this.eventType = (eventType == null) ? EventType.PRIVATE : eventType;
+        this.deleted = (deleted != null) ? deleted : false;
+    }
+
+    public void softDelete() {
+        this.deleted = true;
+    }
 }

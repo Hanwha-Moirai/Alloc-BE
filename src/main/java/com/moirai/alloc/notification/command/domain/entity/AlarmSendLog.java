@@ -1,15 +1,16 @@
 package com.moirai.alloc.notification.command.domain.entity;
 
-import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(
         name = "alarm_send_log",
         indexes = {
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_send_log_status", columnList = "log_status")
         }
 )
-public class AlarmSendLog extends BaseTimeEntity {
+public class AlarmSendLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,11 +36,39 @@ public class AlarmSendLog extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "log_status", nullable = false)
-    private SendLogStatus logStatus = SendLogStatus.PENDING;
+    private SendLogStatus logStatus;
 
     @Column(name = "template_context", nullable = false, length = 255)
     private String templateContext;
 
     @Column(name = "sent_at", nullable = false)
     private LocalDateTime sentAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", insertable = false)
+    private LocalDateTime updatedAt;
+
+    @Builder
+    private AlarmSendLog(
+            Long templateId,
+            Long userId,
+            SendLogStatus logStatus,
+            String templateContext,
+            LocalDateTime sentAt
+    ) {
+        this.templateId = templateId;
+        this.userId = userId;
+        this.templateContext = templateContext;
+        this.sentAt = sentAt;
+
+        this.logStatus = (logStatus != null) ? logStatus : SendLogStatus.PENDING;
+    }
+
+    public void markSuccess() {
+        this.logStatus = SendLogStatus.SUCCESS;
+    }
+
+    public void markFailed() {
+        this.logStatus = SendLogStatus.FAILED;
+    }
 }

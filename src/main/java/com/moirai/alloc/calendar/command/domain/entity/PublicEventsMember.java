@@ -1,11 +1,10 @@
 package com.moirai.alloc.calendar.command.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
         name = "public_events_member",
@@ -24,11 +23,17 @@ public class PublicEventsMember {
     @Column(name = "public_event_id")
     private Long id;
 
-    /** FK: event.event_id */
+    /** FK: events.event_id */
     @Column(name = "event_id", nullable = false)
     private Long eventId;
 
     /** FK: employee.user_id */
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Builder
+    private PublicEventsMember(Long eventId, Long userId) {
+        this.eventId = eventId;
+        this.userId = userId;
+    }
 }

@@ -2,13 +2,10 @@ package com.moirai.alloc.notification.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
-@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
         name = "alarm_template",
@@ -24,16 +21,40 @@ public class AlarmTemplate extends BaseTimeEntity {
     @Column(name = "template_id")
     private Long id;
 
+    /** FK: users.user_id (템플릿 생성자) */
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column(name = "template_title", nullable = false, length = 50)
     private String templateTitle;
 
     @Column(name = "template_context", nullable = false, length = 255)
     private String templateContext;
 
-    @Column(name = "is_deleted", nullable = false)
-    private boolean deleted = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "alarm_template_type", nullable = false)
+    private AlarmTemplateType alarmTemplateType;
 
-    /** FK: users.user_id (템플릿 생성자) */
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted;
+
+    @Builder
+    private AlarmTemplate(
+            Long userId,
+            String templateTitle,
+            String templateContext,
+            AlarmTemplateType alarmTemplateType,
+            Boolean deleted
+    ) {
+        this.userId = userId;
+        this.templateTitle = templateTitle;
+        this.templateContext = templateContext;
+
+        this.deleted = (deleted != null) ? deleted : false;
+        this.alarmTemplateType = (alarmTemplateType != null) ? alarmTemplateType : AlarmTemplateType.POST_TEMP;
+    }
+
+    public void softDelete() {
+        this.deleted = true;
+    }
 }
