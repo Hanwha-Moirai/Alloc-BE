@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### ignore applicaiton-local.yml & gitmessage.txt ###
+src/main/resources/application-local.yml
