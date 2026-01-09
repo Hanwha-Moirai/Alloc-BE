@@ -1,9 +1,13 @@
 package com.moirai.alloc.management.domain;
 
 import jakarta.persistence.*;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
         name = "squad_assignment",
@@ -36,6 +40,5 @@ public class SquadAssignment {
 
     private LocalDateTime decidedAt;
 
-    protected SquadAssignment() {}
     // TODO 상태 변경 내부 로직 추가할 것(finaldecision, assignmentstatus)
 }

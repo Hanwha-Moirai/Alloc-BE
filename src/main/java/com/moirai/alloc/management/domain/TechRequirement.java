@@ -22,4 +22,9 @@ public class TechRequirement {
         this.techId = techId;
         this.techLevel = techLevel;
     }
+    public Long getTechId() { return techId; }
+
+    public TechReqLevel getTechLevel() {
+        return techLevel;
+    }
 }

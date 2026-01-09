@@ -2,9 +2,13 @@ package com.moirai.alloc.management.domain;
 
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "project_document")
 public class ProjectDocument {
@@ -22,8 +26,6 @@ public class ProjectDocument {
 
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
-
-    protected ProjectDocument() {}
 
     public ProjectDocument(String filePath, String extractedText) {
         this.filePath = filePath;
