@@ -15,7 +15,7 @@ public class JobRequirement {
 
     protected JobRequirement() {}
 
-    protected JobRequirement(Long jobId, int requiredCount) {
+    public JobRequirement(Long jobId, int requiredCount) {
         if (jobId == null) {
             throw new IllegalArgumentException("jobId는 필수");
         }
