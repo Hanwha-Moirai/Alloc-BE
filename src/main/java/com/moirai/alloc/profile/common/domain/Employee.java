@@ -1,5 +1,8 @@
 package com.moirai.alloc.profile.common.domain;
 
+import com.moirai.alloc.hr.command.domain.Department;
+import com.moirai.alloc.hr.command.domain.JobStandard;
+import com.moirai.alloc.hr.command.domain.TitleStandard;
 import com.moirai.alloc.user.command.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
