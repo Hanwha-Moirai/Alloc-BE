@@ -4,5 +4,5 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-public class DecideAssignment {
+public class DecideFinalAssignment {
 }
