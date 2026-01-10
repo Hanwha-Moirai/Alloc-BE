@@ -1,15 +1,11 @@
 package com.moirai.alloc.meeting.command.domain.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
-import com.moirai.alloc.project.command.domain.Project;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,9 +25,8 @@ public class MeetingRecord extends BaseTimeEntity {
     @Column(name = "meeting_id")
     private Long meetingId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+    @Column(name = "project_id", nullable = false)
+    private Long projectId;
 
     @Column(name = "created_by", length = 40)
     private String createdBy;
@@ -49,13 +44,13 @@ public class MeetingRecord extends BaseTimeEntity {
     private Boolean isDeleted = false;
 
     @Builder
-    private MeetingRecord(Project project,
+    private MeetingRecord(Long projectId,
                           String createdBy,
                           Double progress,
                           LocalDateTime meetingDate,
                           LocalDateTime meetingTime,
                           Boolean isDeleted) {
-        this.project = project;
+        this.projectId = projectId;
         this.createdBy = createdBy;
         this.progress = progress;
         this.meetingDate = meetingDate;
