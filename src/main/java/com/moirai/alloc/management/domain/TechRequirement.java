@@ -19,8 +19,8 @@ public class TechRequirement {
     protected TechRequirement() {
     }
     public TechRequirement(Long techId, TechReqLevel techLevel) {
-        if (techId == null) throw new IllegalArgumentException("techId 필수");
-        if (techLevel ==null) throw new IllegalArgumentException("level 선택 필수");
+       // if (techId == null) throw new IllegalArgumentException("techId 필수");
+       // if (techLevel ==null) throw new IllegalArgumentException("level 선택 필수");
         this.techId = techId;
         this.techLevel = techLevel;
     }
