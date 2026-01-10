@@ -78,7 +78,7 @@ public class Task extends BaseTimeEntity {
                  LocalDate startDate,
                  LocalDate endDate,
                  Boolean isCompleted,
-                 String isDeleted) {
+                 Boolean isDeleted) {
         this.milestone = milestone;
         this.userId = userId;
         this.taskCategory = (taskCategory == null) ? TaskCategory.DEVELOPMENT : taskCategory;
@@ -88,6 +88,6 @@ public class Task extends BaseTimeEntity {
         this.startDate = startDate;
         this.endDate = endDate;
         this.isCompleted = (isCompleted == null) ? false : isCompleted;
-        this.isDeleted = (isDeleted == null) ? "FALSE" : isDeleted;
+        this.isDeleted = (isDeleted == null) ? false : isDeleted;
     }
 }
