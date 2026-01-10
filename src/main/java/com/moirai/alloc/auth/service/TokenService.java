@@ -1,6 +1,6 @@
 package com.moirai.alloc.auth.service;
 
-import com.moirai.alloc.auth.dto.AuthResponse;
+import com.moirai.alloc.auth.dto.response.AuthResponse;
 import com.moirai.alloc.common.security.auth.RefreshTokenStore;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import com.moirai.alloc.user.command.domain.User;

@@ -1,4 +1,4 @@
-package com.moirai.alloc.auth.dto;
+package com.moirai.alloc.auth.dto.response;
 
 import lombok.*;
 

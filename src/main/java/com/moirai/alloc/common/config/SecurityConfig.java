@@ -1,5 +1,6 @@
 package com.moirai.alloc.common.config;
 
+import com.moirai.alloc.common.security.jwt.JwtAuthenticationFilter;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import com.moirai.alloc.auth.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -58,7 +59,8 @@ public class SecurityConfig {
 
                         // 인증(로그인) 관련: 필요한 것만 permitAll
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        // .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll() // refresh가 있으면 활성화
+
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
 
                         // 관리자 로그인/초기 진입은 허용
                         .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
