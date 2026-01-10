@@ -1,7 +1,7 @@
 package com.moirai.alloc.project.command.domain;
 
-import com.moirai.alloc.management.domain.JobRequirement;
-import com.moirai.alloc.management.domain.TechRequirement;
+import com.moirai.alloc.management.domain.vo.JobRequirement;
+import com.moirai.alloc.management.domain.vo.TechRequirement;
 import jakarta.persistence.*;
 import lombok.*;
 
