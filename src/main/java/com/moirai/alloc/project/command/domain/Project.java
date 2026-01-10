@@ -1,9 +1,13 @@
 package com.moirai.alloc.project.command.domain;
 
+import com.moirai.alloc.management.domain.JobRequirement;
+import com.moirai.alloc.management.domain.TechRequirement;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -45,6 +49,30 @@ public class Project {
 
     @Column(name = "partners", length = 50)
     private String partners;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "project_job_requirement",
+            joinColumns = @JoinColumn(name = "project_id")
+    )
+    private List<JobRequirement> jobRequirements = new ArrayList<>();
+    // 프로젝트 직무 요구 사항을 전체 교체할때 사용
+    public void changeJobRequirements(List<JobRequirement> jobReq) {
+        this.jobRequirements.clear();
+        this.jobRequirements.addAll(jobReq);
+    }
+
+    @ElementCollection
+    @CollectionTable(
+            name = "project_tech_requirement",
+            joinColumns = @JoinColumn(name = "project_id")
+    )
+    private List<TechRequirement> techRequirements = new ArrayList<>();
+
+    public void changeTechRequirements(List<TechRequirement> techReq) {
+        this.techRequirements.clear();
+        this.techRequirements.addAll(techReq);
+    }
 
     @Builder
     private Project(String name,
