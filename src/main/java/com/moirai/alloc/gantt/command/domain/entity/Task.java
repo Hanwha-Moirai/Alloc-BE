@@ -66,7 +66,7 @@ public class Task extends BaseTimeEntity {
     private Boolean isCompleted = false;
 
     @Column(name = "is_deleted", nullable = false, length = 255)
-    private String isDeleted = "FALSE";
+    private Boolean isDeleted = false;
 
     @Builder
     private Task(Milestone milestone,
