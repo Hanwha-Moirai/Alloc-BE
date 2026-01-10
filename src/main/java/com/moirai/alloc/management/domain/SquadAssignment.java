@@ -52,7 +52,7 @@ public class SquadAssignment {
         return sa;
     }
 
-    /*private void validateNotDecided() {
+    private void validateNotDecided() {
         if (this.finalDecision != FinalDecision.PENDING) {
             throw new IllegalStateException(
                     "이미 최종 결정된 인력 배치는 상태를 변경할 수 없습니다."
@@ -90,6 +90,6 @@ public class SquadAssignment {
         }
         this.finalDecision = FinalDecision.EXCLUDED;
         this.decidedAt = LocalDateTime.now();
-    }*/
+    }
 
 }
