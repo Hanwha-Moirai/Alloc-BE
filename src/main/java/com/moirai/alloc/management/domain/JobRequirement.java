@@ -17,7 +17,7 @@ public class JobRequirement {
 
     protected JobRequirement() {}
 
-    /*public JobRequirement(Long jobId, int requiredCount) {
+    public JobRequirement(Long jobId, int requiredCount) {
         if (jobId == null) {
             throw new IllegalArgumentException("jobId는 필수");
         }
@@ -26,7 +26,7 @@ public class JobRequirement {
         }
         this.jobId = jobId;
         this.requiredCount = requiredCount;
-    }*/
+    }
 
     // 중복 값 생성 막는 생성자(equals, hashCode)에 대하여 추가할지 미정
 
