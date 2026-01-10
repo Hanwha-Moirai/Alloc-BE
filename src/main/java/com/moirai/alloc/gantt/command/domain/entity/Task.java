@@ -1,7 +1,6 @@
 package com.moirai.alloc.gantt.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
-import com.moirai.alloc.user.command.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -38,9 +38,8 @@ public class Task extends BaseTimeEntity {
     @JoinColumn(name = "milestone_id", nullable = false)
     private Milestone milestone;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "task_category")
@@ -71,7 +70,7 @@ public class Task extends BaseTimeEntity {
 
     @Builder
     private Task(Milestone milestone,
-                 User user,
+                 Long userId,
                  TaskCategory taskCategory,
                  String taskName,
                  String taskDescription,
@@ -81,7 +80,7 @@ public class Task extends BaseTimeEntity {
                  Boolean isCompleted,
                  String isDeleted) {
         this.milestone = milestone;
-        this.user = user;
+        this.userId = userId;
         this.taskCategory = (taskCategory == null) ? TaskCategory.DEVELOPMENT : taskCategory;
         this.taskName = taskName;
         this.taskDescription = taskDescription;
