@@ -1,5 +1,6 @@
-package com.moirai.alloc.management.domain;
+package com.moirai.alloc.management.domain.vo;
 
+import com.moirai.alloc.management.domain.entity.TechReqLevel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
