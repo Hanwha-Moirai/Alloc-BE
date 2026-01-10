@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.domain;
+package com.moirai.alloc.management.domain.entity;
 
 
 import jakarta.persistence.*;
