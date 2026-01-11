@@ -57,4 +57,21 @@ public class Milestone extends BaseTimeEntity {
         this.achievementRate = achievementRate;
         this.isDeleted = (isDeleted == null) ? false : isDeleted;
     }
+
+    public void changeName(String milestoneName) {
+        this.milestoneName = milestoneName;
+    }
+
+    public void changeSchedule(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public void changeAchievementRate(Long achievementRate) {
+        this.achievementRate = achievementRate;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
 }
