@@ -41,6 +41,18 @@ public class IssueBlocker {
     @Column(name = "delayed_dates")
     private Integer delayedDates;
 
+    public static IssueBlocker create(WeeklyTask weeklyTask,
+                                      String causeOfDelay,
+                                      String dependencySummary,
+                                      Integer delayedDates) {
+        return IssueBlocker.builder()
+                .weeklyTask(weeklyTask)
+                .causeOfDelay(causeOfDelay)
+                .dependencySummary(dependencySummary)
+                .delayedDates(delayedDates)
+                .build();
+    }
+
     @Builder
     private IssueBlocker(WeeklyTask weeklyTask,
                          String causeOfDelay,
