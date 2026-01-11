@@ -37,6 +37,16 @@ public class Participant {
     @Column(name = "is_host", nullable = false)
     private Boolean isHost;
 
+    public static Participant create(MeetingRecord meeting,
+                                     User user,
+                                     Boolean isHost) {
+        return Participant.builder()
+                .meeting(meeting)
+                .user(user)
+                .isHost(isHost)
+                .build();
+    }
+
     @Builder
     private Participant(MeetingRecord meeting,
                         User user,
