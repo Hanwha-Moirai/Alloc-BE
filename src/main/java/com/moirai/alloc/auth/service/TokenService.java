@@ -52,9 +52,6 @@ public class TokenService {
         );
 
         // 6. 응답 생성 (refreshToken은 쿠키로 관리 → 응답에서 제외)
-        return AuthResponse.builder()
-                .accessToken(newAccessToken)
-                .isNewUser(false)
-                .build();
+        return new AuthResponse(newAccessToken, false);
     }
 }

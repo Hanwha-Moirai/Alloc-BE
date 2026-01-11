@@ -57,10 +57,7 @@ public class AuthService {
 
         log.info("LOGIN success userId={}, role={}", userId, user.getAuth().name());
 
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .isNewUser(false)
-                .build();
+        return new AuthResponse(accessToken, false);
     }
 }
 
