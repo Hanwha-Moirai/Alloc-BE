@@ -33,6 +33,7 @@ public class MeetingRecordQueryRepository {
     public Page<MeetingRecordSummaryResponse> findAll(Pageable pageable) {
         String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
                 "created_at, updated_at from meeting_record where is_deleted = false";
+        String countSql = "select count(1) from meeting_record where is_deleted = false";
         String orderSql = " order by created_at desc limit ? offset ?";
         List<MeetingRecordSummaryResponse> content = jdbcTemplate.query(
                 baseSql + orderSql,
@@ -40,7 +41,7 @@ public class MeetingRecordQueryRepository {
                 pageable.getPageSize(),
                 pageable.getOffset()
         );
-        long total = count(baseSql, Collections.emptyList());
+        long total = count(countSql, Collections.emptyList());
         return new PageImpl<>(content, pageable, total);
     }
 
@@ -66,6 +67,7 @@ public class MeetingRecordQueryRepository {
         String inClause = inClause(projectIds.size());
         String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
                 "created_at, updated_at from meeting_record where is_deleted = false and project_id in " + inClause;
+        String countSql = "select count(1) from meeting_record where is_deleted = false and project_id in " + inClause;
         String orderSql = " order by created_at desc limit ? offset ?";
         List<Object> params = new ArrayList<>(projectIds);
         params.add(pageable.getPageSize());
@@ -75,7 +77,7 @@ public class MeetingRecordQueryRepository {
                 summaryRowMapper(),
                 params.toArray()
         );
-        long total = count(baseSql, projectIds);
+        long total = count(countSql, projectIds);
         return new PageImpl<>(content, pageable, total);
     }
 
@@ -87,8 +89,8 @@ public class MeetingRecordQueryRepository {
         }
         QueryParts queryParts = buildSearchQuery(condition);
         String inClause = inClause(projectIds.size());
-        String baseSql = queryParts.sql() + " and project_id in " + inClause;
-        String countSql = queryParts.countSql() + " and project_id in " + inClause;
+        String baseSql = queryParts.sql() + " and mr.project_id in " + inClause;
+        String countSql = queryParts.countSql() + " and mr.project_id in " + inClause;
         List<Object> params = new ArrayList<>(queryParts.params());
         params.addAll(projectIds);
         String orderSql = " order by created_at desc limit ? offset ?";
