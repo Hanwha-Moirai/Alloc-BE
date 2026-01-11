@@ -50,11 +50,48 @@ public class WeeklyReport extends BaseTimeEntity {
     @Column(name = "change_of_plan")
     private String changeOfPlan;
 
+    @Lob
+    @Column(name = "summary_text")
+    private String summaryText;
+
     @Column(name = "task_completion_rate", nullable = false)
     private Double taskCompletionRate;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
+
+    public static WeeklyReport create(Long userId,
+                                      Long projectId,
+                                      LocalDate weekStartDate,
+                                      LocalDate weekEndDate) {
+        return WeeklyReport.builder()
+                .userId(userId)
+                .projectId(projectId)
+                .weekStartDate(weekStartDate)
+                .weekEndDate(weekEndDate)
+                .reportStatus(ReportStatus.DRAFT)
+                .taskCompletionRate(0.0)
+                .isDeleted(false)
+                .build();
+    }
+
+    public void updateReport(ReportStatus reportStatus,
+                             String changeOfPlan,
+                             Double taskCompletionRate) {
+        if (reportStatus != null) {
+            this.reportStatus = reportStatus;
+        }
+        if (changeOfPlan != null) {
+            this.changeOfPlan = changeOfPlan;
+        }
+        if (taskCompletionRate != null) {
+            this.taskCompletionRate = taskCompletionRate;
+        }
+    }
+
+    public void markDeleted() {
+        this.isDeleted = true;
+    }
 
     @Builder
     private WeeklyReport(Long userId,
@@ -63,6 +100,7 @@ public class WeeklyReport extends BaseTimeEntity {
                          LocalDate weekEndDate,
                          ReportStatus reportStatus,
                          String changeOfPlan,
+                         String summaryText,
                          Double taskCompletionRate,
                          Boolean isDeleted) {
         this.userId = userId;
@@ -71,6 +109,7 @@ public class WeeklyReport extends BaseTimeEntity {
         this.weekEndDate = weekEndDate;
         this.reportStatus = (reportStatus == null) ? ReportStatus.DRAFT : reportStatus;
         this.changeOfPlan = changeOfPlan;
+        this.summaryText = summaryText;
         this.taskCompletionRate = taskCompletionRate;
         this.isDeleted = (isDeleted == null) ? false : isDeleted;
     }
