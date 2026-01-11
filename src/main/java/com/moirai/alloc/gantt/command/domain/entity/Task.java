@@ -65,7 +65,7 @@ public class Task extends BaseTimeEntity {
     @Column(name = "is_completed", nullable = false)
     private Boolean isCompleted = false;
 
-    @Column(name = "is_deleted", nullable = false, length = 255)
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
     @Builder
@@ -89,5 +89,32 @@ public class Task extends BaseTimeEntity {
         this.endDate = endDate;
         this.isCompleted = (isCompleted == null) ? false : isCompleted;
         this.isDeleted = (isDeleted == null) ? false : isDeleted;
+    }
+
+    public void markCompleted() {
+        this.taskStatus = TaskStatus.DONE;
+        this.isCompleted = true;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
+
+    public void updateTask(Milestone milestone,
+                           Long userId,
+                           TaskCategory taskCategory,
+                           String taskName,
+                           String taskDescription,
+                           TaskStatus taskStatus,
+                           LocalDate startDate,
+                           LocalDate endDate) {
+        this.milestone = milestone;
+        this.userId = userId;
+        this.taskCategory = taskCategory;
+        this.taskName = taskName;
+        this.taskDescription = taskDescription;
+        this.taskStatus = taskStatus;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }
