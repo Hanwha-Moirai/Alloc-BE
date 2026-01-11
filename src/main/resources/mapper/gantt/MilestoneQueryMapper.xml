@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moirai.alloc.gantt.query.mapper.MilestoneQueryMapper">
+    <select id="findMilestones" resultType="com.moirai.alloc.gantt.query.dto.projection.MilestoneProjection">
+        SELECT
+            milestone_id AS milestoneId,
+            project_id AS projectId,
+            milestone_name AS milestoneName,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            start_date AS startDate,
+            end_date AS endDate,
+            achievement_rate AS achievementRate,
+            is_deleted AS isDeleted
+        FROM milestone
+        WHERE project_id = #{projectId}
+        ORDER BY start_date ASC, milestone_id ASC
+    </select>
+</mapper>
