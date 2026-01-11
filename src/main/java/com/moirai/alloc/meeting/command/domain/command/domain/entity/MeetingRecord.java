@@ -43,6 +43,39 @@ public class MeetingRecord extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    public static MeetingRecord create(Long projectId,
+                                       String createdBy,
+                                       Double progress,
+                                       LocalDateTime meetingDate,
+                                       LocalDateTime meetingTime) {
+        return MeetingRecord.builder()
+                .projectId(projectId)
+                .createdBy(createdBy)
+                .progress(progress)
+                .meetingDate(meetingDate)
+                .meetingTime(meetingTime)
+                .isDeleted(false)
+                .build();
+    }
+
+    public void updateMeetingInfo(Double progress,
+                                  LocalDateTime meetingDate,
+                                  LocalDateTime meetingTime) {
+        if (progress != null) {
+            this.progress = progress;
+        }
+        if (meetingDate != null) {
+            this.meetingDate = meetingDate;
+        }
+        if (meetingTime != null) {
+            this.meetingTime = meetingTime;
+        }
+    }
+
+    public void markDeleted() {
+        this.isDeleted = true;
+    }
+
     @Builder
     private MeetingRecord(Long projectId,
                           String createdBy,
