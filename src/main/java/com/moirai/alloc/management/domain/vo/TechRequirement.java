@@ -1,5 +1,6 @@
-package com.moirai.alloc.management.domain;
+package com.moirai.alloc.management.domain.vo;
 
+import com.moirai.alloc.management.domain.entity.TechReqLevel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
@@ -19,8 +20,8 @@ public class TechRequirement {
     protected TechRequirement() {
     }
     public TechRequirement(Long techId, TechReqLevel techLevel) {
-       // if (techId == null) throw new IllegalArgumentException("techId 필수");
-       // if (techLevel ==null) throw new IllegalArgumentException("level 선택 필수");
+        if (techId == null) throw new IllegalArgumentException("techId 필수");
+        if (techLevel ==null) throw new IllegalArgumentException("level 선택 필수");
         this.techId = techId;
         this.techLevel = techLevel;
     }
