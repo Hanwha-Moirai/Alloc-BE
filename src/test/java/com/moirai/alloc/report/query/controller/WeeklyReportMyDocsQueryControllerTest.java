@@ -1,0 +1,68 @@
+package com.moirai.alloc.report.query.controller;
+
+import com.moirai.alloc.common.security.auth.UserPrincipal;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("local")
+@Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+class WeeklyReportMyDocsQueryControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void getMyReports_returnsPage() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report")
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.content").isArray());
+    }
+
+    @Test
+    void searchMyReports_returnsMatches() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report/search")
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .param("keyword", "Report Project"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.content[0].reportId").value(77001));
+    }
+
+    @Test
+    void getMyReportDetail_returnsDetail() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report/{reportId}", 77001)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.reportId").value(77001));
+    }
+
+    private Authentication pmAuth() {
+        UserPrincipal principal = new UserPrincipal(
+                77001L,
+                "pm_77001",
+                "pm77001@example.com",
+                "PM User",
+                "PM",
+                "pw"
+        );
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+}
