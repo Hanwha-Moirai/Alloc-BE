@@ -31,7 +31,16 @@ ON DUPLICATE KEY UPDATE task_name = VALUES(task_name);
 INSERT INTO weekly_report (report_id, user_id, project_id, week_start_date, week_end_date, report_status, change_of_plan, task_completion_rate, summary_text, is_deleted, created_at, updated_at)
 VALUES
     (77001, 77001, 77001, '2025-01-06', '2025-01-12', 'DRAFT', '변경', 0.5, 'summary', 0, '2025-01-12 00:00:00', '2025-01-12 00:00:00')
-ON DUPLICATE KEY UPDATE report_status = VALUES(report_status);
+ON DUPLICATE KEY UPDATE
+    user_id = VALUES(user_id),
+    project_id = VALUES(project_id),
+    week_start_date = VALUES(week_start_date),
+    week_end_date = VALUES(week_end_date),
+    report_status = VALUES(report_status),
+    change_of_plan = VALUES(change_of_plan),
+    task_completion_rate = VALUES(task_completion_rate),
+    summary_text = VALUES(summary_text),
+    is_deleted = VALUES(is_deleted);
 
 INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date)
 VALUES
