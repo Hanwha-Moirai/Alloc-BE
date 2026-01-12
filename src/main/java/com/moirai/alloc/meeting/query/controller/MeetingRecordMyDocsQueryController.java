@@ -1,9 +1,9 @@
-package com.moirai.alloc.meeting.controller;
+package com.moirai.alloc.meeting.query.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.meeting.query.dto.response.MeetingRecordDetailResponse;
 import com.moirai.alloc.meeting.query.dto.MeetingRecordSearchCondition;
+import com.moirai.alloc.meeting.query.dto.response.MeetingRecordDetailResponse;
 import com.moirai.alloc.meeting.query.dto.response.MeetingRecordSummaryResponse;
 import com.moirai.alloc.meeting.query.service.MeetingRecordQueryService;
 import org.springframework.data.domain.Page;
@@ -17,15 +17,15 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/mydocs/meeting_record")
-public class MeetingRecordMyDocsController {
+public class MeetingRecordMyDocsQueryController {
 
     private final MeetingRecordQueryService meetingRecordQueryService;
 
-    public MeetingRecordMyDocsController(MeetingRecordQueryService meetingRecordQueryService) {
+    public MeetingRecordMyDocsQueryController(MeetingRecordQueryService meetingRecordQueryService) {
         this.meetingRecordQueryService = meetingRecordQueryService;
     }
 
-    // 내 회의록 목록 조회
+    // 내 회의록 조회
     @GetMapping
     public ResponseEntity<ApiResponse<Page<MeetingRecordSummaryResponse>>> getMyMeetingRecords(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -52,7 +52,7 @@ public class MeetingRecordMyDocsController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    // 내 회의록 상세 조회
+    // 내 회의록 상세보기
     @GetMapping("/{meetingRecordId}")
     public ResponseEntity<ApiResponse<MeetingRecordDetailResponse>> getMyMeetingRecordDetail(
             @AuthenticationPrincipal UserPrincipal principal,
