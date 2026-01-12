@@ -29,7 +29,7 @@ public class Employee {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
     private JobStandard job;
 
@@ -67,6 +67,10 @@ public class Employee {
         this.hiringDate = hiringDate;
 
         this.employeeType = (employeeType == null) ? EmployeeType.FULL_TIME : employeeType;
+    }
+
+    public void changeJob(JobStandard job) {
+        this.job = job;
     }
 
 }
