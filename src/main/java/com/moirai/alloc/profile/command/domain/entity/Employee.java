@@ -1,4 +1,4 @@
-package com.moirai.alloc.profile.common.domain;
+package com.moirai.alloc.profile.command.domain.entity;
 
 import com.moirai.alloc.hr.command.domain.Department;
 import com.moirai.alloc.hr.command.domain.JobStandard;
@@ -30,7 +30,7 @@ public class Employee {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "job_id", nullable = false)
+    @JoinColumn(name = "job_id")
     private JobStandard job;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
