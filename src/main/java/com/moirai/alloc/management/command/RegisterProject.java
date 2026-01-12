@@ -6,5 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class RegisterProject {
     public void registerProject(){
+//        1) project 내용을 입력한다.
+//        2) project를 저장한다.
+
     }
 }
