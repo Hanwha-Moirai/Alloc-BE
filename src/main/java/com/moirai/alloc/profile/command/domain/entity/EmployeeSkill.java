@@ -1,4 +1,4 @@
-package com.moirai.alloc.profile.common.domain;
+package com.moirai.alloc.profile.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import com.moirai.alloc.hr.command.domain.TechStandard;
