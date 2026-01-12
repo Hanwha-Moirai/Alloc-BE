@@ -1,10 +1,10 @@
 package com.moirai.alloc.meeting.query.repository;
 
-import com.moirai.alloc.meeting.query.dto.AgendaResponse;
-import com.moirai.alloc.meeting.query.dto.MeetingRecordDetailResponse;
+import com.moirai.alloc.meeting.query.dto.response.AgendaResponse;
+import com.moirai.alloc.meeting.query.dto.response.MeetingRecordDetailResponse;
 import com.moirai.alloc.meeting.query.dto.MeetingRecordSearchCondition;
-import com.moirai.alloc.meeting.query.dto.MeetingRecordSummaryResponse;
-import com.moirai.alloc.meeting.query.dto.ParticipantResponse;
+import com.moirai.alloc.meeting.query.dto.response.MeetingRecordSummaryResponse;
+import com.moirai.alloc.meeting.query.dto.response.ParticipantResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

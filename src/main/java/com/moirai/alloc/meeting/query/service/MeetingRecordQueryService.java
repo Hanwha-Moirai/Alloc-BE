@@ -1,9 +1,9 @@
 package com.moirai.alloc.meeting.query.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.meeting.query.dto.MeetingRecordDetailResponse;
+import com.moirai.alloc.meeting.query.dto.response.MeetingRecordDetailResponse;
 import com.moirai.alloc.meeting.query.dto.MeetingRecordSearchCondition;
-import com.moirai.alloc.meeting.query.dto.MeetingRecordSummaryResponse;
+import com.moirai.alloc.meeting.query.dto.response.MeetingRecordSummaryResponse;
 import com.moirai.alloc.meeting.query.repository.MeetingMembershipRepository;
 import com.moirai.alloc.meeting.query.repository.MeetingRecordQueryRepository;
 import org.springframework.data.domain.Page;

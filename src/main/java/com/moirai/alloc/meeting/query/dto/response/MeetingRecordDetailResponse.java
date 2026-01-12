@@ -1,8 +1,9 @@
-package com.moirai.alloc.meeting.query.dto;
+package com.moirai.alloc.meeting.query.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-public record MeetingRecordSummaryResponse(
+public record MeetingRecordDetailResponse(
         Long meetingId,
         Long projectId,
         String createdBy,
@@ -10,6 +11,8 @@ public record MeetingRecordSummaryResponse(
         LocalDateTime meetingDate,
         LocalDateTime meetingTime,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        List<AgendaResponse> agendas,
+        List<ParticipantResponse> participants
 ) {
 }

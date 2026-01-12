@@ -1,10 +1,10 @@
-package com.moirai.alloc.meeting.command.dto;
+package com.moirai.alloc.meeting.command.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record UpdateMeetingRecordRequest(
-        Long meetingId,
+public record CreateMeetingRecordRequest(
+        Long projectId,
         Double progress,
         LocalDateTime meetingDate,
         LocalDateTime meetingTime,
