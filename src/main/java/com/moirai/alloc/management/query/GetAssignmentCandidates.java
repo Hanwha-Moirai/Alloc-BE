@@ -5,4 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly=true)
 public class GetAssignmentCandidates {
+    public void getAssignmentCandidates(Long projectId, Long userId){
+
+    }
 }

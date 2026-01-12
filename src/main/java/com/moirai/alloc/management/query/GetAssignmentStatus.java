@@ -5,4 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly=true)
 public class GetAssignmentStatus {
+    public void getAssignmentFinalStatus(Long assignmentId){
+
+    }
 }

@@ -5,4 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class RequestInterview {
+    public void requestInterview(Long assignmentId, Long userId){
+    }
 }
