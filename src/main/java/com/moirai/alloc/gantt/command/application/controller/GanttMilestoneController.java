@@ -23,6 +23,7 @@ public class GanttMilestoneController {
         this.ganttCommandService = ganttCommandService;
     }
 
+    // 마일스톤 생성
     @PostMapping
     public ApiResponse<CreatedIdResponse> createMilestone(@PathVariable Long projectId,
                                                           @RequestBody CreateMilestoneRequest request) {
@@ -30,6 +31,7 @@ public class GanttMilestoneController {
         return ApiResponse.success(new CreatedIdResponse(milestoneId));
     }
 
+    // 마일스톤 수정
     @PatchMapping("/{milestoneId}")
     public ApiResponse<Void> updateMilestone(@PathVariable Long projectId,
                                              @PathVariable Long milestoneId,
@@ -38,6 +40,7 @@ public class GanttMilestoneController {
         return ApiResponse.success(null);
     }
 
+    // 마일스톤 삭제
     @DeleteMapping("/{milestoneId}")
     public ApiResponse<Void> deleteMilestone(@PathVariable Long projectId,
                                              @PathVariable Long milestoneId) {
