@@ -25,6 +25,7 @@ public class GanttQueryController {
         this.ganttQueryService = ganttQueryService;
     }
 
+    // 태스크 조회
     @GetMapping("/tasks")
     public ApiResponse<List<TaskResponse>> findTasks(@PathVariable Long projectId,
                                                      @RequestParam(required = false) Long assigneeId,
@@ -41,6 +42,7 @@ public class GanttQueryController {
         return ApiResponse.success(tasks);
     }
 
+    // 마일스톤 상세 조회
     @GetMapping("/ganttchart/milestones/{milestoneId}")
     public ApiResponse<MilestoneResponse> findMilestone(@PathVariable Long projectId,
                                                         @PathVariable Long milestoneId) {
@@ -48,6 +50,7 @@ public class GanttQueryController {
         return ApiResponse.success(milestone);
     }
 
+    // 마일스톤 목록 조회
     @GetMapping("/ganttchart/milestones")
     public ApiResponse<List<MilestoneResponse>> findMilestones(@PathVariable Long projectId) {
         List<MilestoneResponse> milestones = ganttQueryService.findMilestones(projectId);
