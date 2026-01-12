@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.query.dto;
+package com.moirai.alloc.management.query.dto.registration;
 
 public class TechOptionDTO {
     private Long techId;

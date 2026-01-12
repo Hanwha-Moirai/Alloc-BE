@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.command;
+package com.moirai.alloc.management.command.service;
 
 public class SelectAdditionalAssignmentCandidates {
     public void selectAdditionalCandidates(Long projectId) {

@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.command;
+package com.moirai.alloc.management.command.service;
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;

@@ -1,11 +1,4 @@
-package com.moirai.alloc.management.query;
-
-import com.moirai.alloc.management.domain.entity.TechReqLevel;
-import com.moirai.alloc.management.query.dto.JobOptionDTO;
-import com.moirai.alloc.management.query.dto.TechOptionDTO;
-import com.moirai.alloc.project.command.domain.Project;
-
-import java.util.List;
+package com.moirai.alloc.management.query.service;
 
 public class GetProjectRegistrationView {
 

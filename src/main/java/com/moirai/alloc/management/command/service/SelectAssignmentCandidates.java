@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.command;
+package com.moirai.alloc.management.command.service;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
