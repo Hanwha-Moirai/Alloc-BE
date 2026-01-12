@@ -24,6 +24,7 @@ public class GanttTaskController {
         this.ganttCommandService = ganttCommandService;
     }
 
+    // 태스크 생성
     @PostMapping
     public ApiResponse<CreatedIdResponse> createTask(@PathVariable Long projectId,
                                                      @RequestBody CreateTaskRequest request) {
@@ -31,6 +32,7 @@ public class GanttTaskController {
         return ApiResponse.success(new CreatedIdResponse(taskId));
     }
 
+    // 태스크 수정
     @PatchMapping("/{taskId}")
     public ApiResponse<Void> updateTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId,
@@ -39,6 +41,7 @@ public class GanttTaskController {
         return ApiResponse.success(null);
     }
 
+    // 태스크 삭제
     @DeleteMapping("/{taskId}")
     public ApiResponse<Void> deleteTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId) {
@@ -46,6 +49,7 @@ public class GanttTaskController {
         return ApiResponse.success(null);
     }
 
+    // 태스크 완료 (태스크 상태 변경)
     @PatchMapping("/{taskId}/complete")
     public ApiResponse<Void> completeTask(@PathVariable Long projectId,
                                           @PathVariable Long taskId,
