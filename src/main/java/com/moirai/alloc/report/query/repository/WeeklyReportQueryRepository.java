@@ -314,7 +314,7 @@ public class WeeklyReportQueryRepository {
         return new QueryParts(selectSql, countSql, params);
     }
 
-    private long count(String countSql, List<Object> params) {
+    private long count(String countSql, List<?> params) {
         Integer total = jdbcTemplate.queryForObject(countSql, Integer.class, params.toArray());
         return Objects.requireNonNullElse(total, 0);
     }
