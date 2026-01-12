@@ -20,7 +20,13 @@ INSERT INTO meeting_record (meeting_id, project_id, created_by, progress, meetin
 VALUES
     (88001, 88001, 'pm_88001', 10.0, '2025-01-05 10:00:00', '2025-01-05 10:00:00', 0, '2025-01-05 10:00:00', '2025-01-05 10:00:00'),
     (88002, 88002, 'pm_88001', 20.0, '2025-01-06 10:00:00', '2025-01-06 10:00:00', 0, '2025-01-06 10:00:00', '2025-01-06 10:00:00')
-ON DUPLICATE KEY UPDATE progress = VALUES(progress);
+ON DUPLICATE KEY UPDATE
+    project_id = VALUES(project_id),
+    created_by = VALUES(created_by),
+    progress = VALUES(progress),
+    meeting_date = VALUES(meeting_date),
+    meeting_time = VALUES(meeting_time),
+    is_deleted = VALUES(is_deleted);
 
 INSERT INTO agenda (agenda_id, meeting_id, discussion_title, discussion_content, discussion_result, agenda_type)
 VALUES
