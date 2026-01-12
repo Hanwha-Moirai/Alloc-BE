@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly=true)
 public class GetProjectDetail {
+    //private final ProjectRepository projectRepository;
     public void getProjectDetail(Long projectId) {
 //        1) projectId로 프로젝트를 식별한다
 //        2) 프로젝트 상세 정보를 조회한다.
