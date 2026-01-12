@@ -10,6 +10,5 @@ public class GetProjectDetail {
 //        1) projectId로 프로젝트를 식별한다
 //        2) 프로젝트 상세 정보를 조회한다.
 //        3) 조회 결과를 반환한다
-
     }
 }
