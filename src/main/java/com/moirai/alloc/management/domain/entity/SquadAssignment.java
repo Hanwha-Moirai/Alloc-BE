@@ -60,7 +60,7 @@ public class SquadAssignment {
         }
     }
 
-    public void accept() {
+    public void acceptAssignmentRequest() {
         validateNotDecided();
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 수락할 수 있습니다.");
@@ -76,7 +76,7 @@ public class SquadAssignment {
         this.assignmentStatus = AssignmentStatus.INTERVIEW_REQUESTED;
     }
 
-    public void assign() {
+    public void finalAssign() {
         if (this.finalDecision != FinalDecision.PENDING) {
             throw new IllegalStateException("이미 최종 결정이 내려졌습니다.");
         }
@@ -84,7 +84,7 @@ public class SquadAssignment {
         this.decidedAt = LocalDateTime.now();
     }
 
-    public void exclude() {
+    public void finalExclude() {
         if (this.finalDecision != FinalDecision.PENDING) {
             throw new IllegalStateException("이미 최종 결정이 내려졌습니다.");
         }
