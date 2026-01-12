@@ -1,6 +1,7 @@
-package com.moirai.alloc.meeting.command.dto;
+package com.moirai.alloc.meeting.query.dto.response;
 
-public record AgendaRequest(
+public record AgendaResponse(
+        Long agendaId,
         String discussionTitle,
         String discussionContent,
         String discussionResult,
