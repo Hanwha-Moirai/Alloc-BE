@@ -1,4 +1,4 @@
-package com.moirai.alloc.report.controller;
+package com.moirai.alloc.report.query.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
@@ -12,20 +12,25 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/mydocs/report")
-public class WeeklyReportMyDocsController {
+public class WeeklyReportMyDocsQueryController {
 
     private final WeeklyReportQueryService weeklyReportQueryService;
 
-    public WeeklyReportMyDocsController(WeeklyReportQueryService weeklyReportQueryService) {
+    public WeeklyReportMyDocsQueryController(WeeklyReportQueryService weeklyReportQueryService) {
         this.weeklyReportQueryService = weeklyReportQueryService;
     }
 
+    // 내 주간 보고 목록 조회
     @GetMapping
     public ResponseEntity<ApiResponse<Page<WeeklyReportSummaryResponse>>> getMyReports(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -36,6 +41,7 @@ public class WeeklyReportMyDocsController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 내 주간 보고 검색
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<WeeklyReportSummaryResponse>>> searchMyReports(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -59,6 +65,7 @@ public class WeeklyReportMyDocsController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 내 주간 보고 상세 조회
     @GetMapping("/{reportId}")
     public ResponseEntity<ApiResponse<WeeklyReportDetailResponse>> getMyReportDetail(
             @AuthenticationPrincipal UserPrincipal principal,
