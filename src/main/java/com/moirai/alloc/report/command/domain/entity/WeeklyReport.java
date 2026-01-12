@@ -111,6 +111,6 @@ public class WeeklyReport extends BaseTimeEntity {
         this.changeOfPlan = changeOfPlan;
         this.summaryText = summaryText;
         this.taskCompletionRate = taskCompletionRate;
-        this.isDeleted = (isDeleted == null) ? false : isDeleted;
+        this.isDeleted = isDeleted != null && isDeleted;
     }
 }
