@@ -41,4 +41,11 @@ public class EmployeeSkill extends BaseTimeEntity {
         this.proficiency = (proficiency == null) ? Proficiency.LV1 : proficiency;
     }
 
+    public void changeProficiency(Proficiency proficiency) {
+        if (proficiency == null) {
+            throw new IllegalArgumentException("PROFICIENCY_REQUIRED");
+        }
+        this.proficiency = proficiency;
+    }
+
 }
