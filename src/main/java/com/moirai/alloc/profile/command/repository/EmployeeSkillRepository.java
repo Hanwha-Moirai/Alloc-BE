@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface EmployeeSkillRepository extends JpaRepository<EmployeeSkill,Long> {
 
-    // List<EmployeeSkill> findByEmployee_UserIdOrderByTech_TechNameAsc(Long userId);
+    boolean existsByEmployee_UserIdAndTech_TechId(Long userId, Long techId);
 }
