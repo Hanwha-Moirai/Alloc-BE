@@ -11,12 +11,13 @@ import com.moirai.alloc.report.command.service.WeeklyReportCommandService;
 import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/docs/report")
+@RequestMapping("/api/projects/{project_id}/docs/report")
 public class WeeklyReportDocsCommandController {
 
     private final WeeklyReportCommandService weeklyReportCommandService;
@@ -27,31 +28,39 @@ public class WeeklyReportDocsCommandController {
 
     // 주간 보고 생성
     @PostMapping("/create")
+    @PreAuthorize("hasRole('PM')")
     public ResponseEntity<ApiResponse<WeeklyReportCreateResponse>> createReport(
+            @PathVariable("project_id") Long projectId,
             @RequestBody CreateWeeklyReportRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        WeeklyReportCreateResponse response = weeklyReportCommandService.createWeeklyReport(request, principal);
+        WeeklyReportCreateResponse response =
+                weeklyReportCommandService.createWeeklyReport(projectId, request, principal);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 주간 보고 수정 및 저장
     @PatchMapping("/save")
+    @PreAuthorize("hasRole('PM')")
     public ResponseEntity<ApiResponse<WeeklyReportSaveResponse>> saveReport(
+            @PathVariable("project_id") Long projectId,
             @RequestBody UpdateWeeklyReportRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        WeeklyReportSaveResponse response = weeklyReportCommandService.updateWeeklyReport(request, principal);
+        WeeklyReportSaveResponse response =
+                weeklyReportCommandService.updateWeeklyReport(projectId, request, principal);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 주간 보고 삭제
     @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('PM')")
     public ResponseEntity<ApiResponse<WeeklyReportDeleteResponse>> deleteReport(
+            @PathVariable("project_id") Long projectId,
             @RequestBody DeleteWeeklyReportRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        weeklyReportCommandService.deleteWeeklyReport(request.reportId(), principal);
+        weeklyReportCommandService.deleteWeeklyReport(projectId, request.reportId(), principal);
         WeeklyReportDeleteResponse response = new WeeklyReportDeleteResponse(request.reportId(), true);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

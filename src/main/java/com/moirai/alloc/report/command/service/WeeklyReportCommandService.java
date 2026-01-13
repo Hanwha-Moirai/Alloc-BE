@@ -48,8 +48,12 @@ public class WeeklyReportCommandService {
     }
 
     @Transactional
-    public WeeklyReportCreateResponse createWeeklyReport(CreateWeeklyReportRequest request,
+    public WeeklyReportCreateResponse createWeeklyReport(Long projectId,
+                                                         CreateWeeklyReportRequest request,
                                                          UserPrincipal principal) {
+        if (request.projectId() == null || !request.projectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "프로젝트 정보가 일치하지 않습니다.");
+        }
         validateMembership(request.projectId(), principal.userId());
         WeeklyReport report = WeeklyReport.create(
                 principal.userId(),
@@ -76,10 +80,14 @@ public class WeeklyReportCommandService {
     }
 
     @Transactional
-    public WeeklyReportSaveResponse updateWeeklyReport(UpdateWeeklyReportRequest request,
+    public WeeklyReportSaveResponse updateWeeklyReport(Long projectId,
+                                                       UpdateWeeklyReportRequest request,
                                                        UserPrincipal principal) {
         WeeklyReport report = weeklyReportCommandRepository.findByReportIdAndIsDeletedFalse(request.reportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        if (!report.getProjectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다.");
+        }
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
 
@@ -123,9 +131,12 @@ public class WeeklyReportCommandService {
     }
 
     @Transactional
-    public void deleteWeeklyReport(Long reportId, UserPrincipal principal) {
+    public void deleteWeeklyReport(Long projectId, Long reportId, UserPrincipal principal) {
         WeeklyReport report = weeklyReportCommandRepository.findByReportIdAndIsDeletedFalse(reportId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        if (!report.getProjectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다.");
+        }
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
         report.markDeleted();

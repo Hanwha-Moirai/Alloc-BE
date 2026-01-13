@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/docs/report")
+@RequestMapping("/api/projects/{project_id}/docs/report")
 public class WeeklyReportDocsQueryController {
 
     private final WeeklyReportQueryService weeklyReportQueryService;
@@ -31,7 +31,7 @@ public class WeeklyReportDocsQueryController {
     // 주간 보고 목록 조회 (Pageable)
     @GetMapping
     public ResponseEntity<ApiResponse<Page<WeeklyReportSummaryResponse>>> getReports(
-            @RequestParam(required = false) Long projectId,
+            @PathVariable("project_id") Long projectId,
             Pageable pageable
     ) {
         Page<WeeklyReportSummaryResponse> response =
@@ -42,7 +42,7 @@ public class WeeklyReportDocsQueryController {
     // 주간 보고 검색
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<WeeklyReportSummaryResponse>>> searchReports(
-            @RequestParam(required = false) Long projectId,
+            @PathVariable("project_id") Long projectId,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) WeeklyReport.ReportStatus reportStatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStartFrom,
@@ -59,14 +59,17 @@ public class WeeklyReportDocsQueryController {
                 keyword
         );
         Page<WeeklyReportSummaryResponse> response =
-                weeklyReportQueryService.searchDocsReports(condition, pageable);
+                weeklyReportQueryService.searchDocsReports(projectId, condition, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 주간 보고 상세 조회
     @GetMapping("/{reportId}")
-    public ResponseEntity<ApiResponse<WeeklyReportDetailResponse>> getReportDetail(@PathVariable Long reportId) {
-        WeeklyReportDetailResponse response = weeklyReportQueryService.getDocsReportDetail(reportId);
+    public ResponseEntity<ApiResponse<WeeklyReportDetailResponse>> getReportDetail(
+            @PathVariable("project_id") Long projectId,
+            @PathVariable Long reportId
+    ) {
+        WeeklyReportDetailResponse response = weeklyReportQueryService.getDocsReportDetail(projectId, reportId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

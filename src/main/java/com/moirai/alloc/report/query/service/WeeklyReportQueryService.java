@@ -33,15 +33,28 @@ public class WeeklyReportQueryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<WeeklyReportSummaryResponse> searchDocsReports(WeeklyReportSearchCondition condition,
+    public Page<WeeklyReportSummaryResponse> searchDocsReports(Long projectId,
+                                                               WeeklyReportSearchCondition condition,
                                                                Pageable pageable) {
-        return weeklyReportQueryRepository.search(condition, pageable);
+        WeeklyReportSearchCondition scopedCondition = new WeeklyReportSearchCondition(
+                projectId,
+                condition.userId(),
+                condition.reportStatus(),
+                condition.weekStartFrom(),
+                condition.weekStartTo(),
+                condition.keyword()
+        );
+        return weeklyReportQueryRepository.search(scopedCondition, pageable);
     }
 
     @Transactional(readOnly = true)
-    public WeeklyReportDetailResponse getDocsReportDetail(Long reportId) {
-        return weeklyReportQueryRepository.findDetail(reportId)
+    public WeeklyReportDetailResponse getDocsReportDetail(Long projectId, Long reportId) {
+        WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(reportId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        if (!detail.projectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다.");
+        }
+        return detail;
     }
 
     @Transactional(readOnly = true)
