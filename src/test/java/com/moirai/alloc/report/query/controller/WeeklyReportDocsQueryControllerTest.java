@@ -1,4 +1,4 @@
-package com.moirai.alloc.meeting.query.controller;
+package com.moirai.alloc.report.query.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,39 +17,37 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
-@Sql(scripts = "/sql/meeting/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-class MeetingRecordDocsQueryControllerTest {
+@Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+class WeeklyReportDocsQueryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     @WithMockUser
-    void getMeetingRecords_returnsPage() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/docs/meeting_record", 88001))
+    void getReports_returnsPage() throws Exception {
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report", 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
+                .andExpect(jsonPath("$.data.content").isArray());
     }
 
     @Test
     @WithMockUser
-    void searchMeetingRecords_returnsMatches() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/docs/meeting_record/search", 88001)
-                        .param("keyword", "검색키워드"))
+    void searchReports_returnsMatches() throws Exception {
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report/search", 77001)
+                        .param("keyword", "Report Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content[0].meetingId").value(88001))
-                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
+                .andExpect(jsonPath("$.data.content[0].reportId").value(77001));
     }
 
     @Test
     @WithMockUser
-    void getMeetingRecordDetail_returnsDetail() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/docs/meeting_record/{meetingRecordId}", 88001, 88001))
+    void getReportDetail_returnsDetail() throws Exception {
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report/{reportId}", 77001, 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.meetingId").value(88001));
+                .andExpect(jsonPath("$.data.reportId").value(77001));
     }
 }

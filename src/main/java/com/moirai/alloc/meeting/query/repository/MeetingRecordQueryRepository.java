@@ -31,8 +31,10 @@ public class MeetingRecordQueryRepository {
     }
 
     public Page<MeetingRecordSummaryResponse> findAll(Pageable pageable) {
-        String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
-                "created_at, updated_at from meeting_record where is_deleted = false";
+        String baseSql = "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
+                "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " +
+                "from meeting_record mr join project p on p.project_id = mr.project_id " +
+                "where mr.is_deleted = false";
         String countSql = "select count(1) from meeting_record where is_deleted = false";
         String orderSql = " order by created_at desc limit ? offset ?";
         List<MeetingRecordSummaryResponse> content = jdbcTemplate.query(
@@ -46,8 +48,10 @@ public class MeetingRecordQueryRepository {
     }
 
     public Page<MeetingRecordSummaryResponse> findAllByProjectId(Long projectId, Pageable pageable) {
-        String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
-                "created_at, updated_at from meeting_record where is_deleted = false and project_id = ?";
+        String baseSql = "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
+                "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " +
+                "from meeting_record mr join project p on p.project_id = mr.project_id " +
+                "where mr.is_deleted = false and mr.project_id = ?";
         String countSql = "select count(1) from meeting_record where is_deleted = false and project_id = ?";
         String orderSql = " order by created_at desc limit ? offset ?";
         List<Object> params = new ArrayList<>();
@@ -83,8 +87,10 @@ public class MeetingRecordQueryRepository {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
         String inClause = inClause(projectIds.size());
-        String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
-                "created_at, updated_at from meeting_record where is_deleted = false and project_id in " + inClause;
+        String baseSql = "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
+                "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " +
+                "from meeting_record mr join project p on p.project_id = mr.project_id " +
+                "where mr.is_deleted = false and mr.project_id in " + inClause;
         String countSql = "select count(1) from meeting_record where is_deleted = false and project_id in " + inClause;
         String orderSql = " order by created_at desc limit ? offset ?";
         List<Object> params = new ArrayList<>(projectIds);
@@ -126,8 +132,10 @@ public class MeetingRecordQueryRepository {
 
     public Optional<MeetingRecordDetailResponse> findDetail(Long meetingId) {
         List<MeetingRecordSummaryResponse> records = jdbcTemplate.query(
-                "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
-                        "created_at, updated_at from meeting_record where meeting_id = ? and is_deleted = false",
+                "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
+                        "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " +
+                        "from meeting_record mr join project p on p.project_id = mr.project_id " +
+                        "where mr.meeting_id = ? and mr.is_deleted = false",
                 summaryRowMapper(),
                 meetingId
         );
@@ -178,7 +186,8 @@ public class MeetingRecordQueryRepository {
     }
 
     private QueryParts buildSearchQuery(MeetingRecordSearchCondition condition) {
-        String baseSql = "from meeting_record mr where mr.is_deleted = false";
+        String baseSql = "from meeting_record mr join project p on p.project_id = mr.project_id " +
+                "where mr.is_deleted = false";
         StringBuilder where = new StringBuilder();
         List<Object> params = new ArrayList<>();
         if (condition.projectId() != null) {
@@ -203,7 +212,7 @@ public class MeetingRecordQueryRepository {
             params.add(keyword);
             params.add(keyword);
         }
-        String selectSql = "select mr.meeting_id, mr.project_id, mr.created_by, mr.progress, " +
+        String selectSql = "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
                 "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " + baseSql + where;
         String countSql = "select count(1) " + baseSql + where;
         return new QueryParts(selectSql, countSql, params);
@@ -213,6 +222,7 @@ public class MeetingRecordQueryRepository {
         return (rs, rowNum) -> new MeetingRecordSummaryResponse(
                 rs.getLong("meeting_id"),
                 rs.getLong("project_id"),
+                rs.getString("project_name"),
                 rs.getString("created_by"),
                 getDouble(rs.getObject("progress")),
                 toLocalDateTime(rs.getTimestamp("meeting_date")),

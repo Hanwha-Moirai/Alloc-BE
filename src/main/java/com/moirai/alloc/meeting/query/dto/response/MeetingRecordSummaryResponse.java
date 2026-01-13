@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record MeetingRecordSummaryResponse(
         Long meetingId,
         Long projectId,
+        String projectName,
         String createdBy,
         Double progress,
         LocalDateTime meetingDate,

@@ -3,6 +3,8 @@ package com.moirai.alloc.report.command.domain.entity;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +23,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "weekly_tasks")
 public class WeeklyTask {
 
+    public enum TaskType { COMPLETED, INCOMPLETE, NEXT_WEEK }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "weekly_tasks_id")
@@ -34,9 +38,40 @@ public class WeeklyTask {
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "task_type", nullable = false)
+    private TaskType taskType;
+
+    @Column(name = "planned_start_date")
+    private java.time.LocalDate plannedStartDate;
+
+    @Column(name = "planned_end_date")
+    private java.time.LocalDate plannedEndDate;
+
+    public static WeeklyTask create(WeeklyReport report,
+                                    Task task,
+                                    TaskType taskType,
+                                    java.time.LocalDate plannedStartDate,
+                                    java.time.LocalDate plannedEndDate) {
+        return WeeklyTask.builder()
+                .report(report)
+                .task(task)
+                .taskType(taskType)
+                .plannedStartDate(plannedStartDate)
+                .plannedEndDate(plannedEndDate)
+                .build();
+    }
+
     @Builder
-    private WeeklyTask(WeeklyReport report, Task task) {
+    private WeeklyTask(WeeklyReport report,
+                       Task task,
+                       TaskType taskType,
+                       java.time.LocalDate plannedStartDate,
+                       java.time.LocalDate plannedEndDate) {
         this.report = report;
         this.task = task;
+        this.taskType = taskType;
+        this.plannedStartDate = plannedStartDate;
+        this.plannedEndDate = plannedEndDate;
     }
 }

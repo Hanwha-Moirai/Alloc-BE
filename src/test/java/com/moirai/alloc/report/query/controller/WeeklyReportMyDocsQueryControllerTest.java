@@ -1,4 +1,4 @@
-package com.moirai.alloc.meeting.query.controller;
+package com.moirai.alloc.report.query.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -20,47 +20,45 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
-@Sql(scripts = "/sql/meeting/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-class MeetingRecordMyDocsQueryControllerTest {
+@Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+class WeeklyReportMyDocsQueryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void getMyMeetingRecords_returnsPage() throws Exception {
-        mockMvc.perform(get("/api/mydocs/meeting_record")
+    void getMyReports_returnsPage() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
+                .andExpect(jsonPath("$.data.content").isArray());
     }
 
     @Test
-    void searchMyMeetingRecords_returnsMatches() throws Exception {
-        mockMvc.perform(get("/api/mydocs/meeting_record/search")
+    void searchMyReports_returnsMatches() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report/search")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .param("keyword", "검색키워드"))
+                        .param("keyword", "Report Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content[0].meetingId").value(88001))
-                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
+                .andExpect(jsonPath("$.data.content[0].reportId").value(77001));
     }
 
     @Test
-    void getMyMeetingRecordDetail_returnsDetail() throws Exception {
-        mockMvc.perform(get("/api/mydocs/meeting_record/{meetingRecordId}", 88001)
+    void getMyReportDetail_returnsDetail() throws Exception {
+        mockMvc.perform(get("/api/mydocs/report/{reportId}", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.meetingId").value(88001));
+                .andExpect(jsonPath("$.data.reportId").value(77001));
     }
 
     private Authentication pmAuth() {
         UserPrincipal principal = new UserPrincipal(
-                88001L,
-                "pm_88001",
-                "pm88001@example.com",
+                77001L,
+                "pm_77001",
+                "pm77001@example.com",
                 "PM User",
                 "PM",
                 "pw"
