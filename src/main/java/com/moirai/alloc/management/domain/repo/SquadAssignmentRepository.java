@@ -4,6 +4,8 @@ import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
@@ -18,4 +20,14 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
 
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
+
+    @Query("""
+    select distinct p
+    from SquadAssignment sa
+    join Project p on sa.projectId = p.projectId
+    where sa.userId = :userId
+      and sa.finalDecision = 'ASSIGNED'
+""")
+    List<Project> findAssignedProjects(@Param("userId") Long userId);
+
 }
