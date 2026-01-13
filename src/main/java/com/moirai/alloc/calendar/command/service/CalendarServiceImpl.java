@@ -33,6 +33,12 @@ public class CalendarServiceImpl implements CalendarService {
     private final SquadAssignmentRepository squadAssignmentRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 공유 일정(PUBLIC) 생성
+     * - PM 권한 + 프로젝트 멤버십(ASSIGNED) 확인
+     * - 참여자 목록 필수, 중복 제거 후 전원 프로젝트 멤버인지 검증
+     * - events 저장 후 public_events_member 저장, 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public EventResponse createSharedEvent(Long projectId, SharedEventCreateRequest request, UserPrincipal principal) {
@@ -43,7 +49,6 @@ public class CalendarServiceImpl implements CalendarService {
 
         validatePublicMembersRequired(request.getMemberUserIds());
 
-        // 참여자 프로젝트 멤버(ASSIGNED) 검증 + 중복 제거
         List<Long> distinctMemberIds = distinct(request.getMemberUserIds());
         validateMembersBelongToProject(projectId, distinctMemberIds);
 
@@ -72,9 +77,15 @@ public class CalendarServiceImpl implements CalendarService {
         logChange(saved.getId(), principal.userId(), ChangeType.CREATE, "공유 일정 생성",
                 null, saved.getStartDate(), null, saved.getEndDate());
 
-        return EventResponse.from(saved); // 상세 조회는 GET /{eventId}로 memberUserIds 제공
+        return EventResponse.from(saved);
     }
 
+    /**
+     * 개인 일정(PRIVATE) 생성
+     * - 프로젝트 멤버십 확인 + 기간 검증
+     * - 소유자=요청자(principal.userId), 타입=PRIVATE로 events 저장
+     * - 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public EventResponse createPersonalEvent(Long projectId, PersonalEventCreateRequest request, UserPrincipal principal) {
@@ -101,6 +112,12 @@ public class CalendarServiceImpl implements CalendarService {
         return EventResponse.from(saved);
     }
 
+    /**
+     * 휴가 일정(VACATION) 생성
+     * - 프로젝트 멤버십 확인 + 기간 검증
+     * - eventName 미입력 시 "휴가" 기본값 부여
+     * - 타입=VACATION으로 events 저장, 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public EventResponse createVacationEvent(Long projectId, VacationEventCreateRequest request, UserPrincipal principal) {
@@ -130,6 +147,12 @@ public class CalendarServiceImpl implements CalendarService {
         return EventResponse.from(saved);
     }
 
+    /**
+     * 완료 상태 변경
+     * - 이벤트 조회 + 권한 검증(타입별 규칙)
+     * - completed=true -> SUCCESS, false -> IN_PROGRESS
+     * - 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public EventResponse updateCompletion(Long projectId, Long eventId, EventCompletionRequest request, UserPrincipal principal) {
@@ -150,6 +173,16 @@ public class CalendarServiceImpl implements CalendarService {
         return EventResponse.from(event);
     }
 
+    /**
+     * 일정 수정(부분 수정)
+     * - 이벤트 조회 + 권한 검증
+     * - 문자열 필드(이름/장소/설명) 부분 수정
+     * - 기간 변경 시 기간 검증 후 updatePeriod
+     * - 타입 변경 시 PUBLIC 관련 권한/규칙 적용
+     * - memberUserIds가 들어오면 PUBLIC에서만 허용 + 멤버십 검증 후 매핑 재생성
+     * - PUBLIC -> 비PUBLIC 변경 시 참여자 매핑 정리
+     * - 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public EventResponse updateEvent(Long projectId, Long eventId, EventUpdateRequest request, UserPrincipal principal) {
@@ -160,12 +193,10 @@ public class CalendarServiceImpl implements CalendarService {
         LocalDateTime beforeEnd = event.getEndDate();
         EventType beforeType = event.getEventType();
 
-        // 이름/장소/설명
         if (request.getEventName() != null) event.updateEventName(request.getEventName());
         if (request.getPlace() != null) event.updateEventPlace(request.getPlace());
         if (request.getDescription() != null) event.updateEventDescription(request.getDescription());
 
-        // 기간 변경
         if (request.getStartDateTime() != null || request.getEndDateTime() != null) {
             LocalDateTime newStart = (request.getStartDateTime() != null) ? request.getStartDateTime() : event.getStartDate();
             LocalDateTime newEnd = (request.getEndDateTime() != null) ? request.getEndDateTime() : event.getEndDate();
@@ -173,7 +204,6 @@ public class CalendarServiceImpl implements CalendarService {
             event.updatePeriod(newStart, newEnd);
         }
 
-        // 타입 변경
         if (request.getEventType() != null) {
             if (event.getEventType() == EventType.PUBLIC
                     && request.getEventType() != EventType.PUBLIC
@@ -188,13 +218,11 @@ public class CalendarServiceImpl implements CalendarService {
 
         EventType afterType = event.getEventType();
 
-        // PUBLIC로 변경되는 경우 memberUserIds가 반드시 필요 (빈 리스트 금지)
         boolean changedToPublic = (beforeType != EventType.PUBLIC && afterType == EventType.PUBLIC);
         if (changedToPublic && request.getMemberUserIds() == null) {
             throw new IllegalArgumentException("PUBLIC(공유 일정)으로 변경 시 참여자 목록(memberUserIds)은 필수입니다.");
         }
 
-        // 멤버 변경
         if (request.getMemberUserIds() != null) {
             if (afterType != EventType.PUBLIC) {
                 throw new ForbiddenException("공유 일정(PUBLIC)에서만 구성원(memberUserIds)을 변경할 수 있습니다.");
@@ -205,7 +233,6 @@ public class CalendarServiceImpl implements CalendarService {
 
             validatePublicMembersRequired(request.getMemberUserIds());
 
-            // 참여자 프로젝트 멤버(ASSIGNED) 검증 + distinct
             List<Long> distinctMemberIds = distinct(request.getMemberUserIds());
             validateMembersBelongToProject(projectId, distinctMemberIds);
 
@@ -221,7 +248,6 @@ public class CalendarServiceImpl implements CalendarService {
             publicEventsMemberRepository.saveAll(members);
         }
 
-        // PUBLIC -> PRIVATE/VACATION 변경 시 오염 방지
         if (beforeType == EventType.PUBLIC && afterType != EventType.PUBLIC) {
             publicEventsMemberRepository.deleteByEventId(event.getId());
         }
@@ -234,6 +260,12 @@ public class CalendarServiceImpl implements CalendarService {
         return EventResponse.from(event);
     }
 
+    /**
+     * 일정 삭제
+     * - 이벤트 조회 + 권한 검증
+     * - soft delete 처리 + PUBLIC 참여자 매핑 정리
+     * - 변경 로그(events_log) 기록
+     */
     @Override
     @Transactional
     public void deleteEvent(Long projectId, Long eventId, UserPrincipal principal) {
@@ -250,7 +282,12 @@ public class CalendarServiceImpl implements CalendarService {
                 beforeStart, null, beforeEnd, null);
     }
 
-    /** 이벤트 단건 조회 + PUBLIC이면 참여자 이름 포함 */
+    /**
+     * 일정 상세 조회
+     * - 프로젝트 멤버십 확인
+     * - PRIVATE는 작성자만 조회 가능
+     * - PUBLIC이면 참여자 ID를 조회하고, user 테이블에서 이름까지 매핑하여 반환
+     */
     @Override
     @Transactional(readOnly = true)
     public EventDetailResponse getEventDetail(Long projectId, Long eventId, UserPrincipal principal) {
@@ -261,9 +298,7 @@ public class CalendarServiceImpl implements CalendarService {
 
         Long requesterId = principal.userId();
         boolean isOwner = Objects.equals(event.getOwnerUserId(), requesterId);
-        boolean pm = isPm(principal);
 
-        // PRIVATE는 작성자만 조회 가능
         if (event.getEventType() == EventType.PRIVATE && !isOwner) {
             throw new ForbiddenException("개인 일정(PRIVATE)은 작성자만 조회할 수 있습니다.");
         }
@@ -272,7 +307,6 @@ public class CalendarServiceImpl implements CalendarService {
         List<EventMemberResponse> members = List.of();
 
         if (event.getEventType() == EventType.PUBLIC) {
-            // 참여자 ID (중복 제거 + 순서 보존)
             List<Long> orderedDistinctIds = publicEventsMemberRepository.findByEventId(event.getId()).stream()
                     .map(PublicEventsMember::getUserId)
                     .filter(Objects::nonNull)
@@ -283,7 +317,6 @@ public class CalendarServiceImpl implements CalendarService {
 
             memberUserIds = orderedDistinctIds;
 
-            // user 테이블에서 이름 조회
             List<User> userEntities = orderedDistinctIds.isEmpty()
                     ? List.of()
                     : userRepository.findByIdIn(orderedDistinctIds);
@@ -299,12 +332,14 @@ public class CalendarServiceImpl implements CalendarService {
         return EventDetailResponse.from(event, memberUserIds, members);
     }
 
+    /** 프로젝트 ASSIGNED 멤버인지 확인 (아니면 Forbidden) */
     private void checkProjectMembership(Long projectId, UserPrincipal principal) {
         boolean isMember = squadAssignmentRepository
                 .existsByProjectIdAndUserIdAndFinalDecision(projectId, principal.userId(), FinalDecision.ASSIGNED);
         if (!isMember) throw new ForbiddenException("프로젝트 참여자가 아닙니다.");
     }
 
+    /** 이벤트 타입별 수정/삭제 권한 검사 (PRIVATE=작성자, VACATION=작성자/PM, PUBLIC=작성자/PM) */
     private void checkEventPermission(Long projectId, Events event, UserPrincipal principal) {
         checkProjectMembership(projectId, principal);
 
@@ -323,6 +358,7 @@ public class CalendarServiceImpl implements CalendarService {
         if (!isOwner && !pm) throw new ForbiddenException("공유 일정(PUBLIC)은 작성자 또는 PM만 수정/삭제할 수 있습니다.");
     }
 
+    /** principal.role 문자열을 ROLE_ 접두어 제거 후 PM 여부 판별 */
     private boolean isPm(UserPrincipal principal) {
         String role = principal.role();
         if (role == null) return false;
@@ -330,11 +366,13 @@ public class CalendarServiceImpl implements CalendarService {
         return "PM".equalsIgnoreCase(role);
     }
 
+    /** 프로젝트 내 존재하는(삭제되지 않은) 이벤트 단건 조회 */
     private Events getEventOrThrow(Long projectId, Long eventId) {
         return eventsRepository.findByIdAndProjectIdAndDeletedFalse(eventId, projectId)
                 .orElseThrow(() -> new NotFoundException("일정을 찾을 수 없습니다."));
     }
 
+    /** 이벤트 변경 이력(events_log) 저장 */
     private void logChange(Long eventId, Long actorUserId, ChangeType changeType,
                            String description, LocalDateTime beforeStart, LocalDateTime afterStart,
                            LocalDateTime beforeEnd, LocalDateTime afterEnd) {
@@ -351,15 +389,18 @@ public class CalendarServiceImpl implements CalendarService {
         eventsLogRepository.save(log);
     }
 
+    /** null/blank description을 빈 문자열로 정규화 */
     private String defaultDescription(String description) {
         return (description == null || description.isBlank()) ? "" : description;
     }
 
+    /** 기간 검증: start/end 필수 + start < end */
     private void validatePeriod(LocalDateTime start, LocalDateTime end) {
         if (start == null || end == null) throw new IllegalArgumentException("시작 일시와 종료 일시는 필수입니다.");
         if (!start.isBefore(end)) throw new IllegalArgumentException("시작 일시는 종료 일시보다 이전이어야 합니다.");
     }
 
+    /** PUBLIC 참여자 목록 검증: null/empty 금지 + 원소 null 금지 */
     private void validatePublicMembersRequired(List<Long> memberUserIds) {
         if (memberUserIds == null || memberUserIds.isEmpty())
             throw new IllegalArgumentException("공유 일정은 참여자 목록(memberUserIds)이 필수입니다.");
@@ -367,6 +408,7 @@ public class CalendarServiceImpl implements CalendarService {
             throw new IllegalArgumentException("참여자 목록(memberUserIds)에는 null이 포함될 수 없습니다.");
     }
 
+    /** 참여자 중복 제거(순서 보장 X, Java stream distinct 특성상 입력 순서 유지됨) + null 제거 */
     private List<Long> distinct(List<Long> ids) {
         return ids.stream().filter(Objects::nonNull).distinct().toList();
     }

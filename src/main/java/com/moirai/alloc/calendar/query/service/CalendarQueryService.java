@@ -6,5 +6,13 @@ import com.moirai.alloc.common.security.auth.UserPrincipal;
 import java.time.LocalDate;
 
 public interface CalendarQueryService {
+
+    /**
+     * 캘린더 통합 뷰 조회 (EVENT + TASK + MILESTONE)
+     * - 프로젝트 멤버십(ASSIGNED) 검증
+     * - 조회 범위(from~to) 유효성 검증
+     * - EVENT는 권한에 따라 노출 범위가 다름(PRIVATE는 본인만)
+     * - 결과는 시작일시 기준 정렬하여 반환
+     */
     CalendarViewResponse getCalendarView(Long projectId, LocalDate from, LocalDate to, String view, UserPrincipal principal);
 }

@@ -20,6 +20,16 @@ public class CalendarController {
 
     private final CalendarQueryService calendarQueryService;
 
+    /**
+     * [API 기능] 캘린더 통합 뷰 제공 (PM, USER)
+     * GET /api/projects/{projectId}/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD&view=month
+     *
+     * - 기간(from~to) 범위에 해당하는 캘린더 아이템을 통합 조회
+     *   (EVENT + TASK + MILESTONE)
+     * - EVENT는 권한에 따라 노출 범위가 달라짐:
+     *   PUBLIC/VACATION은 프로젝트 멤버에게 노출, PRIVATE는 본인 소유만 노출
+     * - view 파라미터는 현재는 확장용(기본 month)이며, 상세 로직은 QueryService에서 처리
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('PM','USER')")
     public ResponseEntity<ApiResponse<CalendarViewResponse>> getCalendarView(

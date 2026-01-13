@@ -1,19 +1,6 @@
-server:
-  port: 8080
-
 spring:
-  profiles:
-    active: local
-
   application:
     name: Alloc
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
