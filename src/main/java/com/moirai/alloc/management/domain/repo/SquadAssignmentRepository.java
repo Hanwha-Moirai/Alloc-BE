@@ -56,4 +56,21 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             @Param("userId") Long userId,
             @Param("projectType") Project.ProjectType projectType
     );
+    // 프로젝트에 대한 모든 배정 후보 조회
+    List<SquadAssignment> findByProjectId(Long projectId);
+
+    @Query("""
+    select count(sa)
+    from SquadAssignment sa
+    join Employee e on sa.userId = e.userId
+    where sa.projectId = :projectId
+      and sa.finalDecision = 'ASSIGNED'
+      and e.job.jobId = :jobId
+""")
+    long countAssignedByProjectAndJob(
+            @Param("projectId") Long projectId,
+            @Param("jobId") Long jobId
+    );
+
+
 }

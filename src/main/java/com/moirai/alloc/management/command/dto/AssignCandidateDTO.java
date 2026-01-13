@@ -8,6 +8,13 @@ public class AssignCandidateDTO {
     private Long projectId;
     private List<JobAssignmentDTO> assignments;
 
+    public AssignCandidateDTO(
+            Long projectId,
+            List<JobAssignmentDTO> assignments
+    ) {
+        this.projectId = projectId;
+        this.assignments = assignments;
+    }
 
 }
 //어떤 프로젝트, 직군별로 누가 선택되었는지 dto
