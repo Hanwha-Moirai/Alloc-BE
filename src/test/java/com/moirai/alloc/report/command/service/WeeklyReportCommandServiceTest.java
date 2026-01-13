@@ -65,7 +65,8 @@ class WeeklyReportCommandServiceTest {
                 "pw"
         );
 
-        WeeklyReportCreateResponse response = weeklyReportCommandService.createWeeklyReport(request, principal);
+        WeeklyReportCreateResponse response =
+                weeklyReportCommandService.createWeeklyReport(PROJECT_ID, request, principal);
 
         WeeklyReport report = weeklyReportCommandRepository.findByReportIdAndIsDeletedFalse(response.reportId())
                 .orElseThrow();
@@ -96,7 +97,7 @@ class WeeklyReportCommandServiceTest {
                 "pw"
         );
 
-        weeklyReportCommandService.updateWeeklyReport(request, principal);
+        weeklyReportCommandService.updateWeeklyReport(PROJECT_ID, request, principal);
 
         List<WeeklyTask> tasks = weeklyTaskCommandRepository.findAll();
         assertThat(tasks).hasSize(3);
@@ -118,7 +119,7 @@ class WeeklyReportCommandServiceTest {
                 "pw"
         );
 
-        weeklyReportCommandService.deleteWeeklyReport(REPORT_ID, principal);
+        weeklyReportCommandService.deleteWeeklyReport(PROJECT_ID, REPORT_ID, principal);
 
         assertThat(weeklyReportCommandRepository.findByReportIdAndIsDeletedFalse(REPORT_ID)).isEmpty();
     }

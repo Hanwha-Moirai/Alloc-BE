@@ -15,14 +15,17 @@
 ## 1) 전체 주간 보고 목록 조회 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/report`
+- URL: `/api/projects/{projectId}/docs/report`
 - 설명: 접근 가능한 주간 보고 목록을 페이지 단위로 조회한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Query Parameters
 
 - `page` (optional) : 페이지 번호 (0부터 시작)
 - `size` (optional) : 페이지 크기
-- `projectId` (optional) : 특정 프로젝트로 필터링
 
 ### Response
 
@@ -43,12 +46,15 @@
 ## 2) 전체 주간 보고 검색 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/report/search`
+- URL: `/api/projects/{projectId}/docs/report/search`
 - 설명: 조건 기반으로 주간 보고 목록을 검색한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Query Parameters
 
-- `projectId` (optional)
 - `userId` (optional)
 - `reportStatus` (optional) : `DRAFT | REVIEWED`
 - `weekStartFrom` (optional) : `YYYY-MM-DD`
@@ -66,8 +72,12 @@
 ## 3) 주간 보고 초안 생성 (Docs)
 
 - Method: `POST`
-- URL: `/api/docs/report/create`
+- URL: `/api/projects/{projectId}/docs/report/create`
 - 설명: 프로젝트/주차 기준 주간 보고 초안을 생성한다. (AI 생성은 스킵)
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Request Body
 
@@ -100,11 +110,12 @@
 ## 4) 주간 보고 상세 조회 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/report/{reportId}`
+- URL: `/api/projects/{projectId}/docs/report/{reportId}`
 - 설명: 주간 보고 상세 정보를 조회한다.
 
 ### Path Variables
 
+- `projectId`
 - `reportId`
 
 ### Response
@@ -147,8 +158,12 @@
 ## 5) 주간 보고 수정/저장 (Docs)
 
 - Method: `PATCH`
-- URL: `/api/docs/report/save`
+- URL: `/api/projects/{projectId}/docs/report/save`
 - 설명: 주간 보고 초안을 수정하거나 상태를 변경한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Request Body
 
@@ -176,8 +191,12 @@
 ## 6) 주간 보고 삭제 (Docs)
 
 - Method: `DELETE`
-- URL: `/api/docs/report/delete`
+- URL: `/api/projects/{projectId}/docs/report/delete`
 - 설명: 주간 보고를 소프트 삭제한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Request Body
 
@@ -199,8 +218,13 @@
 ## 7) 주간 보고 PDF 출력 (Docs)
 
 - Method: `POST`
-- URL: `/api/docs/report/{reportId}/print`
+- URL: `/api/projects/{projectId}/docs/report/{reportId}/print`
 - 설명: PDF 출력. (현재 미구현)
+
+### Path Variables
+
+- `projectId`
+- `reportId`
 
 ### Response
 

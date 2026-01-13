@@ -26,7 +26,7 @@ class WeeklyReportDocsQueryControllerTest {
     @Test
     @WithMockUser
     void getReports_returnsPage() throws Exception {
-        mockMvc.perform(get("/api/docs/report"))
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report", 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content").isArray());
@@ -35,7 +35,7 @@ class WeeklyReportDocsQueryControllerTest {
     @Test
     @WithMockUser
     void searchReports_returnsMatches() throws Exception {
-        mockMvc.perform(get("/api/docs/report/search")
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report/search", 77001)
                         .param("keyword", "Report Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -45,7 +45,7 @@ class WeeklyReportDocsQueryControllerTest {
     @Test
     @WithMockUser
     void getReportDetail_returnsDetail() throws Exception {
-        mockMvc.perform(get("/api/docs/report/{reportId}", 77001))
+        mockMvc.perform(get("/api/projects/{projectId}/docs/report/{reportId}", 77001, 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.reportId").value(77001));

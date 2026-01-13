@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WeeklyReportQueryServiceTest {
 
     private static final Long REPORT_ID = 77001L;
+    private static final Long PROJECT_ID = 77001L;
     private static final Long PM_USER_ID = 77001L;
 
     @Autowired
@@ -32,7 +33,7 @@ class WeeklyReportQueryServiceTest {
     @Test
     void getDocsReports_returnsPage() {
         Page<WeeklyReportSummaryResponse> page =
-                weeklyReportQueryService.getDocsReports(null, PageRequest.of(0, 10));
+                weeklyReportQueryService.getDocsReports(PROJECT_ID, PageRequest.of(0, 10));
 
         assertThat(page.getContent()).isNotEmpty();
     }
@@ -40,7 +41,7 @@ class WeeklyReportQueryServiceTest {
     @Test
     void searchDocsReports_filtersByKeyword() {
         WeeklyReportSearchCondition condition = new WeeklyReportSearchCondition(
-                null,
+                PROJECT_ID,
                 null,
                 null,
                 null,
@@ -49,14 +50,14 @@ class WeeklyReportQueryServiceTest {
         );
 
         Page<WeeklyReportSummaryResponse> page =
-                weeklyReportQueryService.searchDocsReports(condition, PageRequest.of(0, 10));
+                weeklyReportQueryService.searchDocsReports(PROJECT_ID, condition, PageRequest.of(0, 10));
 
         assertThat(page.getContent()).isNotEmpty();
     }
 
     @Test
     void getDocsReportDetail_returnsTasks() {
-        WeeklyReportDetailResponse detail = weeklyReportQueryService.getDocsReportDetail(REPORT_ID);
+        WeeklyReportDetailResponse detail = weeklyReportQueryService.getDocsReportDetail(PROJECT_ID, REPORT_ID);
 
         assertThat(detail.completedTasks()).hasSize(1);
         assertThat(detail.incompleteTasks()).hasSize(1);

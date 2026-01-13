@@ -41,7 +41,7 @@ class WeeklyReportDocsCommandControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/docs/report/create")
+        mockMvc.perform(post("/api/projects/{projectId}/docs/report/create", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -64,7 +64,7 @@ class WeeklyReportDocsCommandControllerTest {
                 }
                 """;
 
-        mockMvc.perform(patch("/api/docs/report/save")
+        mockMvc.perform(patch("/api/projects/{projectId}/docs/report/save", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -81,13 +81,34 @@ class WeeklyReportDocsCommandControllerTest {
                 }
                 """;
 
-        mockMvc.perform(delete("/api/docs/report/delete")
+        mockMvc.perform(delete("/api/projects/{projectId}/docs/report/delete", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.reportId").value(77001));
+    }
+
+    @Test
+    void saveReport_forbiddenWhenUserRoleIsNotPm() throws Exception {
+        String body = """
+                {
+                  "reportId": 77001,
+                  "reportStatus": "REVIEWED",
+                  "changeOfPlan": "변경",
+                  "taskCompletionRate": 0.8,
+                  "completedTasks": [{"taskId": 77001}],
+                  "incompleteTasks": [{"taskId": 77002, "delayReason": "지연"}],
+                  "nextWeekTasks": [{"taskId": 77003, "plannedStartDate": "2025-01-13", "plannedEndDate": "2025-01-17"}]
+                }
+                """;
+
+        mockMvc.perform(patch("/api/projects/{projectId}/docs/report/save", 77001)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
     }
 
     private Authentication pmAuth() {
@@ -97,6 +118,18 @@ class WeeklyReportDocsCommandControllerTest {
                 "pm77001@example.com",
                 "PM User",
                 "PM",
+                "pw"
+        );
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private Authentication userAuth() {
+        UserPrincipal principal = new UserPrincipal(
+                77002L,
+                "user_77002",
+                "user77002@example.com",
+                "User",
+                "USER",
                 "pw"
         );
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
