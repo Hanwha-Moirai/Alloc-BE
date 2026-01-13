@@ -24,11 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
-@EnableJpaAuditing
-@TestPropertySource(properties = "mybatis.mapper-locations=classpath*:mapper/gantt/*.xml")
-@Import(com.moirai.alloc.gantt.config.GanttMybatisTestConfig.class)
 @Sql(scripts = "/sql/gantt/controller_setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/sql/gantt/controller_cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttQueryControllerTest {
 
     @Autowired

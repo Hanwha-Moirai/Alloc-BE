@@ -28,9 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
-@EnableJpaAuditing
-//@TestPropertySource(properties = "mybatis.mapper-locations=classpath*:mapper/gantt/*.xml")
-//@Import(com.moirai.alloc.gantt.config.GanttMybatisTestConfig.class)
 @Sql(scripts = "/sql/gantt/controller_setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 class GanttCommandControllerTest {
 
@@ -41,7 +38,7 @@ class GanttCommandControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "PM")
     void createTask_returnsCreatedId() throws Exception {
         String body = """
                 {
@@ -64,7 +61,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "PM")
     void updateTask_returnsOk() throws Exception {
         String body = """
                 {
@@ -80,11 +77,26 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "PM")
     void deleteTask_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    void updateTask_forbiddenWhenUserRoleIsNotPm() throws Exception {
+        String body = """
+                {
+                  "taskName": "Updated Task"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
     }
 
     @TestConfiguration
