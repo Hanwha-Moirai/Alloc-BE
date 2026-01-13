@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moirai.alloc.admin.query.mapper.AdminUserQueryMapper">
+
+    <sql id="BaseFrom">
+        FROM users u
+        LEFT JOIN employee e ON e.user_id = u.user_id
+        LEFT JOIN job_standard j ON j.job_id = e.job_id
+        LEFT JOIN department d ON d.dept_id = e.dept_id
+        LEFT JOIN title_standard ts ON ts.title_standard = e.title_standard
+    </sql>
+
+    <sql id="Where">
+        WHERE 1=1
+        <if test="role != null and role != ''">
+            AND u.auth = #{role}
+        </if>
+        <if test="q != null and q != ''">
+            AND (
+            u.user_name LIKE CONCAT('%', #{q}, '%')
+            OR u.email LIKE CONCAT('%', #{q}, '%')
+            OR u.login_id LIKE CONCAT('%', #{q}, '%')
+            OR j.job_name LIKE CONCAT('%', #{q}, '%')
+            OR d.dept_name LIKE CONCAT('%', #{q}, '%')
+            OR ts.title_name LIKE CONCAT('%', #{q}, '%')
+            )
+        </if>
+    </sql>
+
+    <select id="selectUsers" resultType="com.moirai.alloc.admin.query.dto.AdminUserListItem">
+        SELECT
+        u.user_id AS userId,
+        u.user_name AS userName,
+        j.job_name AS jobName,
+        u.email AS email,
+        u.auth AS auth,
+        d.dept_name AS deptName,
+        ts.title_name AS titleName,
+        u.status AS status
+        <include refid="BaseFrom"/>
+        <include refid="Where"/>
+        ORDER BY u.user_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*)
+        <include refid="BaseFrom"/>
+        <include refid="Where"/>
+    </select>
+
+</mapper>

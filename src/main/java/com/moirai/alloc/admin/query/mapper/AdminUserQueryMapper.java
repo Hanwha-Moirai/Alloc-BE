@@ -1,14 +1,14 @@
-package com.moirai.alloc.user.query.mapper;
+package com.moirai.alloc.admin.query.mapper;
 
-import com.moirai.alloc.user.query.dto.UserListItem;
+import com.moirai.alloc.admin.query.dto.AdminUserListItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 @Mapper
-public interface UserQueryMapper {
-    List<UserListItem> selectUsers(
+public interface AdminUserQueryMapper {
+    List<AdminUserListItem> selectUsers(
             @Param("limit") int limit,
             @Param("offset") int offset,
             @Param("q") String q,
