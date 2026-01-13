@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moirai.alloc.user.query.mapper.UserQueryMapper">
+
+    <sql id="UserWhere">
+        WHERE 1=1
+        <if test="q != null and q != ''">
+            AND (
+            u.user_name LIKE CONCAT('%', #{q}, '%')
+            OR u.email LIKE CONCAT('%', #{q}, '%')
+            OR u.login_id LIKE CONCAT('%', #{q}, '%')
+            )
+        </if>
+        <if test="role != null and role != ''">
+            AND u.auth = #{role}
+        </if>
+    </sql>
+
+    <select id="selectUsers" resultType="com.moirai.alloc.user.query.dto.UserListItem">
+        SELECT
+        u.user_id   AS userId,
+        u.user_name AS userName,
+        u.email     AS email,
+        u.auth      AS auth,
+        u.status    AS status
+        FROM users u
+        <include refid="UserWhere"/>
+        ORDER BY u.user_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countUsers" resultType="long">
+        SELECT COUNT(*)
+        FROM users u
+        <include refid="UserWhere"/>
+    </select>
+
+</mapper>
