@@ -29,7 +29,9 @@ class WeeklyReportDocsQueryControllerTest {
         mockMvc.perform(get("/api/projects/{projectId}/docs/report", 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content[0].reporterName").value("PM User"))
+                .andExpect(jsonPath("$.data.content[0].weekLabel").value("2025년 1월 2주차"));
     }
 
     @Test
@@ -39,7 +41,9 @@ class WeeklyReportDocsQueryControllerTest {
                         .param("keyword", "Report Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content[0].reportId").value(77001));
+                .andExpect(jsonPath("$.data.content[0].reportId").value(77001))
+                .andExpect(jsonPath("$.data.content[0].reporterName").value("PM User"))
+                .andExpect(jsonPath("$.data.content[0].weekLabel").value("2025년 1월 2주차"));
     }
 
     @Test
@@ -48,6 +52,8 @@ class WeeklyReportDocsQueryControllerTest {
         mockMvc.perform(get("/api/projects/{projectId}/docs/report/{reportId}", 77001, 77001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.reportId").value(77001));
+                .andExpect(jsonPath("$.data.reportId").value(77001))
+                .andExpect(jsonPath("$.data.reporterName").value("PM User"))
+                .andExpect(jsonPath("$.data.weekLabel").value("2025년 1월 2주차"));
     }
 }

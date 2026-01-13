@@ -34,8 +34,10 @@
 - `reportId`: Long
 - `projectId`: Long
 - `projectName`: String
+- `reporterName`: String
 - `weekStartDate`: `YYYY-MM-DD`
 - `weekEndDate`: `YYYY-MM-DD`
+- `weekLabel`: String (예: `2025년 1월 2주차`)
 - `reportStatus`: `DRAFT | REVIEWED`
 - `taskCompletionRate`: Double
 - `createdAt`: `YYYY-MM-DDTHH:mm:ss`
@@ -96,8 +98,10 @@
 - `reportId`: Long
 - `projectId`: Long
 - `projectName`: String
+- `reporterName`: String
 - `weekStartDate`: `YYYY-MM-DD`
 - `weekEndDate`: `YYYY-MM-DD`
+- `weekLabel`: String (예: `2025년 1월 2주차`)
 - `reportStatus`: `DRAFT | REVIEWED`
 - `taskCompletionRate`: Double
 - `summaryText`: String | null
@@ -125,8 +129,10 @@
 - `reportId`: Long
 - `projectId`: Long
 - `projectName`: String
+- `reporterName`: String
 - `weekStartDate`: `YYYY-MM-DD`
 - `weekEndDate`: `YYYY-MM-DD`
+- `weekLabel`: String (예: `2025년 1월 2주차`)
 - `reportStatus`: `DRAFT | REVIEWED`
 - `taskCompletionRate`: Double
 - `summaryText`: String | null

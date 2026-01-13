@@ -14,10 +14,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.WeekFields;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -31,25 +34,32 @@ public class WeeklyReportQueryRepository {
     }
 
     public Page<WeeklyReportSummaryResponse> findAll(Pageable pageable) {
-        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, wr.week_start_date, " +
-                "wr.week_end_date, wr.report_status, wr.task_completion_rate, wr.created_at, wr.updated_at " +
+        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, " +
+                "wr.week_start_date, wr.week_end_date, wr.report_status, wr.task_completion_rate, " +
+                "wr.created_at, wr.updated_at " +
                 "from weekly_report wr join project p on p.project_id = wr.project_id " +
+                "join users u on u.user_id = wr.user_id " +
                 "where wr.is_deleted = false";
         String countSql = "select count(1) from weekly_report wr where wr.is_deleted = false";
         String orderSql = " order by wr.created_at desc limit ? offset ?";
         List<WeeklyReportSummaryResponse> content = jdbcTemplate.query(
                 baseSql + orderSql,
-                (rs, rowNum) -> new WeeklyReportSummaryResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportSummaryResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 pageable.getPageSize(),
                 pageable.getOffset()
         );
@@ -61,26 +71,33 @@ public class WeeklyReportQueryRepository {
         if (projectId == null) {
             return findAll(pageable);
         }
-        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, wr.week_start_date, " +
-                "wr.week_end_date, wr.report_status, wr.task_completion_rate, wr.created_at, wr.updated_at " +
+        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, " +
+                "wr.week_start_date, wr.week_end_date, wr.report_status, wr.task_completion_rate, " +
+                "wr.created_at, wr.updated_at " +
                 "from weekly_report wr join project p on p.project_id = wr.project_id " +
+                "join users u on u.user_id = wr.user_id " +
                 "where wr.is_deleted = false and wr.project_id = ?";
         String countSql = "select count(1) from weekly_report wr where wr.is_deleted = false and wr.project_id = ?";
         String orderSql = " order by wr.created_at desc limit ? offset ?";
         List<Object> params = List.of(projectId, pageable.getPageSize(), pageable.getOffset());
         List<WeeklyReportSummaryResponse> content = jdbcTemplate.query(
                 baseSql + orderSql,
-                (rs, rowNum) -> new WeeklyReportSummaryResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportSummaryResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 params.toArray()
         );
         long total = count(countSql, List.of(projectId));
@@ -95,17 +112,22 @@ public class WeeklyReportQueryRepository {
         params.add(pageable.getOffset());
         List<WeeklyReportSummaryResponse> content = jdbcTemplate.query(
                 queryParts.sql() + orderSql,
-                (rs, rowNum) -> new WeeklyReportSummaryResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportSummaryResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 params.toArray()
         );
         long total = count(queryParts.countSql(), queryParts.params());
@@ -130,17 +152,22 @@ public class WeeklyReportQueryRepository {
         pageParams.add(pageable.getOffset());
         List<WeeklyReportSummaryResponse> content = jdbcTemplate.query(
                 baseSql + orderSql,
-                (rs, rowNum) -> new WeeklyReportSummaryResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportSummaryResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 pageParams.toArray()
         );
         long total = count(countSql, params);
@@ -152,9 +179,11 @@ public class WeeklyReportQueryRepository {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
         String inClause = inClause(projectIds.size());
-        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, wr.week_start_date, " +
-                "wr.week_end_date, wr.report_status, wr.task_completion_rate, wr.created_at, wr.updated_at " +
+        String baseSql = "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, " +
+                "wr.week_start_date, wr.week_end_date, wr.report_status, wr.task_completion_rate, " +
+                "wr.created_at, wr.updated_at " +
                 "from weekly_report wr join project p on p.project_id = wr.project_id " +
+                "join users u on u.user_id = wr.user_id " +
                 "where wr.is_deleted = false and wr.project_id in " + inClause;
         String countSql = "select count(1) from weekly_report wr where wr.is_deleted = false and wr.project_id in " +
                 inClause;
@@ -164,17 +193,22 @@ public class WeeklyReportQueryRepository {
         params.add(pageable.getOffset());
         List<WeeklyReportSummaryResponse> content = jdbcTemplate.query(
                 baseSql + orderSql,
-                (rs, rowNum) -> new WeeklyReportSummaryResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportSummaryResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 params.toArray()
         );
         long total = count(countSql, projectIds);
@@ -183,27 +217,33 @@ public class WeeklyReportQueryRepository {
 
     public Optional<WeeklyReportDetailResponse> findDetail(Long reportId) {
         List<WeeklyReportDetailResponse> details = jdbcTemplate.query(
-                "select wr.report_id, wr.project_id, p.name as project_name, wr.week_start_date, " +
+                "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, wr.week_start_date, " +
                         "wr.week_end_date, wr.report_status, wr.task_completion_rate, wr.summary_text, " +
                         "wr.change_of_plan, wr.created_at, wr.updated_at " +
                         "from weekly_report wr join project p on p.project_id = wr.project_id " +
+                        "join users u on u.user_id = wr.user_id " +
                         "where wr.is_deleted = false and wr.report_id = ?",
-                (rs, rowNum) -> new WeeklyReportDetailResponse(
-                        rs.getLong("report_id"),
-                        rs.getLong("project_id"),
-                        rs.getString("project_name"),
-                        rs.getDate("week_start_date").toLocalDate(),
-                        rs.getDate("week_end_date").toLocalDate(),
-                        WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
-                        rs.getDouble("task_completion_rate"),
-                        rs.getString("summary_text"),
-                        rs.getString("change_of_plan"),
-                        findCompletedTasks(reportId),
-                        findIncompleteTasks(reportId),
-                        findNextWeekTasks(reportId),
-                        toLocalDateTime(rs.getTimestamp("created_at")),
-                        toLocalDateTime(rs.getTimestamp("updated_at"))
-                ),
+                (rs, rowNum) -> {
+                    LocalDate weekStartDate = rs.getDate("week_start_date").toLocalDate();
+                    return new WeeklyReportDetailResponse(
+                            rs.getLong("report_id"),
+                            rs.getLong("project_id"),
+                            rs.getString("project_name"),
+                            rs.getString("user_name"),
+                            weekStartDate,
+                            rs.getDate("week_end_date").toLocalDate(),
+                            toWeekLabel(weekStartDate),
+                            WeeklyReport.ReportStatus.valueOf(rs.getString("report_status")),
+                            rs.getDouble("task_completion_rate"),
+                            rs.getString("summary_text"),
+                            rs.getString("change_of_plan"),
+                            findCompletedTasks(reportId),
+                            findIncompleteTasks(reportId),
+                            findNextWeekTasks(reportId),
+                            toLocalDateTime(rs.getTimestamp("created_at")),
+                            toLocalDateTime(rs.getTimestamp("updated_at"))
+                    );
+                },
                 reportId
         );
         if (details.isEmpty()) {
@@ -276,6 +316,7 @@ public class WeeklyReportQueryRepository {
 
     private QueryParts buildSearchQuery(WeeklyReportSearchCondition condition) {
         String baseSql = "from weekly_report wr join project p on p.project_id = wr.project_id " +
+                "join users u on u.user_id = wr.user_id " +
                 "where wr.is_deleted = false";
         StringBuilder where = new StringBuilder();
         List<Object> params = new ArrayList<>();
@@ -307,8 +348,9 @@ public class WeeklyReportQueryRepository {
             params.add(keyword);
             params.add(keyword);
         }
-        String selectSql = "select wr.report_id, wr.project_id, p.name as project_name, wr.week_start_date, " +
-                "wr.week_end_date, wr.report_status, wr.task_completion_rate, wr.created_at, wr.updated_at " +
+        String selectSql = "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, " +
+                "wr.week_start_date, wr.week_end_date, wr.report_status, wr.task_completion_rate, " +
+                "wr.created_at, wr.updated_at " +
                 baseSql + where;
         String countSql = "select count(1) " + baseSql + where;
         return new QueryParts(selectSql, countSql, params);
@@ -321,6 +363,14 @@ public class WeeklyReportQueryRepository {
 
     private LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toLocalDateTime();
+    }
+
+    private String toWeekLabel(LocalDate weekStartDate) {
+        if (weekStartDate == null) {
+            return null;
+        }
+        int week = weekStartDate.get(WeekFields.of(Locale.KOREA).weekOfMonth());
+        return String.format("%d년 %d월 %d주차", weekStartDate.getYear(), weekStartDate.getMonthValue(), week);
     }
 
     private String inClause(int size) {

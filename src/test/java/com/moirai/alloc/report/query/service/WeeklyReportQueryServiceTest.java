@@ -62,6 +62,8 @@ class WeeklyReportQueryServiceTest {
         assertThat(detail.completedTasks()).hasSize(1);
         assertThat(detail.incompleteTasks()).hasSize(1);
         assertThat(detail.nextWeekTasks()).hasSize(1);
+        assertThat(detail.reporterName()).isEqualTo("PM User");
+        assertThat(detail.weekLabel()).isEqualTo("2025년 1월 2주차");
     }
 
     @Test
