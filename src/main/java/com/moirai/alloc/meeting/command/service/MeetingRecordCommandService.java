@@ -44,10 +44,13 @@ public class MeetingRecordCommandService {
     }
 
     @Transactional
-    public Long createMeetingRecord(CreateMeetingRecordRequest request, UserPrincipal principal) {
-        validateMembership(request.projectId(), principal.userId());
+    public Long createMeetingRecord(Long projectId, CreateMeetingRecordRequest request, UserPrincipal principal) {
+        if (request.projectId() == null || !request.projectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "프로젝트 정보가 일치하지 않습니다.");
+        }
+        validateMembership(projectId, principal.userId());
         MeetingRecord meetingRecord = MeetingRecord.create(
-                request.projectId(),
+                projectId,
                 principal.loginId(),
                 request.progress(),
                 request.meetingDate(),
@@ -60,8 +63,11 @@ public class MeetingRecordCommandService {
     }
 
     @Transactional
-    public void updateMeetingRecord(UpdateMeetingRecordRequest request, UserPrincipal principal) {
+    public void updateMeetingRecord(Long projectId, UpdateMeetingRecordRequest request, UserPrincipal principal) {
         MeetingRecord meetingRecord = findMeetingRecord(request.meetingId());
+        if (!meetingRecord.getProjectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "회의록을 찾을 수 없습니다.");
+        }
         validateMembership(meetingRecord.getProjectId(), principal.userId());
         validateOwnerOrPm(meetingRecord, principal);
 
@@ -82,8 +88,11 @@ public class MeetingRecordCommandService {
     }
 
     @Transactional
-    public void deleteMeetingRecord(Long meetingId, UserPrincipal principal) {
+    public void deleteMeetingRecord(Long projectId, Long meetingId, UserPrincipal principal) {
         MeetingRecord meetingRecord = findMeetingRecord(meetingId);
+        if (!meetingRecord.getProjectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "회의록을 찾을 수 없습니다.");
+        }
         validateMembership(meetingRecord.getProjectId(), principal.userId());
         validateOwnerOrPm(meetingRecord, principal);
         meetingRecord.markDeleted();

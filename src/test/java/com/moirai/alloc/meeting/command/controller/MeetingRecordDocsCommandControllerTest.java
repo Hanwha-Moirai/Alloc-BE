@@ -56,7 +56,7 @@ class MeetingRecordDocsCommandControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/docs/meeting_record/create")
+        mockMvc.perform(post("/api/projects/{projectId}/docs/meeting_record/create", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -90,7 +90,7 @@ class MeetingRecordDocsCommandControllerTest {
                 }
                 """;
 
-        mockMvc.perform(patch("/api/docs/meeting_record/save")
+        mockMvc.perform(patch("/api/projects/{projectId}/docs/meeting_record/save", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -100,7 +100,7 @@ class MeetingRecordDocsCommandControllerTest {
 
     @Test
     void deleteMeetingRecord_returnsOk() throws Exception {
-        mockMvc.perform(delete("/api/docs/meeting_record/delete")
+        mockMvc.perform(delete("/api/projects/{projectId}/docs/meeting_record/delete", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .param("meetingId", "88001"))
                 .andExpect(status().isOk())

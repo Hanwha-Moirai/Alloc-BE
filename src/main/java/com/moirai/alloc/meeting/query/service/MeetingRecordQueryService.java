@@ -28,20 +28,31 @@ public class MeetingRecordQueryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MeetingRecordSummaryResponse> getDocsMeetingRecords(Pageable pageable) {
-        return meetingRecordQueryRepository.findAll(pageable);
+    public Page<MeetingRecordSummaryResponse> getDocsMeetingRecords(Long projectId, Pageable pageable) {
+        return meetingRecordQueryRepository.findAllByProjectId(projectId, pageable);
     }
 
     @Transactional(readOnly = true)
-    public Page<MeetingRecordSummaryResponse> searchDocsMeetingRecords(MeetingRecordSearchCondition condition,
+    public Page<MeetingRecordSummaryResponse> searchDocsMeetingRecords(Long projectId,
+                                                                       MeetingRecordSearchCondition condition,
                                                                        Pageable pageable) {
-        return meetingRecordQueryRepository.search(condition, pageable);
+        MeetingRecordSearchCondition scopedCondition = new MeetingRecordSearchCondition(
+                projectId,
+                condition.from(),
+                condition.to(),
+                condition.keyword()
+        );
+        return meetingRecordQueryRepository.search(scopedCondition, pageable);
     }
 
     @Transactional(readOnly = true)
-    public MeetingRecordDetailResponse getDocsMeetingRecordDetail(Long meetingId) {
-        return meetingRecordQueryRepository.findDetail(meetingId)
+    public MeetingRecordDetailResponse getDocsMeetingRecordDetail(Long projectId, Long meetingId) {
+        MeetingRecordDetailResponse detail = meetingRecordQueryRepository.findDetail(meetingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "회의록을 찾을 수 없습니다."));
+        if (!detail.projectId().equals(projectId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "회의록을 찾을 수 없습니다.");
+        }
+        return detail;
     }
 
     @Transactional(readOnly = true)

@@ -64,7 +64,7 @@ class MeetingRecordCommandServiceTest {
                 "pw"
         );
 
-        Long meetingId = meetingRecordCommandService.createMeetingRecord(request, principal);
+        Long meetingId = meetingRecordCommandService.createMeetingRecord(PROJECT_ID, request, principal);
 
         assertThat(meetingRecordCommandRepository.findByMeetingIdAndIsDeletedFalse(meetingId)).isPresent();
         assertThat(agendaCommandRepository.findAll().stream()
@@ -93,7 +93,7 @@ class MeetingRecordCommandServiceTest {
                 "pw"
         );
 
-        meetingRecordCommandService.updateMeetingRecord(request, principal);
+        meetingRecordCommandService.updateMeetingRecord(PROJECT_ID, request, principal);
 
         assertThat(agendaCommandRepository.findAll().stream()
                 .anyMatch(agenda -> agenda.getDiscussionTitle().equals("변경"))).isTrue();
@@ -112,7 +112,7 @@ class MeetingRecordCommandServiceTest {
                 "pw"
         );
 
-        meetingRecordCommandService.deleteMeetingRecord(MEETING_ID, principal);
+        meetingRecordCommandService.deleteMeetingRecord(PROJECT_ID, MEETING_ID, principal);
 
         assertThat(meetingRecordCommandRepository.findByMeetingIdAndIsDeletedFalse(MEETING_ID)).isEmpty();
     }

@@ -45,6 +45,24 @@ public class MeetingRecordQueryRepository {
         return new PageImpl<>(content, pageable, total);
     }
 
+    public Page<MeetingRecordSummaryResponse> findAllByProjectId(Long projectId, Pageable pageable) {
+        String baseSql = "select meeting_id, project_id, created_by, progress, meeting_date, meeting_time, " +
+                "created_at, updated_at from meeting_record where is_deleted = false and project_id = ?";
+        String countSql = "select count(1) from meeting_record where is_deleted = false and project_id = ?";
+        String orderSql = " order by created_at desc limit ? offset ?";
+        List<Object> params = new ArrayList<>();
+        params.add(projectId);
+        params.add(pageable.getPageSize());
+        params.add(pageable.getOffset());
+        List<MeetingRecordSummaryResponse> content = jdbcTemplate.query(
+                baseSql + orderSql,
+                summaryRowMapper(),
+                params.toArray()
+        );
+        long total = count(countSql, List.of(projectId));
+        return new PageImpl<>(content, pageable, total);
+    }
+
     public Page<MeetingRecordSummaryResponse> search(MeetingRecordSearchCondition condition, Pageable pageable) {
         QueryParts queryParts = buildSearchQuery(condition);
         String orderSql = " order by created_at desc limit ? offset ?";

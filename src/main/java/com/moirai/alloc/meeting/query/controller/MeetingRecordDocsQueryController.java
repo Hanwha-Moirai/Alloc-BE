@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
 @RestController
-@RequestMapping("/api/docs/meeting_record")
+@RequestMapping("/api/projects/{project_id}/docs/meeting_record")
 public class MeetingRecordDocsQueryController {
 
     private final MeetingRecordQueryService meetingRecordQueryService;
@@ -25,15 +25,18 @@ public class MeetingRecordDocsQueryController {
 
     // 회의록 목록 조회
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<MeetingRecordSummaryResponse>>> getMeetingRecords(Pageable pageable) {
-        Page<MeetingRecordSummaryResponse> response = meetingRecordQueryService.getDocsMeetingRecords(pageable);
+    public ResponseEntity<ApiResponse<Page<MeetingRecordSummaryResponse>>> getMeetingRecords(
+            @PathVariable("project_id") Long projectId,
+            Pageable pageable
+    ) {
+        Page<MeetingRecordSummaryResponse> response = meetingRecordQueryService.getDocsMeetingRecords(projectId, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 회의록 검색
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<MeetingRecordSummaryResponse>>> searchMeetingRecords(
-            @RequestParam(required = false) Long projectId,
+            @PathVariable("project_id") Long projectId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String keyword,
@@ -41,16 +44,18 @@ public class MeetingRecordDocsQueryController {
     ) {
         MeetingRecordSearchCondition condition = new MeetingRecordSearchCondition(projectId, from, to, keyword);
         Page<MeetingRecordSummaryResponse> response =
-                meetingRecordQueryService.searchDocsMeetingRecords(condition, pageable);
+                meetingRecordQueryService.searchDocsMeetingRecords(projectId, condition, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // 회의록 상세 조회
     @GetMapping("/{meetingRecordId}")
     public ResponseEntity<ApiResponse<MeetingRecordDetailResponse>> getMeetingRecordDetail(
+            @PathVariable("project_id") Long projectId,
             @PathVariable Long meetingRecordId
     ) {
-        MeetingRecordDetailResponse response = meetingRecordQueryService.getDocsMeetingRecordDetail(meetingRecordId);
+        MeetingRecordDetailResponse response =
+                meetingRecordQueryService.getDocsMeetingRecordDetail(projectId, meetingRecordId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

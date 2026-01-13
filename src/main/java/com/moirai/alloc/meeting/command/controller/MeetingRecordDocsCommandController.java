@@ -10,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/docs/meeting_record")
+@RequestMapping("/api/projects/{project_id}/docs/meeting_record")
 public class MeetingRecordDocsCommandController {
 
     private final MeetingRecordCommandService meetingRecordCommandService;
@@ -22,30 +22,33 @@ public class MeetingRecordDocsCommandController {
     // 회의록 생성
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Long>> createMeetingRecord(
+            @PathVariable("project_id") Long projectId,
             @RequestBody CreateMeetingRecordRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        Long meetingId = meetingRecordCommandService.createMeetingRecord(request, principal);
+        Long meetingId = meetingRecordCommandService.createMeetingRecord(projectId, request, principal);
         return ResponseEntity.ok(ApiResponse.success(meetingId));
     }
 
     // 회의록 저장
     @PatchMapping("/save")
     public ResponseEntity<ApiResponse<Void>> updateMeetingRecord(
+            @PathVariable("project_id") Long projectId,
             @RequestBody UpdateMeetingRecordRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        meetingRecordCommandService.updateMeetingRecord(request, principal);
+        meetingRecordCommandService.updateMeetingRecord(projectId, request, principal);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     // 회의록 삭제
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> deleteMeetingRecord(
+            @PathVariable("project_id") Long projectId,
             @RequestParam Long meetingId,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        meetingRecordCommandService.deleteMeetingRecord(meetingId, principal);
+        meetingRecordCommandService.deleteMeetingRecord(projectId, meetingId, principal);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

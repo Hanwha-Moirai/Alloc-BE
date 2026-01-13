@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MeetingRecordQueryServiceTest {
 
     private static final Long MEETING_ID = 88001L;
+    private static final Long PROJECT_ID = 88001L;
     private static final Long PM_USER_ID = 88001L;
 
     @Autowired
@@ -31,7 +32,7 @@ class MeetingRecordQueryServiceTest {
     @Test
     void getDocsMeetingRecords_returnsPage() {
         Page<MeetingRecordSummaryResponse> page =
-                meetingRecordQueryService.getDocsMeetingRecords(PageRequest.of(0, 10));
+                meetingRecordQueryService.getDocsMeetingRecords(PROJECT_ID, PageRequest.of(0, 10));
 
         assertThat(page.getContent()).isNotEmpty();
     }
@@ -39,14 +40,14 @@ class MeetingRecordQueryServiceTest {
     @Test
     void searchDocsMeetingRecords_filtersByKeyword() {
         MeetingRecordSearchCondition condition = new MeetingRecordSearchCondition(
-                null,
+                PROJECT_ID,
                 null,
                 null,
                 "검색키워드"
         );
 
         Page<MeetingRecordSummaryResponse> page =
-                meetingRecordQueryService.searchDocsMeetingRecords(condition, PageRequest.of(0, 10));
+                meetingRecordQueryService.searchDocsMeetingRecords(PROJECT_ID, condition, PageRequest.of(0, 10));
 
         assertThat(page.getContent()).isNotEmpty();
     }
