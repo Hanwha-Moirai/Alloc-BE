@@ -1,6 +1,5 @@
 package com.moirai.alloc.management.query.dto.candidate_list;
 
-import com.moirai.alloc.management.query.view.WorkStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.query.view;
+package com.moirai.alloc.management.query.dto.candidate_list;
 
 public enum WorkStatus {
     AVAILABLE,  // 대기중

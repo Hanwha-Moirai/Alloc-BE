@@ -1,7 +1,5 @@
-package com.moirai.alloc.management.query.view;
+package com.moirai.alloc.management.query.dto.candidate_list;
 
-import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidateItemDTO;
-import com.moirai.alloc.management.query.dto.candidate_list.JobAssignmentSummaryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
