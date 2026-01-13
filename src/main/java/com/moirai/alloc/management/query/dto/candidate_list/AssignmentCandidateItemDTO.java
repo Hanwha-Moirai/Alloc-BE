@@ -15,6 +15,6 @@ public class AssignmentCandidateItemDTO {
 
     private Integer monthlyWage;
     private WorkStatus workStatus;
-    //private Integer fitnessScore;
+    private Integer fitnessScore;
     private boolean selected;
 }
