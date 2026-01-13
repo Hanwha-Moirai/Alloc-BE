@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
@@ -30,4 +31,29 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
 """)
     List<Project> findAssignedProjects(@Param("userId") Long userId);
 
+    @Query("""
+        select count(sa)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectType = :projectType
+    """)
+    long countAssignedProjectsByType(
+            @Param("userId") Long userId,
+            @Param("projectType") Project.ProjectType projectType
+    );
+
+    @Query("""
+        select max(p.endDate)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectType = :projectType
+    """)
+    LocalDate findLatestAssignedProjectEndDate(
+            @Param("userId") Long userId,
+            @Param("projectType") Project.ProjectType projectType
+    );
 }
