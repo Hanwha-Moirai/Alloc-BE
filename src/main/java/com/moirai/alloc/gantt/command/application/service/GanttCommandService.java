@@ -1,4 +1,4 @@
-package com.moirai.alloc.gantt.command.application;
+package com.moirai.alloc.gantt.command.application.service;
 
 import com.moirai.alloc.common.port.ProjectInfoPort;
 import com.moirai.alloc.common.port.ProjectMembershipPort;
