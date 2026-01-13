@@ -1,18 +1,27 @@
 package com.moirai.alloc.management.query.service;
 
+import com.moirai.alloc.management.JobStandardRepository;
+import com.moirai.alloc.management.TechStandardRepository;
+import com.moirai.alloc.management.domain.entity.TechReqLevel;
+import com.moirai.alloc.management.query.dto.registration.JobOptionDTO;
+import com.moirai.alloc.management.query.dto.registration.ProjectRegistrationViewDTO;
+import com.moirai.alloc.management.query.dto.registration.TechOptionDTO;
+import com.moirai.alloc.project.command.domain.Project;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
+@Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GetProjectRegistrationView {
 
-    /*private final JobStandardRepostiory jobStandardRepostiory;
+    private final JobStandardRepository jobStandardRepository;
     private final TechStandardRepository techStandardRepository;
 
-    public GetProjectRegistrationView(
-            JobStandardRepository jobStandardRepository,
-            TechStandardRepository techStandardRepository
-    ) {
-        this.jobStandardRepository = jobStandardRepository;
-        this.techStandardRepository = techStandardRepository;
-    }
-    public ProjectRegistrationView getView() {
+    public ProjectRegistrationViewDTO getView() {
 
         List<JobOptionDTO> jobs =
                 jobStandardRepository.findAll().stream()
@@ -30,11 +39,11 @@ public class GetProjectRegistrationView {
                         ))
                         .toList();
 
-        return new ProjectRegistrationView(
+        return new ProjectRegistrationViewDTO(
                 jobs,
                 techs,
-                List.of(Project.ProjectType.values()),
-                List.of(TechReqLevel.values())
+                Arrays.asList(Project.ProjectType.values()),
+                Arrays.asList(TechReqLevel.values())
         );
-    }*/
+    }
 }
