@@ -16,14 +16,15 @@ public class AdminUserQueryService {
 
     private final AdminUserQueryMapper mapper;
 
-    public PageResponse<AdminUserListItem> getUsers(int page, int size, String q, String role) {
-        int safePage = Math.max(page, 1);
-        int safeSize = Math.max(size, 1);
-        int offset = (safePage - 1) * safeSize;
+    public PageResponse<AdminUserListItem> getUsers(int page, int size, String q, String role, String status) {
 
-        List<AdminUserListItem> content = mapper.selectUsers(safeSize, offset, q, role);
-        long total = mapper.countUsers(q, role);
+        int pageNo = Math.max(page, 1);
+        int pageSize = Math.max(size, 1);
+        int offset = (pageNo - 1) * pageSize;
 
-        return PageResponse.from(content, safePage, safeSize, (int) total);
+        List<AdminUserListItem> content = mapper.selectUsers(pageSize, offset, q, role, status);
+        long total = mapper.countUsers(q, role, status);
+
+        return PageResponse.from(content, pageNo, pageSize, (int) total);
     }
 }

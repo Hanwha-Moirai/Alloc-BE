@@ -27,6 +27,10 @@
             OR ts.title_name LIKE CONCAT('%', #{q}, '%')
             )
         </if>
+
+        <if test="status != null and status != ''">
+            AND u.status = #{status}
+        </if>
     </sql>
 
     <select id="selectUsers" resultType="com.moirai.alloc.admin.query.dto.AdminUserListItem">

@@ -12,20 +12,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminQueryController {
+public class AdminUserQueryController {
 
-    private final AdminUserQueryService adminUserQueryService;
+    private final AdminUserQueryService service;
 
-    // 사용자 조회
     @GetMapping
     public ApiResponse<PageResponse<AdminUserListItem>> getUsers(
             @RequestParam int page,
             @RequestParam int size,
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) String role
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status
     ) {
-        return ApiResponse.success(adminUserQueryService.getUsers(page, size, q, role));
+        return ApiResponse.success(service.getUsers(page, size, q, role, status));
     }
-
-
 }
