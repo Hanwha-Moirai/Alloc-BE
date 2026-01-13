@@ -42,10 +42,14 @@ public class SquadAssignment {
 
     private LocalDateTime decidedAt;
 
-    public static SquadAssignment propose(Long projectId, Long userId) {
+    @Column(nullable = true)
+    private Integer fitnessScore; // 적합도 저장할 메서드 필요함
+
+    public static SquadAssignment propose(Long projectId, Long userId, int fitnessScore) {
         SquadAssignment sa = new SquadAssignment();
         sa.projectId = projectId;
         sa.userId = userId;
+        sa.fitnessScore = fitnessScore;
         sa.proposedAt = LocalDateTime.now();
         sa.assignmentStatus = AssignmentStatus.REQUESTED;
         sa.finalDecision = FinalDecision.PENDING;
