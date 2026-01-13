@@ -1,9 +1,8 @@
 package com.moirai.alloc.admin.query.service;
 
 import com.moirai.alloc.admin.query.dto.AdminTechStackListItem;
-import com.moirai.alloc.admin.query.dto.AdminUserListItem;
+import com.moirai.alloc.admin.query.mapper.AdminTechStackQueryMapper;
 import com.moirai.alloc.common.dto.PageResponse;
-import com.moirai.alloc.admin.query.mapper.AdminUserQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,21 +12,20 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminUserQueryService {
+public class AdminTechStackQueryService {
 
-    private final AdminUserQueryMapper mapper;
+    private final AdminTechStackQueryMapper mapper;
 
-    //사용자 조회
-    public PageResponse<AdminUserListItem> getUsers(int page, int size, String q, String role, String status) {
+    //기술 스택 조회
+    public PageResponse<AdminTechStackListItem> getTechStacks(int page, int size, String q) {
 
         int pageNo = Math.max(page, 1);
         int pageSize = Math.max(size, 1);
         int offset = (pageNo - 1) * pageSize;
 
-        List<AdminUserListItem> content = mapper.selectUsers(pageSize, offset, q, role, status);
-        long total = mapper.countUsers(q, role, status);
+        List<AdminTechStackListItem> content = mapper.selectTechStacks(pageSize, offset, q);
+        long total = mapper.countTechStacks(q);
 
         return PageResponse.from(content, pageNo, pageSize, (int) total);
     }
-
 }

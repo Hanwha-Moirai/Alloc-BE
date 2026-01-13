@@ -1,5 +1,6 @@
 package com.moirai.alloc.admin.query.controller;
 
+import com.moirai.alloc.admin.query.dto.AdminTechStackListItem;
 import com.moirai.alloc.admin.query.dto.AdminUserListItem;
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.dto.PageResponse;
@@ -10,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserQueryController {
 
     private final AdminUserQueryService service;
 
-    @GetMapping
+    // 사용자 조회
+    @GetMapping("/users")
     public ApiResponse<PageResponse<AdminUserListItem>> getUsers(
             @RequestParam int page,
             @RequestParam int size,
