@@ -1,6 +1,7 @@
 package com.moirai.alloc.calendar.command.controller;
 
 import com.moirai.alloc.calendar.command.dto.request.*;
+import com.moirai.alloc.calendar.command.dto.response.EventDetailResponse;
 import com.moirai.alloc.calendar.command.dto.response.EventResponse;
 import com.moirai.alloc.calendar.command.service.CalendarService;
 import com.moirai.alloc.common.dto.ApiResponse;
@@ -91,5 +92,18 @@ public class CalendarEventController {
     ) {
         calendarService.deleteEvent(projectId, eventId, principal);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /** 이벤트 상세 조회: 공유 일정이면 참여자 포함 */
+    @GetMapping("/{eventId}")
+    @PreAuthorize("hasAnyRole('PM','USER')")
+    public ResponseEntity<ApiResponse<EventDetailResponse>> getEventDetail(
+            @PathVariable Long projectId,
+            @PathVariable Long eventId,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                calendarService.getEventDetail(projectId, eventId, principal)
+        ));
     }
 }

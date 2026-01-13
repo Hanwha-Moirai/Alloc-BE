@@ -1,6 +1,7 @@
 package com.moirai.alloc.calendar.command.service;
 
 import com.moirai.alloc.calendar.command.dto.request.*;
+import com.moirai.alloc.calendar.command.dto.response.EventDetailResponse;
 import com.moirai.alloc.calendar.command.dto.response.EventResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 
@@ -16,4 +17,6 @@ public interface CalendarService {
     EventResponse updateEvent(Long projectId, Long eventId, EventUpdateRequest request, UserPrincipal principal);
 
     void deleteEvent(Long projectId, Long eventId, UserPrincipal principal);
+
+    EventDetailResponse getEventDetail(Long projectId, Long eventId, UserPrincipal principal);
 }

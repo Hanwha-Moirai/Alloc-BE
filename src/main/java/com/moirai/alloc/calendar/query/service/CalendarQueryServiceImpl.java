@@ -7,7 +7,7 @@ import com.moirai.alloc.calendar.command.dto.response.CalendarViewResponse;
 import com.moirai.alloc.calendar.command.repository.EventsRepository;
 import com.moirai.alloc.common.exception.ForbiddenException;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.management.domain.FinalDecision;
+import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
