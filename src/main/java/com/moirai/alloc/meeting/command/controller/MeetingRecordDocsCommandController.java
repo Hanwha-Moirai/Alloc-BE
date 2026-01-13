@@ -6,8 +6,11 @@ import com.moirai.alloc.meeting.command.dto.request.CreateMeetingRecordRequest;
 import com.moirai.alloc.meeting.command.dto.request.UpdateMeetingRecordRequest;
 import com.moirai.alloc.meeting.command.service.MeetingRecordCommandService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.security.authorization.AuthorityAuthorizationManager.hasRole;
 
 @RestController
 @RequestMapping("/api/docs/meeting_record")

@@ -2,11 +2,11 @@ package com.moirai.alloc.report.command.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.report.command.dto.CreateWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.DeleteWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.UpdateWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.WeeklyReportDeleteResponse;
-import com.moirai.alloc.report.command.dto.WeeklyReportSaveResponse;
+import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.request.DeleteWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportDeleteResponse;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.service.WeeklyReportCommandService;
 import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
 import org.springframework.http.HttpStatus;
