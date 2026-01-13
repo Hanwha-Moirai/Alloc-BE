@@ -34,6 +34,11 @@ public class MyProfileCommandService {
     @Transactional
     public MyProfileUpdateResponse updateMyProfile(Long userId, MyProfileUpdateRequest req) {
 
+        //변경 의도 없는 요청 방지
+        if (req.getEmail() == null && req.getPhone() == null && req.getJobId() == null) {
+            throw new IllegalArgumentException("NO_CHANGES");
+        }
+
         Employee employee = employeeRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_NOT_FOUND"));
 
@@ -42,7 +47,7 @@ public class MyProfileCommandService {
         // 1) 이메일/연락처 수정
         user.updateContact(req.getEmail(), req.getPhone());
 
-        // 2) 직군 수정: jobId가 오면 "선택->변경" 처리 (초기엔 null → 선택하면 세팅)
+        // 2) 직군 수정
         if (req.getJobId() != null) {
             JobStandard job = jobStandardRepository.findById(req.getJobId())
                     .orElseThrow(() -> new IllegalArgumentException("JOB_NOT_FOUND"));
