@@ -44,6 +44,20 @@ public class Agenda {
     @Column(name = "agenda_type", length = 40)
     private String agendaType;
 
+    public static Agenda create(MeetingRecord meeting,
+                                String discussionTitle,
+                                String discussionContent,
+                                String discussionResult,
+                                String agendaType) {
+        return Agenda.builder()
+                .meeting(meeting)
+                .discussionTitle(discussionTitle)
+                .discussionContent(discussionContent)
+                .discussionResult(discussionResult)
+                .agendaType(agendaType)
+                .build();
+    }
+
     @Builder
     private Agenda(MeetingRecord meeting,
                    String discussionTitle,
