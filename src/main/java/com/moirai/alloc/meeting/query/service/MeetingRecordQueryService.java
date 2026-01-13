@@ -36,13 +36,7 @@ public class MeetingRecordQueryService {
     public Page<MeetingRecordSummaryResponse> searchDocsMeetingRecords(Long projectId,
                                                                        MeetingRecordSearchCondition condition,
                                                                        Pageable pageable) {
-        MeetingRecordSearchCondition scopedCondition = new MeetingRecordSearchCondition(
-                projectId,
-                condition.from(),
-                condition.to(),
-                condition.keyword()
-        );
-        return meetingRecordQueryRepository.search(scopedCondition, pageable);
+        return searchMeetingRecordsInProjects(List.of(projectId), condition, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -66,7 +60,7 @@ public class MeetingRecordQueryService {
                                                                          MeetingRecordSearchCondition condition,
                                                                          Pageable pageable) {
         List<Long> projectIds = membershipRepository.findProjectIdsByUserId(principal.userId());
-        return meetingRecordQueryRepository.searchInProjects(projectIds, condition, pageable);
+        return searchMeetingRecordsInProjects(projectIds, condition, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -77,5 +71,11 @@ public class MeetingRecordQueryService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 멤버가 아닙니다.");
         }
         return detail;
+    }
+
+    private Page<MeetingRecordSummaryResponse> searchMeetingRecordsInProjects(List<Long> projectIds,
+                                                                              MeetingRecordSearchCondition condition,
+                                                                              Pageable pageable) {
+        return meetingRecordQueryRepository.searchInProjects(projectIds, condition, pageable);
     }
 }

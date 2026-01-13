@@ -38,12 +38,11 @@ class MeetingRecordQueryServiceTest {
     }
 
     @Test
-    void searchDocsMeetingRecords_filtersByKeyword() {
+    void searchDocsMeetingRecords_filtersByProjectName() {
         MeetingRecordSearchCondition condition = new MeetingRecordSearchCondition(
-                PROJECT_ID,
+                "Meeting Project",
                 null,
-                null,
-                "검색키워드"
+                null
         );
 
         Page<MeetingRecordSummaryResponse> page =
