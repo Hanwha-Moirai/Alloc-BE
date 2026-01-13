@@ -2,8 +2,8 @@ package com.moirai.alloc.gantt.command.application;
 
 import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
+import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
-import com.moirai.alloc.gantt.command.domain.entity.TaskUpdateLog;
 import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskUpdateLogRepository;
 import com.moirai.alloc.gantt.common.exception.GanttException;
@@ -28,11 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("local")
-@EnableJpaAuditing
-@TestPropertySource(properties = "mybatis.mapper-locations=classpath*:mapper/gantt/*.xml")
-@Import(com.moirai.alloc.gantt.config.GanttMybatisTestConfig.class)
 @Sql(scripts = "/sql/gantt/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/sql/gantt/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttCommandServiceTest {
 
     private static final Long PROJECT_ID = 99001L;
