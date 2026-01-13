@@ -1,11 +1,12 @@
 package com.moirai.alloc.gantt.command.application.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
-import com.moirai.alloc.gantt.command.application.GanttCommandService;
+import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
 import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.response.CreatedIdResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,7 @@ public class GanttTaskController {
 
     // 태스크 생성
     @PostMapping
+    @PreAuthorize("hasRole('PM')")
     public ApiResponse<CreatedIdResponse> createTask(@PathVariable Long projectId,
                                                      @RequestBody CreateTaskRequest request) {
         Long taskId = ganttCommandService.createTask(projectId, request);
@@ -34,6 +36,7 @@ public class GanttTaskController {
 
     // 태스크 수정
     @PatchMapping("/{taskId}")
+    @PreAuthorize("hasRole('PM')")
     public ApiResponse<Void> updateTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId,
                                         @RequestBody UpdateTaskRequest request) {
@@ -43,6 +46,7 @@ public class GanttTaskController {
 
     // 태스크 삭제
     @DeleteMapping("/{taskId}")
+    @PreAuthorize("hasRole('PM')")
     public ApiResponse<Void> deleteTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId) {
         ganttCommandService.deleteTask(projectId, taskId);
