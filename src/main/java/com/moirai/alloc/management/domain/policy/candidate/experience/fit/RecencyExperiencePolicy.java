@@ -3,10 +3,13 @@ package com.moirai.alloc.management.domain.policy.candidate.experience.fit;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.common.domain.Employee;
 import com.moirai.alloc.project.command.domain.Project;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-
+@Component
+@RequiredArgsConstructor
 public class RecencyExperiencePolicy {
     // 최근에 비슷한 프로젝트를 했는가?
     private static final int SCORE_WITHIN_6_MONTHS = 20;
