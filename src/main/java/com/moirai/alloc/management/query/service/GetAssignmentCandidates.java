@@ -28,11 +28,7 @@ import java.util.stream.Collectors;
 //        2) projectId로 프로젝트를 식별한다
 //        3) 해당 프로젝트에 대해 생성된 배정 후보 목록을 조회한다.
 //        4) 후보 목록을 조회용 형태로 반환한다.
-/**
- * 배정 후보 조회 (Query)
- * - 이미 생성된 배정 후보를 화면에 표시하기 위한 조회 전용 서비스
- * - 권한 검증은 상위 계층(Controller / Security)에서 수행
- */
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -86,8 +82,14 @@ public class GetAssignmentCandidates {
                             long selectedCount =
                                     assignments.stream()
                                             .filter(a ->
-                                                    a.getFinalDecision() == FinalDecision.ASSIGNED
+                                                    a.getFinalDecision() == FinalDecision.PENDING
                                             )
+                                            .filter(a -> {
+                                                Employee e =
+                                                        employeeRepository.findById(a.getUserId())
+                                                                .orElseThrow();
+                                                return e.getJob().getJobId().equals(req.getJobId());
+                                            })
                                             .count();
 
                             JobAssignmentStatus status;
@@ -108,6 +110,7 @@ public class GetAssignmentCandidates {
                             );
                         })
                         .toList();
+
 
 
         // 후보 리스트 DTO 생성
@@ -140,7 +143,7 @@ public class GetAssignmentCandidates {
                                     mainSkill,
                                     employee.getTitleStandard().getMonthlyCost(),
                                     workStatus,
-                                    null,                          // 적합도 점수 (Query에선 계산 X)
+                                    a.getFitnessScore(),
                                     a.getFinalDecision() == FinalDecision.ASSIGNED
                             );
                         })

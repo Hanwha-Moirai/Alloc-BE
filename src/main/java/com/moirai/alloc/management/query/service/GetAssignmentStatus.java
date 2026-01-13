@@ -18,7 +18,7 @@ import java.util.Map;
 //        1) assignmentId로 배정을 식별한다.
 //        2) 해당 배정의 최종 상태 정보 목록을 조회한다.
 //        4) 최종 상태 정보 목록을 조회용 형태로 반환한다.
-// 직군별
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -27,9 +27,8 @@ public class GetAssignmentStatus {
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
 
-    /**
-     * Command 판단용 (부족 인원 계산)
-     */
+    //Command 판단용 (부족 인원 계산)
+
     public AssignmentStatusDTO getStatus(Long projectId) {
 
         Project project = projectRepository.findById(projectId)
@@ -57,9 +56,7 @@ public class GetAssignmentStatus {
         return new AssignmentStatusDTO(shortageByJobId);
     }
 
-    /**
-     * 🔹 UI 요약 카드용 (조회 전용)
-     */
+    //요약카드
     public AssignmentSummaryCardDTO getSummary(Long projectId) {
 
         List<SquadAssignment> assignments =
