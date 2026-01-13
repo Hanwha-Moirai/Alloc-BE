@@ -8,6 +8,7 @@ import com.moirai.alloc.hr.command.repository.TechStandardRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.domain.entity.EmployeeSkill;
 import com.moirai.alloc.profile.command.dto.response.MyProfileUpdateResponse;
+import com.moirai.alloc.profile.command.dto.response.TechStackDeleteResponse;
 import com.moirai.alloc.profile.command.dto.response.TechStackItemResponse;
 import com.moirai.alloc.profile.command.dto.request.MyProfileUpdateRequest;
 import com.moirai.alloc.profile.command.dto.request.TechStackCreateRequest;
@@ -119,6 +120,26 @@ public class MyProfileCommandService {
                 .proficiency(skill.getProficiency())
                 .createdAt(skill.getCreatedAt())
                 .updatedAt(skill.getUpdatedAt())
+                .build();
+    }
+
+    // 기술 스택 삭제
+    @Transactional
+    public TechStackDeleteResponse deleteTechStack(Long userId, Long employeeTechId) {
+
+        EmployeeSkill skill = employeeSkillRepository.findById(employeeTechId)
+                .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_TECH_NOT_FOUND"));
+
+        // 본인 기술 스택인지 검증
+        if (!skill.getEmployee().getUserId().equals(userId)) {
+            throw new AccessDeniedException("FORBIDDEN_TECH_STACK");
+        }
+
+        employeeSkillRepository.delete(skill);
+
+        return TechStackDeleteResponse.builder()
+                .employeeTechId(employeeTechId)
+                .deleted(true)
                 .build();
     }
 }

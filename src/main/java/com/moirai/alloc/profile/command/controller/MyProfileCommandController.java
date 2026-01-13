@@ -3,6 +3,7 @@ package com.moirai.alloc.profile.command.controller;
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.profile.command.dto.response.MyProfileUpdateResponse;
+import com.moirai.alloc.profile.command.dto.response.TechStackDeleteResponse;
 import com.moirai.alloc.profile.command.dto.response.TechStackItemResponse;
 import com.moirai.alloc.profile.command.dto.request.MyProfileUpdateRequest;
 import com.moirai.alloc.profile.command.dto.request.TechStackCreateRequest;
@@ -50,5 +51,16 @@ public class MyProfileCommandController {
         Long userId = me.userId();
         return ApiResponse.success(myProfileCommandService.updateProficiency(userId, employeeTechId, req));
     }
+
+    // 기술 스택 삭제
+    @DeleteMapping("/tech-stacks/{employeeTechId}")
+    public ApiResponse<TechStackDeleteResponse> deleteTechStack(
+            @AuthenticationPrincipal UserPrincipal me,
+            @PathVariable Long employeeTechId
+    ) {
+        Long userId = me.userId();
+        return ApiResponse.success(myProfileCommandService.deleteTechStack(userId, employeeTechId));
+    }
+
 
 }
