@@ -29,8 +29,8 @@ public class Employee {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "job_id", nullable = false)
     private JobStandard job;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
