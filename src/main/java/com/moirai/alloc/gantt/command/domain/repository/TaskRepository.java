@@ -1,4 +1,4 @@
-package com.moirai.alloc.gantt.command.domain.repo;
+package com.moirai.alloc.gantt.command.domain.repository;
 
 import com.moirai.alloc.calendar.query.dto.TaskCalendarRow;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
@@ -9,6 +9,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
+
+    boolean existsByMilestone_MilestoneId(Long milestoneId);
+
+    boolean existsByMilestone_MilestoneIdAndIsDeletedFalse(Long milestoneId);
 
     @Query("""
         select new com.moirai.alloc.calendar.query.dto.TaskCalendarRow(
