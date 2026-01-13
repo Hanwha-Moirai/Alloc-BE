@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.domain.policy.candidate.skill;
+package com.moirai.alloc.management.domain.policy.calculator.skill;
 
 import com.moirai.alloc.management.domain.vo.TechRequirement;
 import com.moirai.alloc.profile.common.domain.Employee;

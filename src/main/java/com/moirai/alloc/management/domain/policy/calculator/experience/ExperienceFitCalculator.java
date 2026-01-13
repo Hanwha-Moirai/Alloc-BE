@@ -1,10 +1,9 @@
-package com.moirai.alloc.management.domain.policy.candidate.experience;
+package com.moirai.alloc.management.domain.policy.calculator.experience;
 
-import com.moirai.alloc.management.domain.entity.FinalDecision;
-import com.moirai.alloc.management.domain.policy.candidate.experience.fit.ProjectScaleExperiencePolicy;
-import com.moirai.alloc.management.domain.policy.candidate.experience.fit.ProjectTypeExperiencePolicy;
-import com.moirai.alloc.management.domain.policy.candidate.experience.fit.RecencyExperiencePolicy;
-import com.moirai.alloc.management.domain.policy.candidate.experience.fit.TechExperiencePolicy;
+import com.moirai.alloc.management.domain.policy.calculator.experience.fit.ProjectScaleExperiencePolicy;
+import com.moirai.alloc.management.domain.policy.calculator.experience.fit.ProjectTypeExperiencePolicy;
+import com.moirai.alloc.management.domain.policy.calculator.experience.fit.RecencyExperiencePolicy;
+import com.moirai.alloc.management.domain.policy.calculator.experience.fit.TechExperiencePolicy;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.common.domain.Employee;
 import com.moirai.alloc.project.command.domain.Project;

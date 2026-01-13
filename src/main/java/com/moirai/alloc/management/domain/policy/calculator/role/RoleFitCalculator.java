@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.domain.policy.candidate.role;
+package com.moirai.alloc.management.domain.policy.calculator.role;
 
 import com.moirai.alloc.profile.common.domain.Employee;
 import com.moirai.alloc.project.command.domain.Project;

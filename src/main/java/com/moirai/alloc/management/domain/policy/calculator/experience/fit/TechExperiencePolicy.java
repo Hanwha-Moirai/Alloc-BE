@@ -1,10 +1,6 @@
-package com.moirai.alloc.management.domain.policy.candidate.experience.fit;
+package com.moirai.alloc.management.domain.policy.calculator.experience.fit;
 
-import com.moirai.alloc.profile.common.domain.Employee;
-import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Component
 public class TechExperiencePolicy {
