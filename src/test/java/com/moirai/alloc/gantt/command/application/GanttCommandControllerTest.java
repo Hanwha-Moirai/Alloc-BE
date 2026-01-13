@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("local")
 @EnableJpaAuditing
 //@TestPropertySource(properties = "mybatis.mapper-locations=classpath*:mapper/gantt/*.xml")
-@Import(com.moirai.alloc.gantt.config.GanttMybatisTestConfig.class)
+//@Import(com.moirai.alloc.gantt.config.GanttMybatisTestConfig.class)
 @Sql(scripts = "/sql/gantt/controller_setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 class GanttCommandControllerTest {
 
