@@ -41,7 +41,7 @@ class WeeklyReportMyDocsQueryControllerTest {
     void searchMyReports_returnsMatches() throws Exception {
         mockMvc.perform(get("/api/mydocs/report/search")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .param("keyword", "Report Project"))
+                        .param("projectName", "Report Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.content[0].reportId").value(77001))

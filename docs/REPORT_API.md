@@ -57,11 +57,9 @@
 
 ### Query Parameters
 
-- `userId` (optional)
 - `reportStatus` (optional) : `DRAFT | REVIEWED`
 - `weekStartFrom` (optional) : `YYYY-MM-DD`
 - `weekStartTo` (optional) : `YYYY-MM-DD`
-- `keyword` (optional) : 프로젝트명 및 날짜 키워드
 - `page` (optional)
 - `size` (optional)
 
@@ -263,11 +261,10 @@
 
 ### Query Parameters
 
-- `projectId` (optional)
+- `projectName` (optional)
 - `reportStatus` (optional) : `DRAFT | REVIEWED`
 - `weekStartFrom` (optional)
 - `weekStartTo` (optional)
-- `keyword` (optional)
 - `page` (optional)
 - `size` (optional)
 

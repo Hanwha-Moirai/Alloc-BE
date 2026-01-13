@@ -324,9 +324,9 @@ public class WeeklyReportQueryRepository {
             where.append(" and wr.project_id = ?");
             params.add(condition.projectId());
         }
-        if (condition.userId() != null) {
-            where.append(" and wr.user_id = ?");
-            params.add(condition.userId());
+        if (condition.projectName() != null && !condition.projectName().isBlank()) {
+            where.append(" and p.name like ?");
+            params.add("%" + condition.projectName().trim() + "%");
         }
         if (condition.reportStatus() != null) {
             where.append(" and wr.report_status = ?");
@@ -339,14 +339,6 @@ public class WeeklyReportQueryRepository {
         if (condition.weekStartTo() != null) {
             where.append(" and wr.week_start_date <= ?");
             params.add(condition.weekStartTo());
-        }
-        if (condition.keyword() != null && !condition.keyword().isBlank()) {
-            where.append(" and (p.name like ? or cast(wr.week_start_date as char) like ? " +
-                    "or cast(wr.week_end_date as char) like ?)");
-            String keyword = "%" + condition.keyword().trim() + "%";
-            params.add(keyword);
-            params.add(keyword);
-            params.add(keyword);
         }
         String selectSql = "select wr.report_id, wr.project_id, p.name as project_name, u.user_name, " +
                 "wr.week_start_date, wr.week_end_date, wr.report_status, wr.task_completion_rate, " +

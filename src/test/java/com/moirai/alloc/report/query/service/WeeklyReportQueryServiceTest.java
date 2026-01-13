@@ -39,14 +39,13 @@ class WeeklyReportQueryServiceTest {
     }
 
     @Test
-    void searchDocsReports_filtersByKeyword() {
+    void searchDocsReports_filtersByProjectId() {
         WeeklyReportSearchCondition condition = new WeeklyReportSearchCondition(
                 PROJECT_ID,
                 null,
                 null,
                 null,
-                null,
-                "Report Project"
+                null
         );
 
         Page<WeeklyReportSummaryResponse> page =
