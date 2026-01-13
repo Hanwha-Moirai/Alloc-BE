@@ -1,19 +1,14 @@
 package com.moirai.alloc.gantt.command.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
+import com.moirai.alloc.common.security.auth.UserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +19,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,7 +36,6 @@ class GanttCommandControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser(roles = "PM")
     void createTask_returnsCreatedId() throws Exception {
         String body = """
                 {
@@ -53,6 +50,7 @@ class GanttCommandControllerTest {
                 """;
 
         mockMvc.perform(post("/api/projects/{projectId}/tasks", 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -61,7 +59,6 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "PM")
     void updateTask_returnsOk() throws Exception {
         String body = """
                 {
@@ -70,6 +67,7 @@ class GanttCommandControllerTest {
                 """;
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -77,15 +75,14 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "PM")
     void deleteTask_returnsOk() throws Exception {
-        mockMvc.perform(delete("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100))
+        mockMvc.perform(delete("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
 
     @Test
-    @WithMockUser(roles = "USER")
     void updateTask_forbiddenWhenUserRoleIsNotPm() throws Exception {
         String body = """
                 {
@@ -94,17 +91,62 @@ class GanttCommandControllerTest {
                 """;
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
     }
 
-    @TestConfiguration
-    static class TestAuthConfig {
-        @Bean
-        @Primary
-        AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> 99100L;
-        }
+    @Test
+    void completeTask_forbiddenWhenRequesterIsNotAssignee() throws Exception {
+        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99100, 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void completeTask_returnsOkWhenRequesterIsAssignee() throws Exception {
+        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99100, 99100)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    private Authentication pmAuth() {
+        UserPrincipal principal = new UserPrincipal(
+                99100L,
+                "pm_99100",
+                "pm99100@example.com",
+                "PM User",
+                "PM",
+                "pw"
+        );
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private Authentication userAuth() {
+        UserPrincipal principal = new UserPrincipal(
+                99100L,
+                "user_99100",
+                "user99100@example.com",
+                "User",
+                "USER",
+                "pw"
+        );
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private Authentication assigneeAuth() {
+        UserPrincipal principal = new UserPrincipal(
+                99101L,
+                "user_99101",
+                "user99101@example.com",
+                "User One",
+                "USER",
+                "pw"
+        );
+        return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     }
 }
