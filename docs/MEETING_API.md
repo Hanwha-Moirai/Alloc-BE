@@ -15,8 +15,12 @@
 ## 1) 회의록 목록 조회 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/meeting_record`
+- URL: `/api/projects/{projectId}/docs/meeting_record`
 - 설명: 전체 회의록 목록을 페이지 단위로 조회한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Query Parameters
 
@@ -41,12 +45,15 @@
 ## 2) 회의록 검색 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/meeting_record/search`
+- URL: `/api/projects/{projectId}/docs/meeting_record/search`
 - 설명: 조건 기반 회의록 검색.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Query Parameters
 
-- `projectId` (optional)
 - `from` (optional) : `YYYY-MM-DD`
 - `to` (optional) : `YYYY-MM-DD`
 - `keyword` (optional)
@@ -62,7 +69,12 @@
 ## 3) 회의록 상세 조회 (Docs)
 
 - Method: `GET`
-- URL: `/api/docs/meeting_record/{meetingRecordId}`
+- URL: `/api/projects/{projectId}/docs/meeting_record/{meetingRecordId}`
+
+### Path Parameters
+
+- `projectId`: Long
+- `meetingRecordId`: Long
 
 ### Response
 
@@ -91,8 +103,12 @@
 ## 4) 회의록 생성 (Docs)
 
 - Method: `POST`
-- URL: `/api/docs/meeting_record/create`
+- URL: `/api/projects/{projectId}/docs/meeting_record/create`
 - 설명: 회의록을 생성한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Request Body
 
@@ -128,8 +144,12 @@
 ## 5) 회의록 수정 (Docs)
 
 - Method: `PATCH`
-- URL: `/api/docs/meeting_record/save`
+- URL: `/api/projects/{projectId}/docs/meeting_record/save`
 - 설명: 회의록 내용을 수정한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Request Body
 
@@ -165,8 +185,12 @@
 ## 6) 회의록 삭제 (Docs)
 
 - Method: `DELETE`
-- URL: `/api/docs/meeting_record/delete`
+- URL: `/api/projects/{projectId}/docs/meeting_record/delete`
 - 설명: 회의록을 소프트 삭제한다.
+
+### Path Parameters
+
+- `projectId`: Long
 
 ### Query Parameter
 
