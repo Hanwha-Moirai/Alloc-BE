@@ -17,10 +17,6 @@ public class RecencyExperiencePolicy {
 
     private final SquadAssignmentRepository assignmentRepository;
 
-    public RecencyExperiencePolicy(SquadAssignmentRepository assignmentRepository) {
-        this.assignmentRepository = assignmentRepository;
-    }
-
     public int score(Project project, Employee employee) {
 
         LocalDate latestEndDate =

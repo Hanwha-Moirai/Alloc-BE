@@ -15,10 +15,6 @@ public class ProjectTypeExperiencePolicy {
 
     private final SquadAssignmentRepository assignmentRepository;
 
-    public ProjectTypeExperiencePolicy(SquadAssignmentRepository assignmentRepository) {
-        this.assignmentRepository = assignmentRepository;
-    }
-
     public int score(Project project, Employee employee) {
 
         long sameTypeCount =

@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class CandidateScore {
     private final Long userId;
 

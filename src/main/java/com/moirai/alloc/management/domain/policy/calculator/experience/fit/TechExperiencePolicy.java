@@ -9,9 +9,6 @@ public class TechExperiencePolicy {
 
     private final ProjectTechRequirementRepository techRequirementRepository;
 
-    public TechExperiencePolicy(ProjectTechRequirementRepository techRequirementRepository) {
-        this.techRequirementRepository = techRequirementRepository;
-    }
 
     public int score(Project project, Employee employee) {
 
