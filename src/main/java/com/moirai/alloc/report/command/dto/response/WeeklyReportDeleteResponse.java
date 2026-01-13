@@ -1,4 +1,4 @@
-package com.moirai.alloc.report.command.dto;
+package com.moirai.alloc.report.command.dto.response;
 
 public record WeeklyReportDeleteResponse(
         Long reportId,

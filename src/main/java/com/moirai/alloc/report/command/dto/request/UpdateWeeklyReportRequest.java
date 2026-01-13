@@ -1,4 +1,4 @@
-package com.moirai.alloc.report.command.dto;
+package com.moirai.alloc.report.command.dto.request;
 
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 

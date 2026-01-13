@@ -1,11 +1,11 @@
 package com.moirai.alloc.report.command.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.report.command.dto.CompletedTaskRequest;
-import com.moirai.alloc.report.command.dto.CreateWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.IncompleteTaskRequest;
-import com.moirai.alloc.report.command.dto.NextWeekTaskRequest;
-import com.moirai.alloc.report.command.dto.UpdateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.request.CompletedTaskRequest;
+import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.request.IncompleteTaskRequest;
+import com.moirai.alloc.report.command.dto.request.NextWeekTaskRequest;
+import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;

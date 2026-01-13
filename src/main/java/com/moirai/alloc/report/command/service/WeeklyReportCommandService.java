@@ -5,11 +5,10 @@ import com.moirai.alloc.gantt.command.domain.entity.Task;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
-import com.moirai.alloc.report.command.dto.CreateWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.IncompleteTaskRequest;
-import com.moirai.alloc.report.command.dto.NextWeekTaskRequest;
-import com.moirai.alloc.report.command.dto.UpdateWeeklyReportRequest;
-import com.moirai.alloc.report.command.dto.WeeklyReportSaveResponse;
+import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.request.IncompleteTaskRequest;
+import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
@@ -23,8 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @Service
 public class WeeklyReportCommandService {
