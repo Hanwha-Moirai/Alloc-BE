@@ -33,6 +33,7 @@
 
 - `meetingId`: Long
 - `projectId`: Long
+- `projectName`: String
 - `createdBy`: String
 - `progress`: Double
 - `meetingDate`: `YYYY-MM-DDTHH:mm:ss`
