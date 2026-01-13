@@ -17,6 +17,7 @@ import com.moirai.alloc.gantt.command.domain.repository.MilestoneUpdateLogReposi
 import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskUpdateLogRepository;
 import com.moirai.alloc.gantt.common.exception.GanttException;
+import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class GanttCommandService {
 
     private final ProjectInfoPort projectInfoPort;
     private final ProjectMembershipPort projectMembershipPort;
+    private final AuthenticatedUserProvider authenticatedUserProvider;
     private final MilestoneRepository milestoneRepository;
     private final TaskRepository taskRepository;
     private final TaskQueryMapper taskQueryMapper;
@@ -38,6 +40,7 @@ public class GanttCommandService {
 
     public GanttCommandService(ProjectInfoPort projectInfoPort,
                                ProjectMembershipPort projectMembershipPort,
+                               AuthenticatedUserProvider authenticatedUserProvider,
                                MilestoneRepository milestoneRepository,
                                TaskRepository taskRepository,
                                TaskQueryMapper taskQueryMapper,
@@ -45,6 +48,7 @@ public class GanttCommandService {
                                MilestoneUpdateLogRepository milestoneUpdateLogRepository) {
         this.projectInfoPort = projectInfoPort;
         this.projectMembershipPort = projectMembershipPort;
+        this.authenticatedUserProvider = authenticatedUserProvider;
         this.milestoneRepository = milestoneRepository;
         this.taskRepository = taskRepository;
         this.taskQueryMapper = taskQueryMapper;
@@ -139,6 +143,7 @@ public class GanttCommandService {
 
     @Transactional
     public void completeTask(Long projectId, Long taskId, CompleteTaskRequest request) {
+        Long userId = authenticatedUserProvider.getCurrentUserId();
         validateProject(projectId);
 
         Task task = findTaskWithinProject(projectId, taskId);
