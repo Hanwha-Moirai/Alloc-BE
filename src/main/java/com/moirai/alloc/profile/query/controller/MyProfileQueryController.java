@@ -3,6 +3,7 @@ package com.moirai.alloc.profile.query.controller;
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.profile.query.dto.MyProfileBasicResponse;
+import com.moirai.alloc.profile.query.dto.MyProfileSummaryResponse;
 import com.moirai.alloc.profile.query.dto.MyProjectHistoryResponse;
 import com.moirai.alloc.profile.query.dto.MyTechStackResponse;
 import com.moirai.alloc.profile.query.service.MyProfileQueryService;
@@ -18,6 +19,12 @@ import java.util.List;
 public class MyProfileQueryController {
 
     private final MyProfileQueryService myProfileQueryService;
+
+    // 상단바 프로필  조회
+    @GetMapping("/summary")
+    public ApiResponse<MyProfileSummaryResponse> getMySummary(@AuthenticationPrincipal UserPrincipal me) {
+        return ApiResponse.success(myProfileQueryService.getMySummary(me.userId()));
+    }
 
     // 기본 정보 조회
     @GetMapping("/profile")

@@ -4,6 +4,21 @@
 
 <mapper namespace="com.moirai.alloc.profile.query.mapper.MyProfileQueryMapper">
 
+    <!-- 0) 상단바 요약 조회 -->
+    <select id="selectMySummary"
+            resultType="com.moirai.alloc.profile.query.dto.MyProfileSummaryResponse">
+        SELECT
+            u.user_name   AS userName,
+            js.job_name   AS jobName,
+            ts.title_name AS titleName,
+            u.profile_img AS profileImageUrl
+        FROM users u
+                 JOIN employee e ON e.user_id = u.user_id
+                 JOIN job_standard js ON js.job_id = e.job_id
+                 JOIN title_standard ts ON ts.title_standard = e.title_standard
+        WHERE u.user_id = #{userId}
+    </select>
+
     <!-- 1) 기본정보 조회 -->
     <select id="selectMyProfile"
             resultType="com.moirai.alloc.profile.query.dto.MyProfileBasicResponse">

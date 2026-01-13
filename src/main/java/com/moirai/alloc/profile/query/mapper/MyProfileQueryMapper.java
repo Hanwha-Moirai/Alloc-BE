@@ -1,6 +1,7 @@
 package com.moirai.alloc.profile.query.mapper;
 
 import com.moirai.alloc.profile.query.dto.MyProfileBasicResponse;
+import com.moirai.alloc.profile.query.dto.MyProfileSummaryResponse;
 import com.moirai.alloc.profile.query.dto.MyProjectHistoryRow;
 import com.moirai.alloc.profile.query.dto.MyTechStackResponse;
 import org.apache.ibatis.annotations.Mapper;
@@ -10,6 +11,9 @@ import java.util.List;
 
 @Mapper
 public interface MyProfileQueryMapper {
+
+        // 0) 상단바 요약
+        MyProfileSummaryResponse selectMySummary(@Param("userId") Long userId);
 
         // 1) 내 기본 정보
         MyProfileBasicResponse selectMyProfile(@Param("userId") Long userId);

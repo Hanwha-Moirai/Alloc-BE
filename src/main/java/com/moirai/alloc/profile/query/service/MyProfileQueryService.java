@@ -1,9 +1,6 @@
 package com.moirai.alloc.profile.query.service;
 
-import com.moirai.alloc.profile.query.dto.MyProfileBasicResponse;
-import com.moirai.alloc.profile.query.dto.MyProjectHistoryResponse;
-import com.moirai.alloc.profile.query.dto.MyProjectHistoryRow;
-import com.moirai.alloc.profile.query.dto.MyTechStackResponse;
+import com.moirai.alloc.profile.query.dto.*;
 import com.moirai.alloc.profile.query.mapper.MyProfileQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +16,16 @@ public class MyProfileQueryService {
 
     private final MyProfileQueryMapper myProfileQueryMapper;
 
+    //상단바 프로필 조회
+    public MyProfileSummaryResponse getMySummary(Long userId) {
+        MyProfileSummaryResponse res = myProfileQueryMapper.selectMySummary(userId);
+        if (res == null) {
+            throw new IllegalArgumentException("사용자 정보를 찾을 수 없습니다.");
+        }
+        return res;
+    }
+
+    // 기본 정보 조회
     public MyProfileBasicResponse getMyProfile(Long userId) {
         MyProfileBasicResponse res = myProfileQueryMapper.selectMyProfile(userId);
         if (res == null) {
