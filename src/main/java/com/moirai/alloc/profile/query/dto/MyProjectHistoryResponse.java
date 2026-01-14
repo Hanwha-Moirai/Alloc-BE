@@ -1,6 +1,7 @@
 package com.moirai.alloc.profile.query.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.List;
  * projectId 기준으로 Service 계층에서 그룹핑하여 생성*/
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class MyProjectHistoryResponse {
     private Long projectId;
