@@ -310,7 +310,7 @@ class CalendarServiceImplTest {
         when(u2.getUserId()).thenReturn(2L);
         when(u2.getUserName()).thenReturn("이영희");
 
-        when(userRepository.findByIdIn(List.of(3L, 2L))).thenReturn(List.of(u3, u2));
+        when(userRepository.findAllById(List.of(3L, 2L))).thenReturn(List.of(u3, u2));
 
         EventDetailResponse res = calendarService.getEventDetail(projectId, eventId, principal);
 

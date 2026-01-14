@@ -319,7 +319,7 @@ public class CalendarServiceImpl implements CalendarService {
 
             List<User> userEntities = orderedDistinctIds.isEmpty()
                     ? List.of()
-                    : userRepository.findByIdIn(orderedDistinctIds);
+                    : userRepository.findAllById(orderedDistinctIds);
 
             Map<Long, String> nameById = userEntities.stream()
                     .collect(Collectors.toMap(User::getUserId, User::getUserName, (a, b) -> a));
