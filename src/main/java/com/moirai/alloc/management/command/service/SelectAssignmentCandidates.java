@@ -44,7 +44,7 @@ public class SelectAssignmentCandidates {
         // 2) 직군별 선택 인원 검증 (정확히 requiredCount만큼 선택했는지)
         validateSelectedCounts(project, command);
 
-        // 2️⃣ 신규 후보 생성
+        // 3) 신규 후보 생성
         for (JobAssignmentDTO assignment : command.getAssignments()) {
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
                 Long userId = candidate.getUserId();
@@ -100,15 +100,3 @@ public class SelectAssignmentCandidates {
         }
     }
 }
-    /*/특정 직군(jobId)에 대한 사용자 선택 결과 조회
-    private JobAssignmentDTO findAssignment(
-            AssignCandidateDTO command, Long jobId) {
-
-        for (JobAssignmentDTO assignment : command.getAssignments()) {
-            if (assignment.getJobId().equals(jobId)) {
-                return assignment;
-            }
-        }
-        return null;
-    }
-}*/

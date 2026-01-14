@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly=true)
 public class GetProjectDetail {
-    private ProjectRepository projectRepository;
+    private final ProjectRepository projectRepository;
     public GetProjectDetail(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
     }
