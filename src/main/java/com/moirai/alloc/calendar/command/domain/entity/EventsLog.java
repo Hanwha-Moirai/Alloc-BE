@@ -42,17 +42,11 @@ public class EventsLog {
     @Column(name = "log_description")
     private String logDescription;
 
-    @Column(name = "before_start_date")
-    private LocalDateTime beforeStartDate;
+    @Column(name = "before_date")
+    private LocalDateTime beforeDate;
 
-    @Column(name = "after_start_date")
-    private LocalDateTime afterStartDate;
-
-    @Column(name = "before_end_date")
-    private LocalDateTime beforeEndDate;
-
-    @Column(name = "after_end_date")
-    private LocalDateTime afterEndDate;
+    @Column(name = "after_date")
+    private LocalDateTime afterDate;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -64,18 +58,14 @@ public class EventsLog {
             Long actorUserId,
             ChangeType changeType,
             String logDescription,
-            LocalDateTime beforeStartDate,
-            LocalDateTime afterStartDate,
-            LocalDateTime beforeEndDate,
-            LocalDateTime afterEndDate
+            LocalDateTime beforeDate,
+            LocalDateTime afterDate
     ) {
         this.eventId = eventId;
         this.actorUserId = actorUserId;
         this.logDescription = logDescription;
-        this.beforeStartDate = beforeStartDate;
-        this.afterStartDate = afterStartDate;
-        this.beforeEndDate = beforeEndDate;
-        this.afterEndDate = afterEndDate;
+        this.beforeDate = beforeDate;
+        this.afterDate = afterDate;
 
         this.changeType = (changeType == null) ? ChangeType.CREATE : changeType;
     }

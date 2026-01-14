@@ -89,29 +89,4 @@ public class Events extends BaseTimeEntity {
     public void softDelete() {
         this.deleted = true;
     }
-
-    public void updateEventState(EventState eventState) {
-        this.eventState = eventState;
-    }
-
-    public void updateEventType(EventType eventType) {
-        this.eventType = eventType;
-    }
-
-    public void updateEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public void updateEventPlace(String eventPlace) {
-        this.eventPlace = eventPlace;
-    }
-
-    public void updateEventDescription(String eventDescription) {
-        this.eventDescription = eventDescription;
-    }
-
-    public void updatePeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
 }
