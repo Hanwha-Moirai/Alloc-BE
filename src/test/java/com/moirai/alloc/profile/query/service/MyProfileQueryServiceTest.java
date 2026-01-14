@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("local")
-@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+//@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+//@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 class MyProfileQueryServiceTest {
 
     private static final Long USER_ID = 77001L;

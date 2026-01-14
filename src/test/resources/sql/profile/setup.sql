@@ -18,13 +18,13 @@ VALUES (1, 'IT', 77001, NOW(), NOW());
 INSERT INTO job_standard (job_id, job_name, created_at, updated_at)
 VALUES (1, 'BackendDeveloper', NOW(), NOW());
 
-INSERT INTO title_standard (title_standard, title_name, created_at, updated_at)
+INSERT INTO title_standard (title_standard_id, title_name, created_at, updated_at)
 VALUES (1, '사원', NOW(), NOW());
 
 -- 3) employee (users와 1:1)
 -- job_id는 summary에서 JOIN(job_standard)하므로 77001은 반드시 값 존재해야 함
 -- title_standard 컬럼명: e.title_standard 를 mapper에서 사용
-INSERT INTO employee (user_id, job_id, dept_id, employee_type, title_standard, hiring_date)
+INSERT INTO employee (user_id, job_id, dept_id, employee_type, title_standard_id, hiring_date)
 VALUES
     (77001, 1, 1, 'FULL_TIME', 1, DATE '2022-03-01'),
     (77002, 1, 1, 'FULL_TIME', 1, DATE '2023-01-01'),
