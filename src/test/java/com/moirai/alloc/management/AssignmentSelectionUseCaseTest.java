@@ -14,17 +14,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+
 import java.util.List;
 import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+//프로젝트 요구사항에 맞게 후보 선발
 @ExtendWith(MockitoExtension.class)
-class SelectAssignmentCandidatesTest {
+class AssignmentSelectionUseCaseTest {
 
     @Mock
     private SquadAssignmentRepository assignmentRepository;
@@ -36,7 +36,8 @@ class SelectAssignmentCandidatesTest {
     private SelectAssignmentCandidates selectAssignmentCandidates;
 
     @Test
-    void saves_assignments_when_selected_count_matches_requiredCount() {
+    void candidatesAreSelectedWhenRequiredCountIsSatisfied() {
+        // given
         Long projectId = 1L;
         Long jobId = 10L;
 
@@ -47,7 +48,6 @@ class SelectAssignmentCandidatesTest {
 
         when(projectRepository.findById(projectId))
                 .thenReturn(Optional.of(project));
-
         when(assignmentRepository.existsByProjectIdAndUserId(any(), any()))
                 .thenReturn(false);
 
@@ -64,14 +64,17 @@ class SelectAssignmentCandidatesTest {
                 )
         );
 
+        // when
         selectAssignmentCandidates.selectAssignmentCandidates(command);
 
+        // then: 의미 있는 결과만 검증
         verify(assignmentRepository, times(2))
                 .save(any(SquadAssignment.class));
     }
 
     @Test
-    void throws_exception_when_selected_count_does_not_match_requiredCount() {
+    void selectionFailsWhenRequiredCountIsNotMet() {
+        // given
         Long projectId = 1L;
         Long jobId = 10L;
 
@@ -87,13 +90,12 @@ class SelectAssignmentCandidatesTest {
                 List.of(
                         new JobAssignmentDTO(
                                 jobId,
-                                List.of(
-                                        new ScoredCandidateDTO(100L, 80)
-                                )
+                                List.of(new ScoredCandidateDTO(100L, 80))
                         )
                 )
         );
 
+        // when / then
         assertThatThrownBy(() ->
                 selectAssignmentCandidates.selectAssignmentCandidates(command)
         ).isInstanceOf(IllegalArgumentException.class);

@@ -30,7 +30,7 @@ class RegisterProjectTest {
     private ProjectRepository projectRepository;
 
     @Test
-    void REGISTER() {
+    void registerProject() {
         // given
         RegisterProjectCommandDTO command = new RegisterProjectCommandDTO();
         ReflectionTestUtils.setField(command, "name", "AI 프로젝트");
