@@ -38,11 +38,10 @@ public class WeeklyReportQueryService {
                                                                Pageable pageable) {
         WeeklyReportSearchCondition scopedCondition = new WeeklyReportSearchCondition(
                 projectId,
-                condition.userId(),
+                condition.projectName(),
                 condition.reportStatus(),
                 condition.weekStartFrom(),
-                condition.weekStartTo(),
-                condition.keyword()
+                condition.weekStartTo()
         );
         return weeklyReportQueryRepository.search(scopedCondition, pageable);
     }

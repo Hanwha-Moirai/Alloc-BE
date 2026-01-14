@@ -6,10 +6,9 @@ import java.time.LocalDate;
 
 public record WeeklyReportSearchCondition(
         Long projectId,
-        Long userId,
+        String projectName,
         WeeklyReport.ReportStatus reportStatus,
         LocalDate weekStartFrom,
-        LocalDate weekStartTo,
-        String keyword
+        LocalDate weekStartTo
 ) {
 }

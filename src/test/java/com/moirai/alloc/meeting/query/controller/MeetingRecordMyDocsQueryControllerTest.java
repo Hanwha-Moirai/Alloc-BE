@@ -32,17 +32,19 @@ class MeetingRecordMyDocsQueryControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
     }
 
     @Test
     void searchMyMeetingRecords_returnsMatches() throws Exception {
         mockMvc.perform(get("/api/mydocs/meeting_record/search")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .param("keyword", "검색키워드"))
+                        .param("projectName", "Meeting Project"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.content[0].meetingId").value(88001));
+                .andExpect(jsonPath("$.data.content[0].meetingId").value(88001))
+                .andExpect(jsonPath("$.data.content[0].projectName").value("Meeting Project"));
     }
 
     @Test
