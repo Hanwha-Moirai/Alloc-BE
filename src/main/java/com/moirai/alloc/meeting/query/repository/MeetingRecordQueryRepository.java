@@ -190,10 +190,6 @@ public class MeetingRecordQueryRepository {
                 "where mr.is_deleted = false";
         StringBuilder where = new StringBuilder();
         List<Object> params = new ArrayList<>();
-        if (condition.projectId() != null) {
-            where.append(" and mr.project_id = ?");
-            params.add(condition.projectId());
-        }
         if (condition.from() != null) {
             where.append(" and mr.meeting_date >= ?");
             params.add(startOfDay(condition.from()));
@@ -202,15 +198,9 @@ public class MeetingRecordQueryRepository {
             where.append(" and mr.meeting_date <= ?");
             params.add(endOfDay(condition.to()));
         }
-        if (condition.keyword() != null && !condition.keyword().isBlank()) {
-            where.append(" and (mr.created_by like ? or exists (select 1 from agenda a " +
-                    "where a.meeting_id = mr.meeting_id and (a.discussion_title like ? " +
-                    "or a.discussion_content like ? or a.discussion_result like ?)))");
-            String keyword = "%" + condition.keyword().trim() + "%";
-            params.add(keyword);
-            params.add(keyword);
-            params.add(keyword);
-            params.add(keyword);
+        if (condition.projectName() != null && !condition.projectName().isBlank()) {
+            where.append(" and p.name like ?");
+            params.add("%" + condition.projectName().trim() + "%");
         }
         String selectSql = "select mr.meeting_id, mr.project_id, p.name as project_name, mr.created_by, mr.progress, " +
                 "mr.meeting_date, mr.meeting_time, mr.created_at, mr.updated_at " + baseSql + where;

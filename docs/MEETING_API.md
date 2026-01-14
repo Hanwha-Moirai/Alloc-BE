@@ -55,9 +55,9 @@
 
 ### Query Parameters
 
+- `projectName` (optional)
 - `from` (optional) : `YYYY-MM-DD`
 - `to` (optional) : `YYYY-MM-DD`
-- `keyword` (optional)
 - `page` (optional)
 - `size` (optional)
 
@@ -226,10 +226,9 @@
 
 ### Query Parameters
 
-- `projectId` (optional)
+- `projectName` (optional)
 - `from` (optional)
 - `to` (optional)
-- `keyword` (optional)
 - `page` (optional)
 - `size` (optional)
 

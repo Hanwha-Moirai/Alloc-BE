@@ -37,12 +37,12 @@ public class MeetingRecordDocsQueryController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<MeetingRecordSummaryResponse>>> searchMeetingRecords(
             @PathVariable("project_id") Long projectId,
+            @RequestParam(required = false) String projectName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(required = false) String keyword,
             Pageable pageable
     ) {
-        MeetingRecordSearchCondition condition = new MeetingRecordSearchCondition(projectId, from, to, keyword);
+        MeetingRecordSearchCondition condition = new MeetingRecordSearchCondition(projectName, from, to);
         Page<MeetingRecordSummaryResponse> response =
                 meetingRecordQueryService.searchDocsMeetingRecords(projectId, condition, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
