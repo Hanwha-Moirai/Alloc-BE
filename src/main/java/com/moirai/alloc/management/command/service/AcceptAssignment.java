@@ -22,6 +22,6 @@ public class AcceptAssignment {
         if(!assignment.getUserId().equals(userId)){
             throw new IllegalArgumentException("Only the assigned user can accept this assignment");
         }
-        assignment.acceptAssignmentRequest();
+        assignment.acceptAssignment();
     }
 }

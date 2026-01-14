@@ -27,7 +27,7 @@ public class GetAssignmentStatus {
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
 
-    //Command 판단용 (부족 인원 계산)
+    //Command 판단용 (부족 인원 계산; assigned 기준으로)
 
     public AssignmentStatusDTO getStatus(Long projectId) {
 
@@ -56,7 +56,7 @@ public class GetAssignmentStatus {
         return new AssignmentStatusDTO(shortageByJobId);
     }
 
-    //요약카드
+    //요약카드; 직원 응답 상태 기준
     public AssignmentSummaryCardDTO getSummary(Long projectId) {
 
         List<SquadAssignment> assignments =

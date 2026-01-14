@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,24 +46,28 @@ public class SelectAdditionalAssignmentCandidates {
             return;
         }
 
-        // policy로 추가 후보 계산
-        AssignCandidateDTO additionalCandidates =
-                candidateSelectionService.select(project, status);
+        Map<Long, Integer> shortageByJobId =
+                status.getShortageByJobId();
 
-        // 후보 생성 (candidates 기준)
+        AssignCandidateDTO additionalCandidates =
+                candidateSelectionService.select(project, shortageByJobId);
+
         for (JobAssignmentDTO assignment : additionalCandidates.getAssignments()) {
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
 
                 Long userId = candidate.getUserId();
-                int fitnessScore = candidate.getFitnessScore();
 
-                // 중복 방지
-                if (assignmentRepository.existsByProjectIdAndUserId(projectId, userId)) {
+                if (assignmentRepository.existsByProjectIdAndUserId(
+                        projectId, userId)) {
                     continue;
                 }
 
                 assignmentRepository.save(
-                        SquadAssignment.propose(projectId, userId, fitnessScore)
+                        SquadAssignment.propose(
+                                projectId,
+                                userId,
+                                candidate.getFitnessScore()
+                        )
                 );
             }
         }

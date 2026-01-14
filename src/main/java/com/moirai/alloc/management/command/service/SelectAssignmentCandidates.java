@@ -11,6 +11,10 @@ import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 public class SelectAssignmentCandidates {
@@ -40,14 +44,11 @@ public class SelectAssignmentCandidates {
         // 2) 직군별 선택 인원 검증 (정확히 requiredCount만큼 선택했는지)
         validateSelectedCounts(project, command);
 
-        // 3) 배정 후보 저장
+        // 2️⃣ 신규 후보 생성
         for (JobAssignmentDTO assignment : command.getAssignments()) {
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
-
                 Long userId = candidate.getUserId();
-                int fitnessScore = candidate.getFitnessScore();
 
-                // 이미 후보로 존재하면 스킵 (멱등성 보장)
                 if (assignmentRepository.existsByProjectIdAndUserId(
                         project.getProjectId(), userId)) {
                     continue;
@@ -57,38 +58,49 @@ public class SelectAssignmentCandidates {
                         SquadAssignment.propose(
                                 project.getProjectId(),
                                 userId,
-                                fitnessScore
+                                candidate.getFitnessScore()
                         )
                 );
             }
         }
-
     }
 
     //직군별로 requiredCount를 정확히 충족했는지 검증
-    private void validateSelectedCounts(Project project, AssignCandidateDTO command) {
+    private void validateSelectedCounts(
+            Project project,
+            AssignCandidateDTO command
+    ) {
+        Map<Long, JobAssignmentDTO> selectionMap =
+                command.getAssignments().stream()
+                        .collect(Collectors.toMap(
+                                JobAssignmentDTO::getJobId,
+                                Function.identity()
+                        ));
 
         for (JobRequirement requirement : project.getJobRequirements()) {
 
             JobAssignmentDTO selection =
-                    findAssignment(command, requirement.getJobId());
+                    selectionMap.get(requirement.getJobId());
 
             if (selection == null) {
                 throw new IllegalArgumentException(
-                        "No candidates selected for required jobId=" + requirement.getJobId()
+                        "No candidates selected for jobId=" + requirement.getJobId()
                 );
             }
 
-            if (selection.getCandidates().size() != requirement.getRequiredCount()) {
+            if (selection.getCandidates().size()
+                    != requirement.getRequiredCount()) {
                 throw new IllegalArgumentException(
-                        "Must select exactly " + requirement.getRequiredCount()
-                                + " candidates for jobId=" + requirement.getJobId()
+                        "Must select exactly "
+                                + requirement.getRequiredCount()
+                                + " candidates for jobId="
+                                + requirement.getJobId()
                 );
             }
         }
     }
-
-    //특정 직군(jobId)에 대한 사용자 선택 결과 조회
+}
+    /*/특정 직군(jobId)에 대한 사용자 선택 결과 조회
     private JobAssignmentDTO findAssignment(
             AssignCandidateDTO command, Long jobId) {
 
@@ -99,4 +111,4 @@ public class SelectAssignmentCandidates {
         }
         return null;
     }
-}
+}*/

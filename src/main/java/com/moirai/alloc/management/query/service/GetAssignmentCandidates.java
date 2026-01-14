@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 //        2) projectId로 프로젝트를 식별한다
@@ -39,8 +40,8 @@ public class GetAssignmentCandidates {
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final JobStandardRepository jobStandardRepository;
-    private String resolveMainSkill(Employee employee) {
 
+    private String resolveMainSkill(Employee employee) {
         return employee.getSkills().stream()
                 .max(Comparator.comparingInt(
                         skill -> skill.getProficiency().ordinal()
@@ -60,6 +61,28 @@ public class GetAssignmentCandidates {
         // 해당 프로젝트의 후보 목록 조회
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
+
+        // 3️⃣ 사용자 ID 수집
+        List<Long> userIds =
+                assignments.stream()
+                        .map(SquadAssignment::getUserId)
+                        .toList();
+
+        // 4️⃣ User / Employee 일괄 조회 (N+1 제거)
+        Map<Long, User> userMap =
+                userRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(
+                                User::getUserId,
+                                Function.identity()
+                        ));
+
+        Map<Long, Employee> employeeMap =
+                employeeRepository.findAllById(userIds).stream()
+                        .collect(Collectors.toMap(
+                                Employee::getUserId,
+                                Function.identity()
+                        ));
+
 
         //Job 이름 맵 (jobId → jobName)
         Map<Long, String> jobNameMap =
@@ -81,16 +104,13 @@ public class GetAssignmentCandidates {
 
                             long selectedCount =
                                     assignments.stream()
-                                            .filter(a ->
-                                                    a.getFinalDecision() == FinalDecision.PENDING
-                                            )
+                                            .filter(SquadAssignment::isPending)
                                             .filter(a -> {
-                                                Employee e =
-                                                        employeeRepository.findById(a.getUserId())
-                                                                .orElseThrow();
+                                                Employee e = employeeMap.get(a.getUserId());
                                                 return e.getJob().getJobId().equals(req.getJobId());
                                             })
                                             .count();
+
 
                             JobAssignmentStatus status;
                             if (selectedCount == 0) {
@@ -118,13 +138,8 @@ public class GetAssignmentCandidates {
                 assignments.stream()
                         .map(a -> {
 
-                            User user =
-                                    userRepository.findById(a.getUserId())
-                                            .orElseThrow();
-
-                            Employee employee =
-                                    employeeRepository.findById(a.getUserId())
-                                            .orElseThrow();
+                            User user = userMap.get(a.getUserId());
+                            Employee employee = employeeMap.get(a.getUserId());
 
                             String jobName =
                                     jobNameMap.get(employee.getJob().getJobId());
@@ -132,7 +147,7 @@ public class GetAssignmentCandidates {
                             String mainSkill = resolveMainSkill(employee);
 
                             WorkStatus workStatus =
-                                    a.getFinalDecision() == FinalDecision.ASSIGNED
+                                    a.isFinallyAssigned()
                                             ? WorkStatus.ASSIGNED
                                             : WorkStatus.AVAILABLE;
 

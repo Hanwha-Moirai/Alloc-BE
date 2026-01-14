@@ -22,13 +22,17 @@ public class DecideFinalAssignment {
 //        2) 요청자가 pm 권한인지 확인한다(행위 주체 검증)
 //        3) 배정에 대하여 최종 decision을 내리라고 한다.
         SquadAssignment assignment = assignmentRepository.findById(assignmentId).orElseThrow(() -> new RuntimeException("Assignment not found"));
-        User pmUser = userRepository.findById(pmUserId).orElseThrow(() -> new RuntimeException("User not found"));
-        if(pmUser.getAuth() != User.Auth.PM){
-            throw new IllegalStateException("only PM can make final assignment decisions");
+        User pm =
+                userRepository.findById(pmUserId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (pm.getAuth() != User.Auth.PM) {
+            throw new IllegalStateException("PM만 최종 결정을 할 수 있습니다.");
         }
-        if(decision == FinalDecision.ASSIGNED){
+
+        if (decision == FinalDecision.ASSIGNED) {
             assignment.finalAssign();
-        } else if (decision == FinalDecision.EXCLUDED){
+        } else if (decision == FinalDecision.EXCLUDED) {
             assignment.finalExclude();
         }
     }
