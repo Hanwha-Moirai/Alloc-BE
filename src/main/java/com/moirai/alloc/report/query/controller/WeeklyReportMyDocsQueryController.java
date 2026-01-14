@@ -45,20 +45,18 @@ public class WeeklyReportMyDocsQueryController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<WeeklyReportSummaryResponse>>> searchMyReports(
             @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) String projectName,
             @RequestParam(required = false) WeeklyReport.ReportStatus reportStatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStartFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate weekStartTo,
-            @RequestParam(required = false) String keyword,
             Pageable pageable
     ) {
         WeeklyReportSearchCondition condition = new WeeklyReportSearchCondition(
-                projectId,
                 null,
+                projectName,
                 reportStatus,
                 weekStartFrom,
-                weekStartTo,
-                keyword
+                weekStartTo
         );
         Page<WeeklyReportSummaryResponse> response =
                 weeklyReportQueryService.searchMyDocsReports(principal, condition, pageable);
