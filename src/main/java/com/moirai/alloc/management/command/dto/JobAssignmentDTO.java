@@ -16,4 +16,4 @@ public class JobAssignmentDTO {
         this.candidates = candidates;
     }
 }
-// 어떤 직군, 직군에 선택된 사람들
+// 특정 직군에 대하여 추천된 후보 리스트

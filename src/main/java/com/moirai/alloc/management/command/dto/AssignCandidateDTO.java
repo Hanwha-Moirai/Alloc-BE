@@ -17,4 +17,4 @@ public class AssignCandidateDTO {
     }
 
 }
-//어떤 프로젝트, 직군별로 누가 선택되었는지 dto
+//어떤 프로젝트 단위별로, 추천된 결과 묶음

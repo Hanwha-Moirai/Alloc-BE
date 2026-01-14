@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.domain.policy.calculator.availability;
+package com.moirai.alloc.management.domain.policy.scoring.calculator.availability;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.common.domain.Employee;

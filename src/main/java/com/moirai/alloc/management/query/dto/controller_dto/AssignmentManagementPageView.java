@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.query.dto.controllerdto;
+package com.moirai.alloc.management.query.dto.controller_dto;
 
 import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidateItemDTO;
 import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;

@@ -1,15 +1,13 @@
-package com.moirai.alloc.management.domain.policy.service;
+package com.moirai.alloc.management.domain.policy;
 
 import com.moirai.alloc.management.EmployeeRepository;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
-import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
 import com.moirai.alloc.management.domain.policy.scoring.WeightPolicy;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
-import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;
 import com.moirai.alloc.profile.common.domain.Employee;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;

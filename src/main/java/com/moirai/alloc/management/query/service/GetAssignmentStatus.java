@@ -19,14 +19,15 @@ import java.util.Map;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class GetAssignmentStatus {
-//    1) 프로젝트 요구사항 기준으로 "현재 선발 결과"에 따른 부족 인원 계산
-//    2) 선발된 직원들의 응답 상태 요약 (REQUESTED / ACCEPTED / INTERVIEW)
-
+// 프로젝트 인력 배치 현황 요약
+// 1) 직군별 부족 인원 계산 (finalDecision == ASSIGNED 기준)
+// 2) 직원 응답 상태 요약 (REQUESTED / ACCEPTED / INTERVIEW_REQUESTED)
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
 
-    //직군별 부족 인원 계산
-
+//   직군별 부족 인원 계산
+//   직원이 ACCEPTED하여 자동 ASSIGNED된 인원
+//   PM이 FINALDECISION으로 ASSIGNED한 인원을 기준으로 부족 인원 산정
     public AssignmentStatusDTO getStatus(Long projectId) {
 
         Project project = projectRepository.findById(projectId)

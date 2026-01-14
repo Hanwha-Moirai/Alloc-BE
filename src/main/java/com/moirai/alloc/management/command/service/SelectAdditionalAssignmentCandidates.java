@@ -4,10 +4,10 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
-import com.moirai.alloc.management.domain.policy.service.CandidateSelectionService;
+import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
+import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;
 import com.moirai.alloc.management.query.service.GetAssignmentStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
@@ -20,16 +20,16 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class SelectAdditionalAssignmentCandidates {
-//      1) 프로젝트 조회
-//      2) GetAssignmentStatus 로 부족 인원 조회
-//      3) 부족한 직군만 Map<Long, Integer>로 추출
-//      4) CandidateSelectionService(policy)에 위임
-//      5) 추가 후보를 SquadAssignment 리포지토리 로 저장
+// 1) 프로젝트 조회
+// 2) AssignmentShortageCalculator(policy)로 부족 인원 계산
+// 3) 부족 인원 기준으로 CandidateSelectionService(policy)에 후보 추천 위임
+// 4) 중복을 제외하고 신규 후보를 SquadAssignment로 저장
 
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
     private final GetAssignmentStatus getAssignmentStatus;
     private final CandidateSelectionService candidateSelectionService;
+    private final AssignmentShortageCalculator shortageCalculator;
 
     public void selectAdditionalCandidates(Long projectId) {
 
@@ -37,21 +37,19 @@ public class SelectAdditionalAssignmentCandidates {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        // 현재 상태 조회
-        AssignmentStatusDTO status =
-                getAssignmentStatus.getStatus(projectId);
+        // 부족 인원 계산 - policy
+        Map<Long, Integer> shortageByJobId =
+                shortageCalculator.calculate(project);
 
         // 부족 인원 없으면 종료
-        if (!status.hasShortage()) {
+        if (shortageByJobId.isEmpty()) {
             return;
         }
-
-        Map<Long, Integer> shortageByJobId =
-                status.getShortageByJobId();
-
+        //부족한 인원 기준 후보 추천
         AssignCandidateDTO additionalCandidates =
                 candidateSelectionService.select(project, shortageByJobId);
 
+        // 신규 후보 저장
         for (JobAssignmentDTO assignment : additionalCandidates.getAssignments()) {
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
 

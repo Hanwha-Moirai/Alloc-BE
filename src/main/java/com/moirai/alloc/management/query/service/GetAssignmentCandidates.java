@@ -3,9 +3,10 @@ import com.moirai.alloc.hr.command.domain.JobStandard;
 import com.moirai.alloc.management.EmployeeRepository;
 import com.moirai.alloc.management.JobStandardRepository;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
+import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
-import com.moirai.alloc.management.domain.policy.service.CandidateSelectionService;
+import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
@@ -40,16 +41,6 @@ public class GetAssignmentCandidates {
     private final JobStandardRepository jobStandardRepository;
     private final CandidateSelectionService candidateSelectionService;
 
-
-    private String resolveMainSkill(Employee employee) {
-        return employee.getSkills().stream()
-                .max(Comparator.comparingInt(
-                        skill -> skill.getProficiency().ordinal()
-                ))
-                .map(skill -> skill.getTech().getTechName())
-                .orElse(null);
-    }
-
     public AssignmentCandidatesView getAssignmentCandidates(Long projectId) {
 
         // 프로젝트 조회
@@ -78,14 +69,6 @@ public class GetAssignmentCandidates {
                         .map(SquadAssignment::getUserId)
                         .distinct().toList();
 
-        // User / Employee 일괄 조회
-        Map<Long, User> userMap =
-                userRepository.findAllById(userIds).stream()
-                        .collect(Collectors.toMap(
-                                User::getUserId,
-                                Function.identity()
-                        ));
-
         Map<Long, Employee> employeeMap =
                 employeeRepository.findAllById(userIds).stream()
                         .collect(Collectors.toMap(
@@ -107,79 +90,107 @@ public class GetAssignmentCandidates {
                                 JobStandard::getJobName
                         ));
 
-        //Job 요약 DTO 생성
+        //Job 요약 생성
         List<JobAssignmentSummaryDTO> jobSummaries =
                 project.getJobRequirements().stream()
-                        .map(req -> {
-                            // 최종 결정되지 않은(선발 중인) 인원 기준
-                            long selectedCount =
-                                    assignments.stream()
-                                            .filter(SquadAssignment::isPending)
-                                            .filter(a -> {
-                                                Employee e = employeeMap.get(a.getUserId());
-                                                return e != null
-                                                        && e.getJob().getJobId().equals(req.getJobId());
-                                            })
-                                            .count();
-
-
-                            JobAssignmentSummaryDTO.Status status =
-                                    selectedCount == 0
-                                            ? JobAssignmentSummaryDTO.Status.NONE
-                                            : selectedCount < req.getRequiredCount()
-                                            ? JobAssignmentSummaryDTO.Status.INCOMPLETE
-                                            : JobAssignmentSummaryDTO.Status.COMPLETE;
-
-                            return new JobAssignmentSummaryDTO(
-                                    req.getJobId(),
-                                    jobNameMap.get(req.getJobId()),
-                                    (int) selectedCount,
-                                    req.getRequiredCount(),
-                                    status
-                            );
-                        })
+                        .map(req -> createJobSummary(
+                                req,
+                                assignments,
+                                employeeMap,
+                                jobNameMap.get(req.getJobId())
+                        ))
                         .toList();
-        /* =========================
-           6. 현재 근무 중인 인원 Set (N+1 제거)
-           ========================= */
+
+        // 현재 근무 중인 인원 Set (N+1 제거)
         Set<Long> workingUserIds =
                 assignmentRepository.findUserIdsByFinalDecision(FinalDecision.ASSIGNED);
 
-
-        // 후보 리스트 DTO 생성; policy 결과 기반
         // 후보 리스트 DTO 생성; policy 결과 기반 (선택 안 된 추천 후보)
         List<AssignmentCandidateItemDTO> candidates =
                 recommended.getAssignments().stream()
-                        .flatMap(job -> job.getCandidates().stream())
-                        .map(c -> {
-
-                            Employee employee = employeeMap.get(c.getUserId());
-                            if (employee == null) {
-                                return null; // 데이터 불일치 방어
-                            }
-                            User user = employee.getUser();
-
-                            AssignmentCandidateItemDTO.WorkStatus workStatus =
-                                    workingUserIds.contains(employee.getUserId())
-                                            ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
-                                            : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
-
-                            return new AssignmentCandidateItemDTO(
-                                    user.getUserId(),
-                                    user.getUserName(),
-                                    jobNameMap.get(employee.getJob().getJobId()),
-                                    resolveMainSkill(employee),
-                                    employee.getTitleStandard().getMonthlyCost(),
-                                    workStatus,
-                                    c.getFitnessScore(),
-                                    false            //미결정상태 조회
-                            );
-                        })
+                        .flatMap(a -> a.getCandidates().stream())
+                        .map(c -> createCandidateItem(
+                                c,
+                                employeeMap.get(c.getUserId()),
+                                workingUserIds
+                        ))
                         .filter(Objects::nonNull)
                         .toList();
 
 
         return new AssignmentCandidatesView(jobSummaries, candidates);
     }
+
+    // Query 전용 View DTO 조립 헬퍼
+    private JobAssignmentSummaryDTO createJobSummary(
+            JobRequirement req,
+            List<SquadAssignment> assignments,
+            Map<Long, Employee> employeeMap,
+            String jobName
+    ) {
+        long selectedCount =
+                assignments.stream()
+                        .filter(SquadAssignment::isPending)
+                        .filter(a -> {
+                            Employee e = employeeMap.get(a.getUserId());
+                            return e != null
+                                    && e.getJob().getJobId().equals(req.getJobId());
+                        })
+                        .count();
+
+        JobAssignmentSummaryDTO.Status status =
+                selectedCount == 0
+                        ? JobAssignmentSummaryDTO.Status.NONE
+                        : selectedCount < req.getRequiredCount()
+                        ? JobAssignmentSummaryDTO.Status.INCOMPLETE
+                        : JobAssignmentSummaryDTO.Status.COMPLETE;
+
+        return new JobAssignmentSummaryDTO(
+                req.getJobId(),
+                jobName,
+                (int) selectedCount,
+                req.getRequiredCount(),
+                status
+        );
+    }
+
+    private AssignmentCandidateItemDTO createCandidateItem(
+            ScoredCandidateDTO c,
+            Employee employee,
+            Set<Long> workingUserIds
+    ) {
+        if (employee == null) {
+            return null;
+        }
+
+        User user = employee.getUser();
+
+        AssignmentCandidateItemDTO.WorkStatus workStatus =
+                workingUserIds.contains(employee.getUserId())
+                        ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
+                        : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
+
+        return new AssignmentCandidateItemDTO(
+                user.getUserId(),
+                user.getUserName(),
+                employee.getJob().getJobName(),
+                resolveMainSkill(employee),
+                employee.getTitleStandard().getMonthlyCost(),
+                workStatus,
+                c.getFitnessScore(),
+                false
+        );
+    }
+
+    private String resolveMainSkill(Employee employee) {
+        return employee.getSkills().stream()
+                .max(Comparator.comparingInt(
+                        skill -> skill.getProficiency().ordinal()
+                ))
+                .map(skill -> skill.getTech().getTechName())
+                .orElse(null);
+    }
+
+
 }
 

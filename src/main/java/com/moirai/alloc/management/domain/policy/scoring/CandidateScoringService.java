@@ -1,9 +1,9 @@
 package com.moirai.alloc.management.domain.policy.scoring;
 
-import com.moirai.alloc.management.domain.policy.calculator.availability.AvailabilityFitCalculator;
-import com.moirai.alloc.management.domain.policy.calculator.experience.ExperienceFitCalculator;
-import com.moirai.alloc.management.domain.policy.calculator.role.RoleFitCalculator;
-import com.moirai.alloc.management.domain.policy.calculator.skill.SkillFitCalculator;
+import com.moirai.alloc.management.domain.policy.scoring.calculator.availability.AvailabilityFitCalculator;
+import com.moirai.alloc.management.domain.policy.scoring.calculator.experience.ExperienceFitCalculator;
+import com.moirai.alloc.management.domain.policy.scoring.calculator.role.RoleFitCalculator;
+import com.moirai.alloc.management.domain.policy.scoring.calculator.skill.SkillFitCalculator;
 import com.moirai.alloc.profile.common.domain.Employee;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;

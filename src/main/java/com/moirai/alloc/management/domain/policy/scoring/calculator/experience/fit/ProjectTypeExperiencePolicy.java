@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.domain.policy.calculator.experience.fit;
+package com.moirai.alloc.management.domain.policy.scoring.calculator.experience.fit;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.common.domain.Employee;

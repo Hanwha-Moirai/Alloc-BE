@@ -9,3 +9,4 @@ public class ScoredCandidateDTO {
     private Long userId;
     private int fitnessScore;
 }
+// 미선발, 점수만 가진 후보

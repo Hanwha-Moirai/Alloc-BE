@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -83,6 +85,13 @@ public class Employee {
         }
         return 0; // 기술 없으면 0
     }
+    // 경험한 기술 조회용
+    public Set<Long> getExperiencedTechIds() {
+        return this.skills.stream()
+                .map(skill -> skill.getTech().getTechId())
+                .collect(Collectors.toSet());
+    }
+
 
 
 }
