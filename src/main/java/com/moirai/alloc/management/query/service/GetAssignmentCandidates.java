@@ -62,13 +62,13 @@ public class GetAssignmentCandidates {
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
 
-        // 3️⃣ 사용자 ID 수집
+        // 사용자 ID
         List<Long> userIds =
                 assignments.stream()
                         .map(SquadAssignment::getUserId)
                         .toList();
 
-        // 4️⃣ User / Employee 일괄 조회 (N+1 제거)
+        // User / Employee 일괄 조회
         Map<Long, User> userMap =
                 userRepository.findAllById(userIds).stream()
                         .collect(Collectors.toMap(
