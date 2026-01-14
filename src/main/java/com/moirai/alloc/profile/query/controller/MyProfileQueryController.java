@@ -29,6 +29,9 @@ public class MyProfileQueryController {
     // 기본 정보 조회
     @GetMapping("/profile")
     public ApiResponse<MyProfileBasicResponse> getMyProfile(@AuthenticationPrincipal UserPrincipal me) {
+        if (me == null) {
+            throw new org.springframework.security.access.AccessDeniedException("UNAUTHORIZED");
+        }
         return ApiResponse.success(myProfileQueryService.getMyProfile(me.userId()));
     }
 
