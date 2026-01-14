@@ -1,5 +1,7 @@
 package com.moirai.alloc.management.domain.repo;
 
+import com.moirai.alloc.management.domain.entity.AssignmentStatus;
+import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
 
@@ -72,5 +75,13 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             @Param("jobId") Long jobId
     );
 
+    boolean existsByUserIdAndFinalDecision(Long userId, FinalDecision finalDecision);
+
+    @Query("""
+    select sa.userId
+    from SquadAssignment sa
+    where sa.finalDecision = :decision
+""")
+    Set<Long> findUserIdsByFinalDecision(@Param("decision") FinalDecision decision);
 
 }

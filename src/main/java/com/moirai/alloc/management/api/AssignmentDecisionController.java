@@ -1,15 +1,12 @@
 package com.moirai.alloc.management.api;
 
-import com.moirai.alloc.management.command.controllerdto.AssignmentDecisionRequest;
-import com.moirai.alloc.management.command.controllerdto.AssignmentResponseRequest;
-import com.moirai.alloc.management.command.controllerdto.AssignmentResponseType;
 import com.moirai.alloc.management.command.service.AcceptAssignment;
 import com.moirai.alloc.management.command.service.DecideFinalAssignment;
 import com.moirai.alloc.management.command.service.RequestInterview;
+import com.moirai.alloc.management.domain.entity.AssignmentStatus;
+import com.moirai.alloc.management.domain.entity.FinalDecision;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,36 +19,32 @@ public class AssignmentDecisionController {
     private final RequestInterview requestInterview;
     private final DecideFinalAssignment decideFinalAssignment;
 
-    // 직원 응답 (수락 / 인터뷰 요청)
     @PostMapping("/response")
     public void respondAssignment(
             @PathVariable Long assignmentId,
-            @RequestBody AssignmentResponseRequest request
+            @RequestParam AssignmentStatus status,
+            @RequestParam Long userId   // 그냥 식별자; 권한 안 불림
     ) {
-        if (request.getResponseType() == AssignmentResponseType.ACCEPT) {
-            acceptAssignment.acceptAssignment(
-                    assignmentId,
-                    request.getUserId()
-            );
-        } else if (request.getResponseType()
-                == AssignmentResponseType.INTERVIEW_REQUEST) {
-            requestInterview.requestInterview(
-                    assignmentId,
-                    request.getUserId()
-            );
+        if (status == AssignmentStatus.ACCEPTED) {
+            acceptAssignment.acceptAssignment(assignmentId, userId);
+        } else if (status == AssignmentStatus.INTERVIEW_REQUESTED) {
+            requestInterview.requestInterview(assignmentId, userId);
+        } else {
+            throw new IllegalArgumentException("Invalid assignment response");
         }
     }
 
-    //PM 최종 결정 (배정 / 제외)
     @PostMapping("/decision")
     public void decideAssignment(
             @PathVariable Long assignmentId,
-            @RequestBody AssignmentDecisionRequest request
+            @RequestParam FinalDecision decision,
+            @RequestParam Long pmUserId   // 그냥 식별자; 권한 안 붙임
     ) {
         decideFinalAssignment.decideFinalAssignment(
                 assignmentId,
-                request.getPmUserId(),
-                request.getDecision()
+                pmUserId,
+                decision
         );
     }
+
 }

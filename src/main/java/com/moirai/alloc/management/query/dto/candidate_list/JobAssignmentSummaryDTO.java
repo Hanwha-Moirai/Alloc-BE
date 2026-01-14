@@ -10,5 +10,11 @@ public class JobAssignmentSummaryDTO {
     private String jobName;
     private int selectedCount;
     private int requiredCount;
-    private JobAssignmentStatus status;
+    private Status status;
+
+    public enum Status {
+        NONE,        // 미선택
+        INCOMPLETE,  // 미충족
+        COMPLETE     // 충족
+    }
 }

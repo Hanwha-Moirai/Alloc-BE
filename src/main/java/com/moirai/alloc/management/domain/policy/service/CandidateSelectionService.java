@@ -23,11 +23,11 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class CandidateSelectionService {
+    // 직군별 직원 조회, 점수 계산 + 가중치 + 정렬 + 3배수 컷 + 결과 dto 생성
 
     private final EmployeeRepository employeeRepository;
     private final CandidateScoringService candidateScoringService;
     private final WeightPolicy weightPolicy;
-
 
     public AssignCandidateDTO select(
             Project project,
@@ -39,6 +39,8 @@ public class CandidateSelectionService {
 
             Long jobId = jobReq.getJobId();
 
+            // 최초 추천 = requiredCount = project 요구사항
+            // 추가 추천: requiredCount = 부족 인원
             int requiredCount =
                     requiredCountByJobId.getOrDefault(jobId, 0);
 
@@ -47,7 +49,8 @@ public class CandidateSelectionService {
             }
             // 3배수 컷
             int limit = requiredCount * 3;
-            //1) 직군별 직원 조회
+
+            // 직군별 직원 조회
             List<Employee> employees =
                     employeeRepository.findByJobId(jobId);
 
@@ -84,6 +87,3 @@ public class CandidateSelectionService {
 
     }
 }
-
-
-// 직군별 직원 조회, 점수 계산 + 가중치 + 정렬 + 3배수 컷 + 결과 dto 생성

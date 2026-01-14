@@ -16,4 +16,9 @@ public class AssignmentCandidateItemDTO {
     private WorkStatus workStatus;
     private Integer fitnessScore;
     private boolean selected;
+
+    public enum WorkStatus {
+        AVAILABLE,  // 대기중
+        ASSIGNED    // 투입중
+    }
 }

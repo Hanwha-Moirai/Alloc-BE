@@ -9,7 +9,7 @@ import com.moirai.alloc.management.domain.policy.service.CandidateSelectionServi
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;
-import com.moirai.alloc.management.query.service.GetAssignmentStatus;
+import com.moirai.alloc.management.query.service.GetSelectedAssignmentStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ class SelectAdditionalAssignmentCandidatesTest {
     private SquadAssignmentRepository assignmentRepository;
 
     @Mock
-    private GetAssignmentStatus getAssignmentStatus;
+    private GetSelectedAssignmentStatus getAssignmentStatus;
 
     @Mock
     private CandidateSelectionService candidateSelectionService;

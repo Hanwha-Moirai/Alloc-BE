@@ -64,21 +64,32 @@ public class SquadAssignment {
             );
         }
     }
+    private void validateAssignedUser(Long actorUserId) {
+        if (!this.userId.equals(actorUserId)) {
+            throw new IllegalStateException("배정 대상자만 수행할 수 있는 작업입니다.");
+        }
+    }
     // 직원 액션
     // 직원 수락
-    public void acceptAssignment() {
+    public void acceptAssignment(Long actorUserId) {
+        validateAssignedUser(actorUserId);
         validateNotDecided();
+
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 수락할 수 있습니다.");
         }
+
         this.assignmentStatus = AssignmentStatus.ACCEPTED;
     }
     // 직원 인터뷰 요청
-    public void requestInterview() {
+    public void requestInterview(Long actorUserId) {
+        validateAssignedUser(actorUserId);
         validateNotDecided();
+
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 인터뷰 요청이 가능합니다.");
         }
+
         this.assignmentStatus = AssignmentStatus.INTERVIEW_REQUESTED;
     }
     // pm 액션

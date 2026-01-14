@@ -20,12 +20,12 @@ import java.util.Map;
 @Transactional
 @RequiredArgsConstructor
 public class SelectAdditionalAssignmentCandidates {
-//        1. 프로젝트 조회
-//        2. Query Service에게 현재 상태를 물어봄
-//        3. 부족 인원 수를 결과로 받음
-//        4. policy로 “추가 후보 userId 목록” 계산
-//        5. SquadAssignment.propose()로 추가 생성
-//        6.저장
+//      1) 프로젝트 조회
+//      2) GetAssignmentStatus 로 부족 인원 조회
+//      3) 부족한 직군만 Map<Long, Integer>로 추출
+//      4) CandidateSelectionService(policy)에 위임
+//      5) 추가 후보를 SquadAssignment 리포지토리 로 저장
+
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
     private final GetAssignmentStatus getAssignmentStatus;

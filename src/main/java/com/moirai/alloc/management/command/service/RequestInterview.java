@@ -20,6 +20,6 @@ public class RequestInterview {
         if(!assignment.getUserId().equals(userId)){
             throw new IllegalArgumentException("Only the assigned user can request Interview for this assignment");
         }
-        assignment.requestInterview();
+        assignment.requestInterview(userId);
     }
 }

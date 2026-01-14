@@ -15,19 +15,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//        1) assignmentId로 배정을 식별한다.
-//        2) 해당 배정의 최종 상태 정보 목록을 조회한다.
-//        4) 최종 상태 정보 목록을 조회용 형태로 반환한다.
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class GetAssignmentStatus {
+//    1) 프로젝트 요구사항 기준으로 "현재 선발 결과"에 따른 부족 인원 계산
+//    2) 선발된 직원들의 응답 상태 요약 (REQUESTED / ACCEPTED / INTERVIEW)
 
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
 
-    //Command 판단용 (부족 인원 계산; assigned 기준으로)
+    //직군별 부족 인원 계산
 
     public AssignmentStatusDTO getStatus(Long projectId) {
 

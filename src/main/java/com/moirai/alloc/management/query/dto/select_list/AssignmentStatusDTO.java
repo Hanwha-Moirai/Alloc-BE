@@ -15,7 +15,7 @@ public class AssignmentStatusDTO {
         this.shortageByJobId = shortageByJobId;
     }
 
-    /** 부족한 직군이 하나라도 있는지 */
+    // 부족한 직군이 하나라도 있는지
     public boolean hasShortage() {
         return shortageByJobId.values()
                 .stream()
