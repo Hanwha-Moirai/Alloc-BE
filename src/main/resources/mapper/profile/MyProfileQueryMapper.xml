@@ -15,7 +15,7 @@
         FROM users u
                  JOIN employee e ON e.user_id = u.user_id
                  JOIN job_standard js ON js.job_id = e.job_id
-                 JOIN title_standard ts ON ts.title_standard = e.title_standard
+                 JOIN title_standard ts ON ts.title_standard_id = e.title_standard_id
         WHERE u.user_id = #{userId}
     </select>
 
@@ -34,7 +34,7 @@
             d.dept_id AS deptId,
             d.dept_name AS deptName,
             e.employee_type AS employeeType,
-            ts.title_standard AS titleStandardId,
+            ts.title_standard_id AS titleStandardId,
             ts.title_name AS titleName,
             e.hiring_date AS hiringDate,
 
@@ -53,7 +53,7 @@
                  JOIN employee e ON e.user_id = u.user_id
                  LEFT JOIN job_standard js ON js.job_id = e.job_id
                  JOIN department d ON d.dept_id = e.dept_id
-                 JOIN title_standard ts ON ts.title_standard = e.title_standard
+                 JOIN title_standard ts ON ts.title_standard_id = e.title_standard_id
         WHERE u.user_id = #{userId}
     </select>
 
