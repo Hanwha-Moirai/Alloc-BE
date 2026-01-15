@@ -1,6 +1,7 @@
 package com.moirai.alloc.gantt.query.application;
 
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,15 +35,18 @@ class GanttQueryControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("태스크 목록 조회가 성공하고 userName을 반환한다.")
     void findTasks_returnsTasks() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/tasks", 99100))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].taskId").value(99100));
+                .andExpect(jsonPath("$.data[0].taskId").value(99100))
+                .andExpect(jsonPath("$.data[0].userName").value("User One"));
     }
 
     @Test
     @WithMockUser
+    @DisplayName("마일스톤 상세 조회가 성공한다.")
     void findMilestone_returnsMilestone() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones/{milestoneId}", 99100, 99100))
                 .andExpect(status().isOk())
@@ -52,6 +56,7 @@ class GanttQueryControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("삭제된 마일스톤을 제외한 목록 조회가 성공한다.")
     void findMilestones_returnsList() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones", 99100))
                 .andExpect(status().isOk())
@@ -65,7 +70,7 @@ class GanttQueryControllerTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> 99100L;
+            return () -> 99101L;
         }
     }
 }
