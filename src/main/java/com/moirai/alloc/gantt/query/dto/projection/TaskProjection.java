@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public record TaskProjection(
         Long taskId,
         Long milestoneId,
-        Long userId,
+        String userName,
         TaskCategory taskCategory,
         String taskName,
         String taskDescription,
