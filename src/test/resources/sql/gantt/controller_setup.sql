@@ -28,7 +28,8 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO milestone (milestone_id, project_id, milestone_name, start_date, end_date, achievement_rate, is_deleted, created_at, updated_at)
 VALUES
     (99100, 99100, 'M1', '2025-01-01', '2025-01-15', 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-    (99101, 99100, 'M2', '2025-01-16', '2025-01-31', 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
+    (99101, 99100, 'M2', '2025-01-16', '2025-01-31', 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
+    (99102, 99100, 'M3', '2025-02-01', '2025-02-15', 0, 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
 ON DUPLICATE KEY UPDATE
     project_id = VALUES(project_id),
     milestone_name = VALUES(milestone_name),
