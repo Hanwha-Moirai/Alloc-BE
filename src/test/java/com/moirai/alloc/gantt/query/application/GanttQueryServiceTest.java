@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/gantt/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/gantt/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttQueryServiceTest {
 
     private static final Long PROJECT_ID = 99001L;
@@ -76,8 +77,8 @@ class GanttQueryServiceTest {
         Map<Long, Integer> taskCounts = responses.stream()
                 .collect(Collectors.toMap(MilestoneResponse::milestoneId, item -> item.tasks().size()));
 
-        assertThat(taskCounts.get(99001L)).isGreaterThanOrEqualTo(1);
-        assertThat(taskCounts.get(99002L)).isGreaterThanOrEqualTo(1);
+        assertThat(taskCounts.get(99001L)).isEqualTo(1);
+        assertThat(taskCounts.get(99002L)).isEqualTo(1);
     }
 
     @Test
