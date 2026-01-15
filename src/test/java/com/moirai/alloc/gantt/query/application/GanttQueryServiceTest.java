@@ -63,6 +63,13 @@ class GanttQueryServiceTest {
         assertThat(taskCounts.get(99002L)).isEqualTo(1);
     }
 
+    @Test
+    void findMilestones_excludesDeletedMilestones() {
+        List<MilestoneResponse> responses = ganttQueryService.findMilestones(PROJECT_ID);
+
+        assertThat(responses.stream().anyMatch(item -> item.milestoneId().equals(99003L))).isFalse();
+    }
+
     @TestConfiguration
     static class TestAuthConfig {
         @Bean
