@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 public record TaskResponse(
         Long taskId,
         Long milestoneId,
-        Long userId,
+        //Long userId,
+        String userName,
         TaskCategory taskCategory,
         String taskName,
         String taskDescription,
