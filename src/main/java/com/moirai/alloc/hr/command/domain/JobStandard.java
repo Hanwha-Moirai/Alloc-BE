@@ -1,5 +1,6 @@
 package com.moirai.alloc.hr.command.domain;
 
+import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -7,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "job_standard")
-public class JobStandard {
+public class JobStandard extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

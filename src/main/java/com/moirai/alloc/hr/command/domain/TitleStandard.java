@@ -12,7 +12,7 @@ public class TitleStandard extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "title_standard")
+    @Column(name = "title_standard_id")
     private Long titleStandardId;
 
     @Column(name = "title_name", nullable = false, length = 250)

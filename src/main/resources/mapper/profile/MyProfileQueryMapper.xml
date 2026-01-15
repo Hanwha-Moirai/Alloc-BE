@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moirai.alloc.profile.query.mapper.MyProfileQueryMapper">
+
+    <!-- 0) 상단바 요약 조회 -->
+    <select id="selectMySummary"
+            resultType="com.moirai.alloc.profile.query.dto.MyProfileSummaryResponse">
+        SELECT
+            u.user_name   AS userName,
+            js.job_name   AS jobName,
+            ts.title_name AS titleName,
+            u.profile_img AS profileImageUrl
+        FROM users u
+                 JOIN employee e ON e.user_id = u.user_id
+                 JOIN job_standard js ON js.job_id = e.job_id
+                 JOIN title_standard ts ON ts.title_standard_id = e.title_standard_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <!-- 1) 기본정보 조회 -->
+    <select id="selectMyProfile"
+            resultType="com.moirai.alloc.profile.query.dto.MyProfileBasicResponse">
+        SELECT
+            u.user_id AS userId,
+            u.user_name AS userName,
+            u.birthday AS birthday,
+            u.email AS email,
+            u.phone AS phone,
+
+            js.job_id AS jobId,
+            js.job_name AS jobName,
+            d.dept_id AS deptId,
+            d.dept_name AS deptName,
+            e.employee_type AS employeeType,
+            ts.title_standard_id AS titleStandardId,
+            ts.title_name AS titleName,
+            e.hiring_date AS hiringDate,
+
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM squad_assignment sa
+                             JOIN project p ON p.project_id = sa.project_id
+                    WHERE sa.user_id = u.user_id
+                      AND sa.final_decision = 'ASSIGNED'
+                      AND p.project_status = 'ACTIVE'
+                ) THEN TRUE ELSE FALSE
+                END AS assignedNow
+
+        FROM users u
+                 JOIN employee e ON e.user_id = u.user_id
+                 LEFT JOIN job_standard js ON js.job_id = e.job_id
+                 JOIN department d ON d.dept_id = e.dept_id
+                 JOIN title_standard ts ON ts.title_standard_id = e.title_standard_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <!-- 2) 기술스택 조회 -->
+    <select id="selectMyTechStacks"
+            resultType="com.moirai.alloc.profile.query.dto.MyTechStackResponse">
+        SELECT
+            es.employee_tech_id AS employeeTechId,
+            t.tech_id AS techId,
+            t.tech_name AS techName,
+            es.proficiency AS proficiency
+        FROM employee_skill es
+                 JOIN tech_standard t ON t.tech_id = es.tech_id
+        WHERE es.user_id = #{userId}
+        ORDER BY t.tech_name
+    </select>
+
+    <!-- 3-1) 프로젝트 히스토리: 카드 단위 페이징용 projectIds 먼저 조회 -->
+    <select id="selectMyProjectIdsForHistory" resultType="long">
+        SELECT
+            p.project_id
+        FROM squad_assignment sa
+                 JOIN project p ON p.project_id = sa.project_id
+        WHERE sa.user_id = #{userId}
+          AND sa.final_decision = 'ASSIGNED'
+        ORDER BY p.end_date DESC, p.project_id DESC
+            LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 3-2) 위에서 뽑은 projectIds 범위에 대해서만 row 조회 -->
+    <select id="selectMyProjectHistoryRowsByProjectIds"
+            resultType="com.moirai.alloc.profile.query.dto.MyProjectHistoryRow">
+        SELECT
+        p.project_id AS projectId,
+        p.name AS projectName,
+        p.start_date AS startDate,
+        p.end_date AS endDate,
+
+        js.job_name AS myJobName,
+
+        t.tech_id AS techId,
+        t.tech_name AS techName,
+        es.proficiency AS proficiency
+
+        FROM squad_assignment sa
+        JOIN project p ON p.project_id = sa.project_id
+        JOIN employee e ON e.user_id = sa.user_id
+        LEFT JOIN job_standard js ON js.job_id = e.job_id
+
+        JOIN project_tech_requirement ptr ON ptr.project_id = sa.project_id
+        JOIN employee_skill es
+        ON es.user_id = sa.user_id
+        AND es.tech_id = ptr.tech_id
+        JOIN tech_standard t ON t.tech_id = es.tech_id
+
+        WHERE sa.user_id = #{userId}
+        AND sa.final_decision = 'ASSIGNED'
+        AND p.project_id IN
+        <foreach collection="projectIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+
+        ORDER BY p.end_date DESC, p.project_id DESC, t.tech_name
+    </select>
+
+</mapper>

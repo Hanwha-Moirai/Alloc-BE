@@ -5,12 +5,8 @@ import com.moirai.alloc.calendar.command.domain.entity.EventType;
 import com.moirai.alloc.calendar.command.domain.entity.Events;
 import com.moirai.alloc.calendar.command.dto.response.CalendarViewResponse;
 import com.moirai.alloc.calendar.command.repository.EventsRepository;
-import com.moirai.alloc.calendar.query.dto.MilestoneCalendarRow;
-import com.moirai.alloc.calendar.query.dto.TaskCalendarRow;
 import com.moirai.alloc.common.exception.ForbiddenException;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.gantt.command.domain.repository.MilestoneRepository;
-import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +32,6 @@ class CalendarQueryServiceImplTest {
     private CalendarQueryServiceImpl calendarQueryService;
 
     @Mock private EventsRepository eventsRepository;
-    @Mock private TaskRepository taskRepository;
-    @Mock private MilestoneRepository milestoneRepository;
     @Mock private SquadAssignmentRepository squadAssignmentRepository;
 
     @Mock private UserPrincipal principal;
@@ -96,10 +90,6 @@ class CalendarQueryServiceImplTest {
         when(eventsRepository.findVisibleEvents(eq(projectId), any(), any(), eq(userId)))
                 .thenReturn(List.of(e1, e2));
 
-        // Stage1에서는 Task/Milestone은 빈 리스트로 두어도 무방(핵심은 통합/정렬/검증)
-        when(taskRepository.findCalendarTasks(eq(projectId), eq(from), eq(to))).thenReturn(List.<TaskCalendarRow>of());
-        when(milestoneRepository.findCalendarMilestones(eq(projectId), eq(from), eq(to))).thenReturn(List.<MilestoneCalendarRow>of());
-
         CalendarViewResponse res = calendarQueryService.getCalendarView(projectId, from, to, "month", principal);
 
         assertThat(res.getItems()).hasSize(2);
@@ -108,8 +98,6 @@ class CalendarQueryServiceImplTest {
         assertThat(res.getItems().get(1).getTitle()).isEqualTo("B");
 
         verify(eventsRepository).findVisibleEvents(eq(projectId), any(), any(), eq(userId));
-        verify(taskRepository).findCalendarTasks(projectId, from, to);
-        verify(milestoneRepository).findCalendarMilestones(projectId, from, to);
     }
 
     @Test
