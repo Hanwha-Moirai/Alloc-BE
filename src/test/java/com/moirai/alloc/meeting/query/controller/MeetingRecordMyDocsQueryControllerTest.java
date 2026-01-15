@@ -1,6 +1,7 @@
 package com.moirai.alloc.meeting.query.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,12 +22,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/meeting/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/meeting/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class MeetingRecordMyDocsQueryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
+    @DisplayName("내 회의록 목록을 조회한다.")
     void getMyMeetingRecords_returnsPage() throws Exception {
         mockMvc.perform(get("/api/mydocs/meeting_record")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
@@ -37,6 +40,7 @@ class MeetingRecordMyDocsQueryControllerTest {
     }
 
     @Test
+    @DisplayName("내 회의록 검색 결과를 반환한다.")
     void searchMyMeetingRecords_returnsMatches() throws Exception {
         mockMvc.perform(get("/api/mydocs/meeting_record/search")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
@@ -48,6 +52,7 @@ class MeetingRecordMyDocsQueryControllerTest {
     }
 
     @Test
+    @DisplayName("내 회의록 상세를 조회한다.")
     void getMyMeetingRecordDetail_returnsDetail() throws Exception {
         mockMvc.perform(get("/api/mydocs/meeting_record/{meetingRecordId}", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
