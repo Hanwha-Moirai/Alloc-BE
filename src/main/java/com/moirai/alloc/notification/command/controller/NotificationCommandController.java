@@ -16,6 +16,12 @@ public class NotificationCommandController {
 
     private final NotificationCommandService commandService;
 
+    /**
+     * [알림함] 단건 읽음 처리
+     * - 요구사항: "알림 읽음 처리"
+     * - ERD: alarm_log.is_read = true (soft update)
+     * - 보안: 본인(userId) 알림만 변경 가능 (서비스에서 userId + alarmId 조건 업데이트)
+     */
     @PreAuthorize("hasAnyRole('ADMIN','PM','USER')")
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<ApiResponse<Void>> markRead(
@@ -27,6 +33,11 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    /**
+     * [알림함] 전체 읽음 처리
+     * - 요구사항: "알림 전체 읽음 처리"
+     * - ERD: alarm_log.is_read = true where user_id = ? and is_deleted=false and is_read=false
+     */
     @PreAuthorize("hasAnyRole('ADMIN','PM','USER')")
     @PatchMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllRead(@AuthenticationPrincipal UserPrincipal principal) {
@@ -35,6 +46,12 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    /**
+     * [알림함] 단건 삭제(Soft Delete)
+     * - 요구사항: "알림 삭제 처리"
+     * - ERD: alarm_log.is_deleted = true (물리 삭제 X)
+     * - 보안: 본인(userId) 알림만 삭제 가능
+     */
     @PreAuthorize("hasAnyRole('ADMIN','PM','USER')")
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(
@@ -46,6 +63,11 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    /**
+     * [알림함] 읽음 처리된 알림 전체 삭제(Soft Delete)
+     * - 요구사항: "알림 전체 삭제 처리(읽음 처리된 알림)"
+     * - ERD: alarm_log.is_deleted = true where user_id=? and is_read=true and is_deleted=false
+     */
     @PreAuthorize("hasAnyRole('ADMIN','PM','USER')")
     @DeleteMapping("/read")
     public ResponseEntity<ApiResponse<Void>> deleteAllRead(@AuthenticationPrincipal UserPrincipal principal) {
@@ -54,6 +76,10 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    /**
+     * AuthenticationPrincipal에서 userId 확보(미인증이면 403)
+     * - 컨트롤러 공통 보일러플레이트: principal null/값 null 방어
+     */
     private Long requireUserId(UserPrincipal principal) {
         if (principal == null || principal.userId() == null) {
             throw new org.springframework.security.access.AccessDeniedException("인증 정보가 없습니다.");

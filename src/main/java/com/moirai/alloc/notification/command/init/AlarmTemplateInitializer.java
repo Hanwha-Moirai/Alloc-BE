@@ -14,6 +14,8 @@ public class AlarmTemplateInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        upsert(AlarmTemplateType.POST_TEMP,       "프로젝트 임시 배정", "프로젝트 {{projectName}} 임시멤버로 지정되었습니다.");
+        upsert(AlarmTemplateType.POST_FINAL,       "프로젝트 최종 배정", "프로젝트 {{projectName}} 최종멤버로 지정되었습니다.");
         upsert(AlarmTemplateType.TASK_ASSIGN,       "태스크 담당자 배정", "태스크 {{taskName}} 담당자로 지정되었습니다.");
         upsert(AlarmTemplateType.TASK_DUE_D1,       "마감 임박(D-1)",     "태스크 {{taskName}} 마감이 1일 남았습니다.");
         upsert(AlarmTemplateType.TASK_DUE_D3,       "마감 임박(D-3)",     "태스크 {{taskName}} 마감이 3일 남았습니다.");

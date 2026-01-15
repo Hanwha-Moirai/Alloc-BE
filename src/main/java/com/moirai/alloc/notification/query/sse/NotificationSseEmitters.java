@@ -10,9 +10,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class NotificationSseEmitters {
 
-    private static final long TIMEOUT_MS = 60L * 60 * 1000; // 1시간
+    /** SSE 연결 타임아웃(1시간). 주기적 heartbeat로 중간 끊김 완화 */
+    private static final long TIMEOUT_MS = 60L * 60 * 1000;
+
+    /** userId → (해당 유저의 다중 연결 emitter set) */
     private final Map<Long, Set<SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
 
+    /**
+     * 유저 SSE 연결 등록
+     * - 다중 탭/다중 디바이스를 고려해 Set으로 관리
+     * - completion/timeout/error 콜백에서 자동 제거
+     * - 최초 INIT 이벤트 1회 전송(클라이언트 연결 확인 용도)
+     */
     public SseEmitter add(Long userId) {
         SseEmitter emitter = new SseEmitter(TIMEOUT_MS);
         emittersByUser.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(emitter);
@@ -28,6 +37,10 @@ public class NotificationSseEmitters {
         return emitter;
     }
 
+    /**
+     * 특정 유저에게 SSE 이벤트 전송
+     * - 전송 실패 emitter는 dead로 간주하고 제거(리소스 누수 방지)
+     */
     public void sendToUser(Long userId, String eventName, Object data) {
         Set<SseEmitter> set = emittersByUser.getOrDefault(userId, Set.of());
         List<SseEmitter> dead = new ArrayList<>();
@@ -43,13 +56,13 @@ public class NotificationSseEmitters {
     }
 
     /**
-     * 모든 사용자 emitter에 heartbeat 이벤트 전송
-     * @return 이번 heartbeat에서 "접근한 emitter 수"(대략적인 지표)
+     * 전체 emitter에 heartbeat 전송
+     * - 프록시/로드밸런서 환경에서 유휴 연결 종료를 막기 위한 keep-alive 성격
+     * - touched: 이번 실행에서 실제 전송 시도한 emitter 수(운영 지표)
      */
     public int broadcastHeartbeat(String eventName, Object data) {
         int touched = 0;
 
-        // snapshot (순회 중 concurrent 변경 안전)
         Map<Long, Set<SseEmitter>> snapshot = new HashMap<>(emittersByUser);
 
         for (Map.Entry<Long, Set<SseEmitter>> entry : snapshot.entrySet()) {
@@ -57,7 +70,6 @@ public class NotificationSseEmitters {
             Set<SseEmitter> set = entry.getValue();
             if (set == null || set.isEmpty()) continue;
 
-            // emitter set도 snapshot
             List<SseEmitter> emitters = new ArrayList<>(set);
             List<SseEmitter> dead = new ArrayList<>();
 
@@ -70,13 +82,15 @@ public class NotificationSseEmitters {
                 }
             }
 
-            // 죽은 emitter 제거
             dead.forEach(em -> remove(userId, em));
         }
 
         return touched;
     }
 
+    /**
+     * emitter 제거(유저의 set이 비면 map에서도 제거)
+     */
     private void remove(Long userId, SseEmitter emitter) {
         Set<SseEmitter> set = emittersByUser.get(userId);
         if (set != null) {

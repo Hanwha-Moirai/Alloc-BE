@@ -18,12 +18,17 @@ public class InternalNotificationController {
     private final NotificationCommandService commandService;
 
     /**
-     * 시스템/도메인 서비스들이 호출하는 내부 알림 생성 API
-     * Gateway 내부 인증(서비스 토큰/API KEY 등)으로 보호 권장
+     * [시스템 내부] 알림 생성(수신자 N명 → alarm_log N건 + alarm_send_log N건)
+     * - 요구사항: "알림 이벤트 생성" (프로젝트 할당/태스크 담당자 배정/일정 초대 등 트리거)
+     * - 템플릿: alarm_template(타입별) 조회 후 variables 치환하여 title/body 생성
+     * - 응답: 생성된 alarm_id 목록 및 createdCount 반환
+     * - 보안: 외부 노출 금지. 게이트웨이/서비스토큰 등으로 INTERNAL 권한 보호 권장
      */
     @PreAuthorize("hasAuthority('INTERNAL')")
     @PostMapping
-    public ResponseEntity<ApiResponse<InternalNotificationCreateResponse>> create(@Valid @RequestBody InternalNotificationCreateRequest request) {
+    public ResponseEntity<ApiResponse<InternalNotificationCreateResponse>> create(
+            @Valid @RequestBody InternalNotificationCreateRequest request
+    ) {
         var res = commandService.createInternalNotifications(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res));
     }

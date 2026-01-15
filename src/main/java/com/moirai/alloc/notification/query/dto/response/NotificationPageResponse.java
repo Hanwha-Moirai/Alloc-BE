@@ -1,6 +1,6 @@
 package com.moirai.alloc.notification.query.dto.response;
 
-import com.moirai.alloc.common.dto.Pagination;
+import com.moirai.alloc.common.dto.pagination.Pagination;
 import lombok.Builder;
 import lombok.Getter;
 

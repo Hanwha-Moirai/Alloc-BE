@@ -14,41 +14,45 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-        update AlarmLog a
-           set a.read = true
-         where a.userId = :userId
-           and a.deleted = false
-           and a.read = false
+    update AlarmLog a
+       set a.read = true,
+           a.updatedAt = CURRENT_TIMESTAMP
+     where a.userId = :userId
+       and a.deleted = false
+       and a.read = false
     """)
     int markAllRead(@Param("userId") Long userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         update AlarmLog a
-           set a.read = true
-         where a.id = :alarmId
-           and a.userId = :userId
-           and a.deleted = false
+        set a.read = true,
+           a.updatedAt = CURRENT_TIMESTAMP
+        where a.id = :alarmId
+       and a.userId = :userId
+       and a.deleted = false
     """)
     int markRead(@Param("userId") Long userId, @Param("alarmId") Long alarmId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-        update AlarmLog a
-           set a.deleted = true
-         where a.id = :alarmId
-           and a.userId = :userId
-           and a.deleted = false
+    update AlarmLog a
+       set a.deleted = true,
+           a.updatedAt = CURRENT_TIMESTAMP
+     where a.id = :alarmId
+       and a.userId = :userId
+       and a.deleted = false
     """)
     int softDeleteOne(@Param("userId") Long userId, @Param("alarmId") Long alarmId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-        update AlarmLog a
-           set a.deleted = true
-         where a.userId = :userId
-           and a.deleted = false
-           and a.read = true
+    update AlarmLog a
+       set a.deleted = true,
+           a.updatedAt = CURRENT_TIMESTAMP
+     where a.userId = :userId
+       and a.deleted = false
+       and a.read = true
     """)
     int softDeleteAllRead(@Param("userId") Long userId);
 }

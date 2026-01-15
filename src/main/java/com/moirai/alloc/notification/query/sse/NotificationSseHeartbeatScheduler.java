@@ -20,8 +20,9 @@ public class NotificationSseHeartbeatScheduler {
     private final NotificationSseHeartbeatProperties props;
 
     /**
-     * - fixedDelay: 이전 실행이 끝난 뒤 delay만큼 기다렸다가 실행
-     * - initialDelay: 서버 기동 직후 쏠림 완화
+     * SSE heartbeat 주기 전송
+     * - 유휴 연결 종료 방지/프록시 타임아웃 대응
+     * - 예외가 발생해도 스케줄러 스레드가 죽지 않도록 보호
      */
     @Scheduled(
             fixedDelayString = "${notification.sse.heartbeat.fixed-delay-ms:25000}",
@@ -32,7 +33,6 @@ public class NotificationSseHeartbeatScheduler {
             int touched = emitters.broadcastHeartbeat(props.getEventName(), props.getData());
             log.debug("SSE heartbeat sent. emittersTouched={}", touched);
         } catch (Exception e) {
-            // heartbeat 자체 실패로 스케줄러가 죽지 않게 보호
             log.warn("SSE heartbeat scheduler failed.", e);
         }
     }
