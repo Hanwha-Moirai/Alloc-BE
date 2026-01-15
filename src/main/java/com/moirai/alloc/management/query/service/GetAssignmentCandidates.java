@@ -1,7 +1,6 @@
 package com.moirai.alloc.management.query.service;
 import com.moirai.alloc.hr.command.domain.JobStandard;
-import com.moirai.alloc.management.EmployeeRepository;
-import com.moirai.alloc.management.JobStandardRepository;
+import com.moirai.alloc.hr.command.repository.JobStandardRepository;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
@@ -13,7 +12,8 @@ import com.moirai.alloc.management.domain.vo.JobRequirement;
 import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidateItemDTO;
 import com.moirai.alloc.management.query.dto.candidate_list.JobAssignmentSummaryDTO;
 import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidatesView;
-import com.moirai.alloc.profile.common.domain.Employee;
+import com.moirai.alloc.profile.command.domain.entity.Employee;
+import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.project.command.domain.Project;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;

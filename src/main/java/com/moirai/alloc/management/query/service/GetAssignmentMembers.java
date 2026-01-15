@@ -1,11 +1,11 @@
 package com.moirai.alloc.management.query.service;
 
-import com.moirai.alloc.management.EmployeeRepository;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidateItemDTO;
-import com.moirai.alloc.profile.common.domain.Employee;
+import com.moirai.alloc.profile.command.domain.entity.Employee;
+import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

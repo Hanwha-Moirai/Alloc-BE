@@ -1,7 +1,8 @@
 package com.moirai.alloc.management.query.service;
 
-import com.moirai.alloc.management.JobStandardRepository;
-import com.moirai.alloc.management.TechStandardRepository;
+
+import com.moirai.alloc.hr.command.repository.JobStandardRepository;
+import com.moirai.alloc.hr.command.repository.TechStandardRepository;
 import com.moirai.alloc.management.domain.entity.TechReqLevel;
 import com.moirai.alloc.management.query.dto.registration.JobOptionDTO;
 import com.moirai.alloc.management.query.dto.registration.ProjectRegistrationViewDTO;

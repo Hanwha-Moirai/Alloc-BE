@@ -1,7 +1,7 @@
 package com.moirai.alloc.management.domain.policy.scoring.calculator.experience.fit;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.profile.common.domain.Employee;
+import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
