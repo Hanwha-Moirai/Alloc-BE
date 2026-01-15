@@ -2,11 +2,14 @@ package com.moirai.alloc.gantt.common.exception;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = "com.moirai.alloc.gantt")
 public class GanttExceptionHandler {
 

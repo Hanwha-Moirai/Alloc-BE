@@ -27,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
-@Sql(scripts = "/sql/gantt/controller_setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/gantt/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/gantt/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttQueryControllerTest {
 
     @Autowired
@@ -37,32 +38,32 @@ class GanttQueryControllerTest {
     @WithMockUser
     @DisplayName("태스크 목록 조회가 성공하고 userName을 반환한다.")
     void findTasks_returnsTasks() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/tasks", 99100))
+        mockMvc.perform(get("/api/projects/{projectId}/tasks", 99001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].taskId").value(99100))
-                .andExpect(jsonPath("$.data[0].userName").value("User One"));
+                .andExpect(jsonPath("$.data[0].taskId").value(99001))
+                .andExpect(jsonPath("$.data[0].userName").value("User Two"));
     }
 
     @Test
     @WithMockUser
     @DisplayName("마일스톤 상세 조회가 성공한다.")
     void findMilestone_returnsMilestone() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones/{milestoneId}", 99100, 99100))
+        mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones/{milestoneId}", 99001, 99001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.milestoneId").value(99100));
+                .andExpect(jsonPath("$.data.milestoneId").value(99001));
     }
 
     @Test
     @WithMockUser
     @DisplayName("삭제된 마일스톤을 제외한 목록 조회가 성공한다.")
     void findMilestones_returnsList() throws Exception {
-        mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones", 99100))
+        mockMvc.perform(get("/api/projects/{projectId}/ganttchart/milestones", 99001))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[*].milestoneId", not(hasItem(99102))));
+                .andExpect(jsonPath("$.data[*].milestoneId", not(hasItem(99003))));
     }
 
     @TestConfiguration
@@ -70,7 +71,7 @@ class GanttQueryControllerTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> 99101L;
+            return () -> 99002L;
         }
     }
 }
