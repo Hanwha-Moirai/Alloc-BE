@@ -1,5 +1,6 @@
 package com.moirai.alloc.common.dto;
 
+import com.moirai.alloc.common.dto.pagination.Pagination;
 import lombok.Builder;
 import lombok.Getter;
 
