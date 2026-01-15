@@ -1,6 +1,7 @@
 package com.moirai.alloc.report.query.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,12 +22,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class WeeklyReportMyDocsQueryControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
+    @DisplayName("내 주간보고 목록을 조회한다.")
     void getMyReports_returnsPage() throws Exception {
         mockMvc.perform(get("/api/mydocs/report")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
@@ -38,6 +41,7 @@ class WeeklyReportMyDocsQueryControllerTest {
     }
 
     @Test
+    @DisplayName("내 주간보고 검색 결과를 반환한다.")
     void searchMyReports_returnsMatches() throws Exception {
         mockMvc.perform(get("/api/mydocs/report/search")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
@@ -50,6 +54,7 @@ class WeeklyReportMyDocsQueryControllerTest {
     }
 
     @Test
+    @DisplayName("내 주간보고 상세를 조회한다.")
     void getMyReportDetail_returnsDetail() throws Exception {
         mockMvc.perform(get("/api/mydocs/report/{reportId}", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
