@@ -4,6 +4,7 @@ import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportSearchCondition;
 import com.moirai.alloc.report.query.dto.WeeklyReportSummaryResponse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 @EnableJpaAuditing
 class WeeklyReportQueryServiceTest {
 
@@ -31,6 +32,7 @@ class WeeklyReportQueryServiceTest {
     private WeeklyReportQueryService weeklyReportQueryService;
 
     @Test
+    @DisplayName("프로젝트 주간보고 목록을 페이지로 조회한다.")
     void getDocsReports_returnsPage() {
         Page<WeeklyReportSummaryResponse> page =
                 weeklyReportQueryService.getDocsReports(PROJECT_ID, PageRequest.of(0, 10));
@@ -39,6 +41,7 @@ class WeeklyReportQueryServiceTest {
     }
 
     @Test
+    @DisplayName("주간보고 검색 시 프로젝트 조건이 적용된다.")
     void searchDocsReports_filtersByProjectId() {
         WeeklyReportSearchCondition condition = new WeeklyReportSearchCondition(
                 PROJECT_ID,
@@ -55,6 +58,7 @@ class WeeklyReportQueryServiceTest {
     }
 
     @Test
+    @DisplayName("주간보고 상세 조회 시 태스크와 주차 정보를 반환한다.")
     void getDocsReportDetail_returnsTasks() {
         WeeklyReportDetailResponse detail = weeklyReportQueryService.getDocsReportDetail(PROJECT_ID, REPORT_ID);
 
@@ -66,6 +70,7 @@ class WeeklyReportQueryServiceTest {
     }
 
     @Test
+    @DisplayName("내 주간보고 상세 조회 시 멤버십을 검증한다.")
     void getMyDocsReportDetail_checksMembership() {
         UserPrincipal principal = new UserPrincipal(
                 PM_USER_ID,

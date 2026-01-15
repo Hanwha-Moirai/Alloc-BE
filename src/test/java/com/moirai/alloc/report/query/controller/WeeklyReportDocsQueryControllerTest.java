@@ -1,5 +1,6 @@
 package com.moirai.alloc.report.query.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class WeeklyReportDocsQueryControllerTest {
 
     @Autowired
@@ -25,6 +27,7 @@ class WeeklyReportDocsQueryControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("프로젝트 주간보고 목록을 조회한다.")
     void getReports_returnsPage() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/docs/report", 77001))
                 .andExpect(status().isOk())
@@ -36,6 +39,7 @@ class WeeklyReportDocsQueryControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("프로젝트 주간보고 검색 결과를 반환한다.")
     void searchReports_returnsMatches() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/docs/report/search", 77001)
                         .param("reportStatus", "DRAFT"))
@@ -48,6 +52,7 @@ class WeeklyReportDocsQueryControllerTest {
 
     @Test
     @WithMockUser
+    @DisplayName("프로젝트 주간보고 상세를 조회한다.")
     void getReportDetail_returnsDetail() throws Exception {
         mockMvc.perform(get("/api/projects/{projectId}/docs/report/{reportId}", 77001, 77001))
                 .andExpect(status().isOk())
