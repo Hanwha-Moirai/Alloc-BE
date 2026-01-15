@@ -7,7 +7,7 @@
         SELECT
             t.task_id AS taskId,
             t.milestone_id AS milestoneId,
-            t.user_id AS userId,
+            u.user_name AS userName,
             t.task_category AS taskCategory,
             t.task_name AS taskName,
             t.task_description AS taskDescription,
@@ -20,10 +20,11 @@
             t.is_deleted AS isDeleted
         FROM task t
         JOIN milestone m ON m.milestone_id = t.milestone_id
+        LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.is_deleted = false
-        <if test="assigneeId != null">
-            AND t.user_id = #{assigneeId}
+        <if test="assigneeName != null and assigneeName != ''">
+            AND u.user_name = #{assigneeName}
         </if>
         <if test="status != null">
             AND t.task_status = #{status}
@@ -41,7 +42,7 @@
         SELECT
             t.task_id AS taskId,
             t.milestone_id AS milestoneId,
-            t.user_id AS userId,
+            u.user_name AS userName,
             t.task_category AS taskCategory,
             t.task_name AS taskName,
             t.task_description AS taskDescription,
@@ -54,6 +55,7 @@
             t.is_deleted AS isDeleted
         FROM task t
         JOIN milestone m ON m.milestone_id = t.milestone_id
+        LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.task_id = #{taskId}
           AND t.is_deleted = false
@@ -63,7 +65,7 @@
         SELECT
             t.task_id AS taskId,
             t.milestone_id AS milestoneId,
-            t.user_id AS userId,
+            u.user_name AS userName,
             t.task_category AS taskCategory,
             t.task_name AS taskName,
             t.task_description AS taskDescription,
@@ -76,6 +78,7 @@
             t.is_deleted AS isDeleted
         FROM task t
         JOIN milestone m ON m.milestone_id = t.milestone_id
+        LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.milestone_id = #{milestoneId}
           AND t.is_deleted = false

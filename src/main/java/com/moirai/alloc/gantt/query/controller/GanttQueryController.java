@@ -28,12 +28,12 @@ public class GanttQueryController {
     // 태스크 조회
     @GetMapping("/tasks")
     public ApiResponse<List<TaskResponse>> findTasks(@PathVariable Long projectId,
-                                                     @RequestParam(required = false) Long assigneeId,
+                                                     @RequestParam(required = false) String userName,
                                                      @RequestParam(required = false) String status,
                                                      @RequestParam(required = false) LocalDate startDate,
                                                      @RequestParam(required = false) LocalDate endDate) {
         TaskSearchRequest request = new TaskSearchRequest(
-                assigneeId,
+                userName,
                 status == null ? null : TaskStatus.valueOf(status),
                 startDate,
                 endDate
