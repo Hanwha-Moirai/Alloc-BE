@@ -8,7 +8,7 @@ import java.time.LocalDate;
 public interface CalendarQueryService {
 
     /**
-     * 캘린더 통합 뷰 조회 (EVENT + TASK + MILESTONE)
+     * 캘린더 뷰 조회
      * - 프로젝트 멤버십(ASSIGNED) 검증
      * - 조회 범위(from~to) 유효성 검증
      * - EVENT는 권한에 따라 노출 범위가 다름(PRIVATE는 본인만)

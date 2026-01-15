@@ -78,4 +78,13 @@ public class User {
         this.status = Status.ACTIVE;
         this.auth = (auth == null) ? Auth.USER : auth;
     }
+
+    public void updateContact(String email, String phone) {
+        if (email != null) {
+            this.email = email;
+        }
+        if (phone != null) {
+            this.phone = phone;
+        }
+    }
 }

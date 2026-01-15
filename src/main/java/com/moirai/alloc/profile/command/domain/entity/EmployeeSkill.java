@@ -1,4 +1,4 @@
-package com.moirai.alloc.profile.common.domain;
+package com.moirai.alloc.profile.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
 import com.moirai.alloc.hr.command.domain.TechStandard;
@@ -39,6 +39,13 @@ public class EmployeeSkill extends BaseTimeEntity {
         this.tech = tech;
         this.employee = employee;
         this.proficiency = (proficiency == null) ? Proficiency.LV1 : proficiency;
+    }
+
+    public void changeProficiency(Proficiency proficiency) {
+        if (proficiency == null) {
+            throw new IllegalArgumentException("PROFICIENCY_REQUIRED");
+        }
+        this.proficiency = proficiency;
     }
 
 }

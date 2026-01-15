@@ -16,6 +16,7 @@
             is_deleted AS isDeleted
         FROM milestone
         WHERE project_id = #{projectId}
+            AND is_deleted = false
         ORDER BY start_date ASC, milestone_id ASC
     </select>
 </mapper>
