@@ -86,4 +86,5 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
     List<Long> findUserIdsInProjectByDecision(Long projectId, FinalDecision finalDecision, List<Long> distinct);
     // TODO : calendar 만든 팀원 확인 필요
     boolean existsByProjectIdAndUserIdAndFinalDecision(Long projectId, Long aLong, FinalDecision finalDecision);
+
 }
