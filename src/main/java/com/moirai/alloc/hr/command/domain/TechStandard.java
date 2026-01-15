@@ -29,4 +29,8 @@ public class TechStandard extends BaseTimeEntity {
         this.techName = techName;
     }
 
+    public void updateTechName(String techName) {
+        this.techName = techName;
+    }
+
 }
