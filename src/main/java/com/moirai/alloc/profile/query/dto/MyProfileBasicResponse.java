@@ -1,11 +1,13 @@
 package com.moirai.alloc.profile.query.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class MyProfileBasicResponse {
     private Long userId;

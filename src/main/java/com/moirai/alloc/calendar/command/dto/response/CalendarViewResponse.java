@@ -8,5 +8,6 @@ import java.util.List;
 @Getter
 @Builder
 public class CalendarViewResponse {
-    private List<CalendarItemResponse> items;
+    private List<CalendarEventItemResponse> items;
 }
+

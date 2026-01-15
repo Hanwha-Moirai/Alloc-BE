@@ -8,6 +8,7 @@ import com.moirai.alloc.hr.command.repository.TechStandardRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.domain.entity.EmployeeSkill;
 import com.moirai.alloc.profile.command.dto.response.MyProfileUpdateResponse;
+import com.moirai.alloc.profile.command.dto.response.TechStackDeleteResponse;
 import com.moirai.alloc.profile.command.dto.response.TechStackItemResponse;
 import com.moirai.alloc.profile.command.dto.request.MyProfileUpdateRequest;
 import com.moirai.alloc.profile.command.dto.request.TechStackCreateRequest;
@@ -33,6 +34,11 @@ public class MyProfileCommandService {
     @Transactional
     public MyProfileUpdateResponse updateMyProfile(Long userId, MyProfileUpdateRequest req) {
 
+        //변경 의도 없는 요청 방지
+        if (req.getEmail() == null && req.getPhone() == null && req.getJobId() == null) {
+            throw new IllegalArgumentException("NO_CHANGES");
+        }
+
         Employee employee = employeeRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_NOT_FOUND"));
 
@@ -41,7 +47,7 @@ public class MyProfileCommandService {
         // 1) 이메일/연락처 수정
         user.updateContact(req.getEmail(), req.getPhone());
 
-        // 2) 직군 수정: jobId가 오면 "선택->변경" 처리 (초기엔 null → 선택하면 세팅)
+        // 2) 직군 수정
         if (req.getJobId() != null) {
             JobStandard job = jobStandardRepository.findById(req.getJobId())
                     .orElseThrow(() -> new IllegalArgumentException("JOB_NOT_FOUND"));
@@ -119,6 +125,26 @@ public class MyProfileCommandService {
                 .proficiency(skill.getProficiency())
                 .createdAt(skill.getCreatedAt())
                 .updatedAt(skill.getUpdatedAt())
+                .build();
+    }
+
+    // 기술 스택 삭제
+    @Transactional
+    public TechStackDeleteResponse deleteTechStack(Long userId, Long employeeTechId) {
+
+        EmployeeSkill skill = employeeSkillRepository.findById(employeeTechId)
+                .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_TECH_NOT_FOUND"));
+
+        // 본인 기술 스택인지 검증
+        if (!skill.getEmployee().getUserId().equals(userId)) {
+            throw new AccessDeniedException("FORBIDDEN_TECH_STACK");
+        }
+
+        employeeSkillRepository.delete(skill);
+
+        return TechStackDeleteResponse.builder()
+                .employeeTechId(employeeTechId)
+                .deleted(true)
                 .build();
     }
 }

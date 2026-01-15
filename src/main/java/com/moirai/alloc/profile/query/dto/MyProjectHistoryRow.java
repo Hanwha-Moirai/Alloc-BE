@@ -1,5 +1,6 @@
 package com.moirai.alloc.profile.query.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 * Service에서 그룹핑 후 MyProjectHistoryResponse로 변환됨
 * */
 @Getter
+@Builder
 public class MyProjectHistoryRow {
     private Long projectId;
     private String projectName;

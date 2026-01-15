@@ -18,6 +18,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    mockitoAgent {
+        transitive = false
+    }
 }
 
 repositories {
@@ -57,8 +60,11 @@ dependencies {
     //redis 관련
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    mockitoAgent 'org.mockito:mockito-core'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs "-javaagent:${configurations.mockitoAgent.asPath}", "-Xshare:off"
 }
