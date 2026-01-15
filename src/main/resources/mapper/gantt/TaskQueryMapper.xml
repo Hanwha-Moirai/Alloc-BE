@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moirai.alloc.gantt.query.mapper.TaskQueryMapper">
+    <select id="findTasks" resultType="com.moirai.alloc.gantt.query.dto.projection.TaskProjection">
+        SELECT
+            t.task_id AS taskId,
+            t.milestone_id AS milestoneId,
+            t.user_id AS userId,
+            t.task_category AS taskCategory,
+            t.task_name AS taskName,
+            t.task_description AS taskDescription,
+            t.task_status AS taskStatus,
+            t.created_at AS createdAt,
+            t.updated_at AS updatedAt,
+            t.start_date AS startDate,
+            t.end_date AS endDate,
+            t.is_completed AS isCompleted,
+            t.is_deleted AS isDeleted
+        FROM task t
+        JOIN milestone m ON m.milestone_id = t.milestone_id
+        WHERE m.project_id = #{projectId}
+          AND t.is_deleted = false
+        <if test="assigneeId != null">
+            AND t.user_id = #{assigneeId}
+        </if>
+        <if test="status != null">
+            AND t.task_status = #{status}
+        </if>
+        <if test="startDate != null">
+            AND t.start_date &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND t.end_date &lt;= #{endDate}
+        </if>
+        ORDER BY t.start_date ASC, t.task_id ASC
+    </select>
+
+    <select id="findTaskById" resultType="com.moirai.alloc.gantt.query.dto.projection.TaskProjection">
+        SELECT
+            t.task_id AS taskId,
+            t.milestone_id AS milestoneId,
+            t.user_id AS userId,
+            t.task_category AS taskCategory,
+            t.task_name AS taskName,
+            t.task_description AS taskDescription,
+            t.task_status AS taskStatus,
+            t.created_at AS createdAt,
+            t.updated_at AS updatedAt,
+            t.start_date AS startDate,
+            t.end_date AS endDate,
+            t.is_completed AS isCompleted,
+            t.is_deleted AS isDeleted
+        FROM task t
+        JOIN milestone m ON m.milestone_id = t.milestone_id
+        WHERE m.project_id = #{projectId}
+          AND t.task_id = #{taskId}
+          AND t.is_deleted = false
+    </select>
+
+    <select id="findTasksByMilestone" resultType="com.moirai.alloc.gantt.query.dto.projection.TaskProjection">
+        SELECT
+            t.task_id AS taskId,
+            t.milestone_id AS milestoneId,
+            t.user_id AS userId,
+            t.task_category AS taskCategory,
+            t.task_name AS taskName,
+            t.task_description AS taskDescription,
+            t.task_status AS taskStatus,
+            t.created_at AS createdAt,
+            t.updated_at AS updatedAt,
+            t.start_date AS startDate,
+            t.end_date AS endDate,
+            t.is_completed AS isCompleted,
+            t.is_deleted AS isDeleted
+        FROM task t
+        JOIN milestone m ON m.milestone_id = t.milestone_id
+        WHERE m.project_id = #{projectId}
+          AND t.milestone_id = #{milestoneId}
+          AND t.is_deleted = false
+        ORDER BY t.start_date ASC, t.task_id ASC
+    </select>
+</mapper>
