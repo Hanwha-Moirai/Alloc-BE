@@ -10,8 +10,8 @@ import lombok.*;
 @Table(
         name = "alarm_template",
         indexes = {
-                @Index(name = "idx_alarm_template_user", columnList = "user_id"),
-                @Index(name = "idx_alarm_template_deleted", columnList = "is_deleted")
+                @Index(name = "idx_alarm_template_deleted", columnList = "is_deleted"),
+                @Index(name = "idx_alarm_template_type", columnList = "alarm_template_type")
         }
 )
 public class AlarmTemplate extends BaseTimeEntity {
@@ -20,10 +20,6 @@ public class AlarmTemplate extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "template_id")
     private Long id;
-
-    /** FK: users.user_id (템플릿 생성자) */
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
 
     @Column(name = "template_title", nullable = false, length = 50)
     private String templateTitle;
@@ -39,22 +35,21 @@ public class AlarmTemplate extends BaseTimeEntity {
     private boolean deleted;
 
     @Builder
-    private AlarmTemplate(
-            Long userId,
-            String templateTitle,
-            String templateContext,
-            AlarmTemplateType alarmTemplateType,
-            Boolean deleted
-    ) {
-        this.userId = userId;
+    private AlarmTemplate(String templateTitle,
+                          String templateContext,
+                          AlarmTemplateType alarmTemplateType) {
         this.templateTitle = templateTitle;
         this.templateContext = templateContext;
-
-        this.deleted = (deleted != null) ? deleted : false;
-        this.alarmTemplateType = (alarmTemplateType != null) ? alarmTemplateType : AlarmTemplateType.POST_TEMP;
+        this.alarmTemplateType = alarmTemplateType;
+        this.deleted = false;
     }
 
-    public void softDelete() {
-        this.deleted = true;
+    public void softDelete() { this.deleted = true; }
+    public void restore() { this.deleted = false; }
+
+    public void update(String title, String context, AlarmTemplateType type) {
+        if (title != null && !title.isBlank()) this.templateTitle = title;
+        if (context != null && !context.isBlank()) this.templateContext = context;
+        if (type != null) this.alarmTemplateType = type;
     }
 }
