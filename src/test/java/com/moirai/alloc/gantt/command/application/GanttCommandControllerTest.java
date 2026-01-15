@@ -2,6 +2,7 @@ package com.moirai.alloc.gantt.command.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +37,7 @@ class GanttCommandControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @DisplayName("PM 권한으로 태스크 생성이 성공한다.")
     void createTask_returnsCreatedId() throws Exception {
         String body = """
                 {
@@ -59,6 +61,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
+    @DisplayName("PM 권한으로 태스크 수정이 성공한다.")
     void updateTask_returnsOk() throws Exception {
         String body = """
                 {
@@ -75,6 +78,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
+    @DisplayName("PM 권한으로 태스크 삭제가 성공한다.")
     void deleteTask_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/projects/{projectId}/tasks/{taskId}", 99100, 99100)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
@@ -83,6 +87,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
+    @DisplayName("PM 권한이 없으면 태스크 수정이 금지된다.")
     void updateTask_forbiddenWhenUserRoleIsNotPm() throws Exception {
         String body = """
                 {
@@ -98,6 +103,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
+    @DisplayName("담당자가 아니면 태스크 완료가 금지된다.")
     void completeTask_forbiddenWhenRequesterIsNotAssignee() throws Exception {
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99100, 99100)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
@@ -106,6 +112,7 @@ class GanttCommandControllerTest {
     }
 
     @Test
+    @DisplayName("담당자일 때 태스크 완료가 성공한다.")
     void completeTask_returnsOkWhenRequesterIsAssignee() throws Exception {
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99100, 99100)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
