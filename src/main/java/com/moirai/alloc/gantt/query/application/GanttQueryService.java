@@ -47,7 +47,7 @@ public class GanttQueryService {
 
         List<TaskProjection> tasks = taskQueryMapper.findTasks(
                 projectId,
-                request.assigneeName(),
+                userId,
                 request.status() == null ? null : request.status().name(),
                 request.startDate(),
                 request.endDate()
