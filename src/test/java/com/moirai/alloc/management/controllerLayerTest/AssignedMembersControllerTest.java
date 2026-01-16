@@ -41,8 +41,10 @@ class AssignedMembersControllerTest extends ControllerTestSupport {
     @MockBean private SelectAssignmentCandidates selectAssignmentCandidates;
     @MockBean private SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
 
+    // PM 권한을 가진 사용자가 접근했을 때
+    //  선정된 인력 목록을 정상적으로 반환하는지 검증
     @Test
-    void getAssignedMembers_pm_success() throws Exception {
+    void getAssignedMembersPmSuccess() throws Exception {
         // given
         Long projectId = 1L;
 
@@ -66,8 +68,10 @@ class AssignedMembersControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$[0].employeeName").value("김철수"))
                 .andExpect(jsonPath("$[0].jobName").value("Backend"));
     }
+//     일반 USER 권한도 해당 API에 접근 가능함을 검증
+//     반환 데이터가 없어도 200 OK를 내려주는지 확인
     @Test
-    void getAssignedMembers_user_success() throws Exception {
+    void getAssignedMembersUserSuccess() throws Exception {
         // given
         Long projectId = 1L;
 
@@ -81,15 +85,18 @@ class AssignedMembersControllerTest extends ControllerTestSupport {
                 )
                 .andExpect(status().isOk());
     }
+    //인증 정보 없이 접근할 경우
     @Test
-    void getAssignedMembers_unauthorized() throws Exception {
+    void getAssignedMembersUnauthorized() throws Exception {
         mockMvc.perform(
                         get("/api/projects/{projectId}/assignments/assigned", 1L)
                 )
                 .andExpect(status().isForbidden());
     }
+//    Controller가 요청을 처리하면서
+//    GetAssignedMembers 유스케이스를 정확히 한 번 호출하는지 검증
     @Test
-    void getAssignedMembers_calls_service_once() throws Exception {
+    void getAssignedMembersCallsServiceOnce() throws Exception {
         Long projectId = 1L;
 
         given(getAssignedMembers.getAssignedMembers(projectId))
@@ -104,6 +111,4 @@ class AssignedMembersControllerTest extends ControllerTestSupport {
         verify(getAssignedMembers, times(1))
                 .getAssignedMembers(projectId);
     }
-
-
 }

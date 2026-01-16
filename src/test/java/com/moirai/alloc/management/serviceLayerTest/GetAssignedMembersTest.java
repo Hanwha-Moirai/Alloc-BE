@@ -3,7 +3,6 @@ package com.moirai.alloc.management.serviceLayerTest;
 import com.moirai.alloc.hr.command.domain.Department;
 import com.moirai.alloc.hr.command.domain.JobStandard;
 import com.moirai.alloc.hr.command.domain.TitleStandard;
-import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.dto.AssignedMemberDTO;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -76,9 +74,10 @@ class GetAssignedMembersTest {
 
 
 
-
+//     프로젝트에 최종 배정된 인력이 존재하는 경우
+//     해당 인력들만 DTO로 변환되어 반환되는지 검증
     @Test
-    void getAssignedMembers_returns_only_assigned_members() {
+    void getAssignedMembersReturnsOnlyAssignedMembers() {
         // given
         Long projectId = 1L;
 
@@ -106,10 +105,11 @@ class GetAssignedMembersTest {
         // then
         assertThat(result).hasSize(2);
     }
-
-
+//     프로젝트에 최종 배정된 인력이 없는 경우
+//     빈 리스트를 반환해야 하며
+//     불필요한 Employee 조회가 발생하지 않아야 함
     @Test
-    void getAssignedMembers_returns_empty_list_when_none_assigned() {
+    void getAssignedMembersReturnsEmptyListWhenNoneAssigned() {
         // given
         given(assignmentRepository.findAssignedByProjectId(1L))
                 .willReturn(List.of());
