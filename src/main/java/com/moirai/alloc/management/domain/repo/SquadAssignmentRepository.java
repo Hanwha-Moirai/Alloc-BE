@@ -89,7 +89,7 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
       and sa.finalDecision = :finalDecision
       and sa.userId in :userIds
 """)
-    List<Long> findUserIdsInProjectByFinalDecision(
+    List<Long> findUserIdsInProjectByDecision(
             @Param("projectId") Long projectId,
             @Param("finalDecision") FinalDecision finalDecision,
             @Param("userIds") List<Long> userIds
