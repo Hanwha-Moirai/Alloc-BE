@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 //@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-@EnableJpaAuditing
 class WeeklyReportQueryServiceTest {
 
     private static final Long REPORT_ID = 77001L;

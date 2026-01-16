@@ -11,7 +11,7 @@ import java.util.List;
 public interface TaskQueryMapper {
     List<TaskProjection> findTasks(
             @Param("projectId") Long projectId,
-            @Param("assigneeName") String assigneeName,
+            @Param("assigneeId") Long assigneeId,
             @Param("status") String status,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
