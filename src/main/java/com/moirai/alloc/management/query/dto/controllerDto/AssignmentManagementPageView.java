@@ -1,8 +1,8 @@
-package com.moirai.alloc.management.query.dto.controller_dto;
+package com.moirai.alloc.management.query.dto.controllerDto;
 
-import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidateItemDTO;
-import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;
-import com.moirai.alloc.management.query.dto.select_list.AssignmentSummaryCardDTO;
+import com.moirai.alloc.management.query.dto.candidateList.AssignmentCandidateItemDTO;
+import com.moirai.alloc.management.query.dto.selectedList.AssignmentStatusDTO;
+import com.moirai.alloc.management.query.dto.selectedList.AssignmentSummaryCardDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

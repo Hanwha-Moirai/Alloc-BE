@@ -1,7 +1,7 @@
 package com.moirai.alloc.management.query.service;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.management.query.dto.project_list.ProjectListItemDTO;
+import com.moirai.alloc.management.query.dto.projectList.ProjectListItemDTO;
 import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
