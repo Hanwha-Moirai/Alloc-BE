@@ -308,6 +308,46 @@ class CalendarEventControllerWebMvcTest {
     }
 
     @Test
+    @DisplayName("POST /vacation: 성공 -> 200 + ApiResponse.success + Service 호출")
+    void createVacation_success() throws Exception {
+        EventResponse serviceRes = EventResponse.builder()
+                .eventId(555L)
+                .projectId(PROJECT_ID)
+                .ownerUserId(20L)
+                .eventName("휴가")
+                .eventType(EventType.VACATION)
+                .eventState(EventState.IN_PROGRESS)
+                .startDateTime(LocalDateTime.of(2026, 1, 11, 0, 0))
+                .endDateTime(LocalDateTime.of(2026, 1, 11, 23, 59))
+                .description("연차")
+                .build();
+
+        when(calendarService.createVacationEvent(eq(PROJECT_ID), any(VacationEventCreateRequest.class), any(UserPrincipal.class)))
+                .thenReturn(serviceRes);
+
+        String body = """
+            {
+              "eventName": "휴가",
+              "startDateTime": "2026-01-11T00:00:00",
+              "endDateTime": "2026-01-11T23:59:00",
+              "description": "연차"
+            }
+            """;
+
+        mockMvc.perform(post("/api/projects/{projectId}/calendar/events/vacation", PROJECT_ID)
+                        .with(authentication(authWithRole("USER", 20L)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.eventType").value("VACATION"));
+
+        verify(calendarService, times(1))
+                .createVacationEvent(eq(PROJECT_ID), any(VacationEventCreateRequest.class), any(UserPrincipal.class));
+    }
+
+
+    @Test
     @DisplayName("PATCH /{eventId}/completion: Validation 실패(completed 누락) -> 400 + VALIDATION_ERROR/'Validation failed' + Service 미호출")
     void updateCompletion_validation_fail_missingCompleted() throws Exception {
         String body = """
@@ -455,4 +495,6 @@ class CalendarEventControllerWebMvcTest {
         verify(calendarService, times(1))
                 .getEventDetail(eq(PROJECT_ID), eq(EVENT_ID), any(UserPrincipal.class));
     }
+
+
 }
