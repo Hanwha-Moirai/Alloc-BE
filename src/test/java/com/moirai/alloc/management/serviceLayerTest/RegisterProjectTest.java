@@ -1,4 +1,4 @@
-package com.moirai.alloc.management;
+package com.moirai.alloc.management.serviceLayerTest;
 
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
 import com.moirai.alloc.management.command.service.RegisterProject;
@@ -33,6 +33,7 @@ class RegisterProjectTest {
     void registerProject() {
         // given
         RegisterProjectCommandDTO command = new RegisterProjectCommandDTO();
+
         ReflectionTestUtils.setField(command, "name", "AI 프로젝트");
         ReflectionTestUtils.setField(command, "startDate", LocalDate.of(2025, 1, 1));
         ReflectionTestUtils.setField(command, "endDate", LocalDate.of(2025, 6, 30));
@@ -60,7 +61,7 @@ class RegisterProjectTest {
                 .thenReturn(savedProject);
 
         // when
-        Long projectId = registerProject.registerProject(command);
+        Long projectId = registerProject.registerProject(command,1L);
 
         // then
         assertThat(projectId).isEqualTo(100L);

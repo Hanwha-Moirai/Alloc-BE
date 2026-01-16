@@ -1,4 +1,4 @@
-package com.moirai.alloc.management;
+package com.moirai.alloc.management.serviceLayerTest;
 
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;

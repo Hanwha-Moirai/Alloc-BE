@@ -1,4 +1,4 @@
-package com.moirai.alloc.management;
+package com.moirai.alloc.management.serviceLayerTest;
 
 import com.moirai.alloc.management.command.service.DecideFinalAssignment;
 import com.moirai.alloc.management.command.service.RequestInterview;
