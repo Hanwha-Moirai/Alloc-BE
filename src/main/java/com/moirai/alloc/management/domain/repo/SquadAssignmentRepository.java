@@ -82,19 +82,21 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
     where sa.finalDecision = :decision
 """)
     Set<Long> findUserIdsByFinalDecision(@Param("decision") FinalDecision decision);
-
     @Query("""
-    select sa
+    select sa.userId
     from SquadAssignment sa
     where sa.projectId = :projectId
-      and sa.finalDecision = 'ASSIGNED'
+      and sa.finalDecision = :finalDecision
+      and sa.userId in :userIds
 """)
-    List<SquadAssignment> findAssignedByProjectId(Long projectId);
-
-
-    // TODO : calendar 만든 팀원 확인 필요
-    List<Long> findUserIdsInProjectByDecision(Long projectId, FinalDecision finalDecision, List<Long> distinct);
-    // TODO : calendar 만든 팀원 확인 필요
-    boolean existsByProjectIdAndUserIdAndFinalDecision(Long projectId, Long aLong, FinalDecision finalDecision);
-
+    List<Long> findUserIdsInProjectByDecision(
+            @Param("projectId") Long projectId,
+            @Param("finalDecision") FinalDecision finalDecision,
+            @Param("userIds") List<Long> userIds
+    );
+    boolean existsByProjectIdAndUserIdAndFinalDecision(
+            Long projectId,
+            Long userId,
+            FinalDecision finalDecision
+    );
 }
