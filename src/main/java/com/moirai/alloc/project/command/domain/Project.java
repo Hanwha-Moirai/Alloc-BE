@@ -5,6 +5,7 @@ import com.moirai.alloc.management.domain.vo.TechRequirement;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,5 +94,40 @@ public class Project {
         this.projectStatus = (projectStatus == null) ? ProjectStatus.DRAFT : projectStatus;
         this.projectType = (projectType == null) ? ProjectType.NEW : projectType;
     }
+    //프로젝트 수정
+    public void updateBasicInfo(
+            String name,
+            LocalDate startDate,
+            LocalDate endDate,
+            String partners,
+            String description,
+            Integer predictedCost
+    ) {
+        validatePeriod(startDate, endDate);
+        validatePredictedCost(predictedCost);
+
+        this.name = name;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.partners = partners;
+        this.description = description;
+        this.predictedCost = predictedCost;
+    }
+    private void validatePeriod(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("프로젝트 기간은 필수입니다.");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("시작일은 종료일보다 이전이어야 합니다.");
+        }
+    }
+
+    private void validatePredictedCost(Integer cost) {
+        if (cost == null || cost < 0) {
+            throw new IllegalArgumentException("예산은 0 이상이어야 합니다.");
+        }
+    }
+
+
 
 }
