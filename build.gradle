@@ -2,11 +2,59 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.9'
     id 'io.spring.dependency-management' version '1.1.7'
+    // 커버리지 리포트 생성을 위한 JaCoCo 플러그인 활성화.
+    id 'jacoco'
 }
 
 group = 'com.moirai'
 version = '0.0.1-SNAPSHOT'
 description = 'Alloc'
+
+jacoco {
+    // 리포트 출력 일관성을 위해 JaCoCo 버전 고정.
+    toolVersion = "0.8.10"
+}
+
+def QDomainList = []
+for (qPattern in '**/QA'..'**/QZ') {
+    QDomainList.add(qPattern + '*')
+}
+
+def jacocoExcludes = QDomainList + [
+        // 공통/인프라 성격 코드는 커버리지 대상에서 제외.
+        '**/config/**',
+        '**/dto/**',
+        '**/entity/**',
+        '**/exception/**',
+        '**/model/**',
+        '**/util/**',
+        '**/common/**'
+]
+
+tasks.named('jacocoTestReport') {
+    // 테스트 실행 이후 커버리지 리포트 생성.
+    dependsOn test
+
+    reports {
+        // XML/HTML 리포트 생성, CSV는 비활성화.
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+
+    // Controller/Service 클래스만 커버리지 리포트 대상.
+    classDirectories.setFrom(
+            files(classDirectories.files.collect { fileTree(dir: it, includes: [
+                    '**/*Controller*',
+                    '**/*Service*'
+            ], excludes: jacocoExcludes) })
+    )
+    // 컴파일된 소스와 JaCoCo 실행 데이터를 기반으로 리포트 생성.
+    sourceDirectories.setFrom(files('src/main/java'))
+    executionData.setFrom(fileTree(layout.buildDirectory).include('/jacoco/*.exec'))
+}
+
+
 
 java {
     toolchain {
@@ -17,6 +65,9 @@ java {
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
+    }
+    mockitoAgent {
+        transitive = false
     }
 }
 
@@ -57,8 +108,16 @@ dependencies {
     //redis 관련
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    mockitoAgent 'org.mockito:mockito-core'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs "-javaagent:${configurations.mockitoAgent.asPath}", "-Xshare:off"
+
+    // 테스트 종료 후 항상 커버리지 리포트 생성 시도.
+    finalizedBy tasks.named('jacocoTestReport')
+    // 테스트 실패 시에도 리포트 생성 허용.
+    ignoreFailures = true
 }

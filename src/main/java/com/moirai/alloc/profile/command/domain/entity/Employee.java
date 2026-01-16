@@ -1,4 +1,4 @@
-package com.moirai.alloc.profile.common.domain;
+package com.moirai.alloc.profile.command.domain.entity;
 
 import com.moirai.alloc.hr.command.domain.Department;
 import com.moirai.alloc.hr.command.domain.JobStandard;
@@ -38,7 +38,7 @@ public class Employee {
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "title_standard", nullable = false)
+    @JoinColumn(name = "title_standard_id", nullable = false)
     private TitleStandard titleStandard;
 
     @Column(name = "project_no")
@@ -67,6 +67,10 @@ public class Employee {
         this.hiringDate = hiringDate;
 
         this.employeeType = (employeeType == null) ? EmployeeType.FULL_TIME : employeeType;
+    }
+
+    public void changeJob(JobStandard job) {
+        this.job = job;
     }
 
 }
