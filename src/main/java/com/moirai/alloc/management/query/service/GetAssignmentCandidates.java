@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -63,14 +64,28 @@ public class GetAssignmentCandidates {
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
 
-        // 사용자 ID
-        List<Long> userIds =
+        // employee 조회 범위 결정; 선발된 인원 + 추천 후보
+        //선발된 인원
+        List<Long> assignedUserIds =
                 assignments.stream()
                         .map(SquadAssignment::getUserId)
                         .distinct().toList();
+        //추천된(후보)인원
+        List<Long> recommendedUserIds =
+                recommended.getAssignments().stream()
+                        .flatMap(a -> a.getCandidates().stream())
+                        .map(ScoredCandidateDTO::getUserId)
+                        .distinct()
+                        .toList();
+        //선발된 인원 + 추천된(후보)인원의 합집합
+        List<Long> allUserIds =
+                Stream.concat(
+                        assignedUserIds.stream(),
+                        recommendedUserIds.stream()
+                ).distinct().toList();
 
         Map<Long, Employee> employeeMap =
-                employeeRepository.findAllById(userIds).stream()
+                employeeRepository.findAllById(allUserIds).stream()
                         .collect(Collectors.toMap(
                                 Employee::getUserId,
                                 Function.identity()
