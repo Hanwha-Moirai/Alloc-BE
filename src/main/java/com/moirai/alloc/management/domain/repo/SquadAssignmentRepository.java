@@ -2,28 +2,89 @@ package com.moirai.alloc.management.domain.repo;
 
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
-import org.springframework.data.repository.CrudRepository;
+import com.moirai.alloc.project.command.domain.Project;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
-public interface SquadAssignmentRepository extends CrudRepository<SquadAssignment, Long> {
+public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
+
+    @Query("""
+            select distinct p
+            from SquadAssignment sa
+            join Project p on sa.projectId = p.projectId
+            where sa.userId = :userId
+            """)
+    List<Project> findProjectsByUserId(Long userId);
+
+
+    boolean existsByProjectIdAndUserId(Long projectId, Long userId);
+
+    @Query("""
+    select distinct p
+    from SquadAssignment sa
+    join Project p on sa.projectId = p.projectId
+    where sa.userId = :userId
+      and sa.finalDecision = 'ASSIGNED'
+""")
+    List<Project> findAssignedProjects(@Param("userId") Long userId);
+
+    @Query("""
+        select count(sa)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectType = :projectType
+    """)
+    long countAssignedProjectsByType(
+            @Param("userId") Long userId,
+            @Param("projectType") Project.ProjectType projectType
+    );
+
+    @Query("""
+        select max(p.endDate)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectType = :projectType
+    """)
+    LocalDate findLatestAssignedProjectEndDate(
+            @Param("userId") Long userId,
+            @Param("projectType") Project.ProjectType projectType
+    );
+    // 프로젝트에 대한 모든 배정 후보 조회
+    List<SquadAssignment> findByProjectId(Long projectId);
+
+    @Query("""
+    select count(sa)
+    from SquadAssignment sa
+    join Employee e on sa.userId = e.userId
+    where sa.projectId = :projectId
+      and sa.finalDecision = 'ASSIGNED'
+      and e.job.jobId = :jobId
+""")
+    long countAssignedByProjectAndJob(
+            @Param("projectId") Long projectId,
+            @Param("jobId") Long jobId
+    );
+
+    boolean existsByUserIdAndFinalDecision(Long userId, FinalDecision finalDecision);
+
+    @Query("""
+    select sa.userId
+    from SquadAssignment sa
+    where sa.finalDecision = :decision
+""")
+    Set<Long> findUserIdsByFinalDecision(@Param("decision") FinalDecision decision);
+    // TODO : calendar 만든 팀원 확인 필요
+    List<Long> findUserIdsInProjectByDecision(Long projectId, FinalDecision finalDecision, List<Long> distinct);
+    // TODO : calendar 만든 팀원 확인 필요
     boolean existsByProjectIdAndUserIdAndFinalDecision(Long projectId, Long aLong, FinalDecision finalDecision);
 
-    List<SquadAssignment> findByProjectIdAndFinalDecision(Long projectId, FinalDecision finalDecision);
-
-    /** memberUserIds가 프로젝트 ASSIGNED 멤버인지 검증용 */
-    @Query("""
-        select sa.userId
-        from SquadAssignment sa
-        where sa.projectId = :projectId
-          and sa.finalDecision = :finalDecision
-          and sa.userId in :userIds
-    """)
-    List<Long> findUserIdsInProjectByDecision(
-            @Param("projectId") Long projectId,
-            @Param("finalDecision") FinalDecision finalDecision,
-            @Param("userIds") List<Long> userIds
-    );
 }
