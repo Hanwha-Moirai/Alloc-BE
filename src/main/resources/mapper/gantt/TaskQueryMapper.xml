@@ -23,8 +23,8 @@
         LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.is_deleted = false
-        <if test="assigneeName != null and assigneeName != ''">
-            AND u.user_name = #{assigneeName}
+        <if test="assigneeId != null">
+            AND t.user_id = #{assigneeId}
         </if>
         <if test="status != null">
             AND t.task_status = #{status}

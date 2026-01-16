@@ -35,7 +35,7 @@ public class MyProfileCommandService {
     public MyProfileUpdateResponse updateMyProfile(Long userId, MyProfileUpdateRequest req) {
 
         //변경 의도 없는 요청 방지
-        if (req.getEmail() == null && req.getPhone() == null && req.getJobId() == null) {
+        if (req.getEmail() == null && req.getPhone() == null && req.getJobId() == null && req.getBirthday() == null) {
             throw new IllegalArgumentException("NO_CHANGES");
         }
 
@@ -45,7 +45,7 @@ public class MyProfileCommandService {
         User user = employee.getUser();
 
         // 1) 이메일/연락처 수정
-        user.updateContact(req.getEmail(), req.getPhone());
+        user.updateProfile(req.getEmail(), req.getPhone(),req.getBirthday());
 
         // 2) 직군 수정
         if (req.getJobId() != null) {
@@ -61,6 +61,7 @@ public class MyProfileCommandService {
                 .userName(user.getUserName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .birthday(user.getBirthday())
                 .jobId(employee.getJob() != null ? employee.getJob().getJobId() : null)
                 .jobName(employee.getJob() != null ? employee.getJob().getJobName() : null)
                 .titleId(title != null ? title.getTitleStandardId() : null)
