@@ -8,6 +8,7 @@ import com.moirai.alloc.meeting.command.dto.request.UpdateMeetingRecordRequest;
 import com.moirai.alloc.meeting.command.repository.AgendaCommandRepository;
 import com.moirai.alloc.meeting.command.repository.MeetingRecordCommandRepository;
 import com.moirai.alloc.meeting.command.repository.ParticipantCommandRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/meeting/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/sql/meeting/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = "/sql/meeting/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class MeetingRecordCommandServiceTest {
 
     private static final Long PROJECT_ID = 88001L;
@@ -45,6 +46,7 @@ class MeetingRecordCommandServiceTest {
     private ParticipantCommandRepository participantCommandRepository;
 
     @Test
+    @DisplayName("회의록 생성 시 의제와 참석자가 함께 저장된다.")
     void createMeetingRecord_savesMeetingAgendaParticipants() {
         CreateMeetingRecordRequest request = new CreateMeetingRecordRequest(
                 PROJECT_ID,
@@ -74,6 +76,7 @@ class MeetingRecordCommandServiceTest {
     }
 
     @Test
+    @DisplayName("회의록 수정 시 의제와 참석자가 교체된다.")
     void updateMeetingRecord_replacesAgendasAndParticipants() {
         UpdateMeetingRecordRequest request = new UpdateMeetingRecordRequest(
                 MEETING_ID,
@@ -102,6 +105,7 @@ class MeetingRecordCommandServiceTest {
     }
 
     @Test
+    @DisplayName("회의록 삭제 시 삭제 플래그가 설정된다.")
     void deleteMeetingRecord_marksDeleted() {
         UserPrincipal principal = new UserPrincipal(
                 PM_USER_ID,
