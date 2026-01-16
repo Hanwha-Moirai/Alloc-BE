@@ -9,6 +9,7 @@ import com.moirai.alloc.management.query.dto.registration.ProjectRegistrationVie
 import com.moirai.alloc.management.query.service.GetProjectDetail;
 import com.moirai.alloc.management.query.service.GetProjectList;
 import com.moirai.alloc.management.query.service.GetProjectRegistrationView;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,7 +28,7 @@ public class ProjectController {
     private final RegisterProject registerProject;
     private final GetProjectRegistrationView getProjectRegistrationView;
 
-    // 프로젝트 목록 조회(사용자 + PM 가능)
+    // 프로젝트 목록 조회 (USER + PM)
     @GetMapping
     public List<ProjectListItemDTO> getProjects(
             @AuthenticationPrincipal UserPrincipal principal
@@ -35,27 +36,31 @@ public class ProjectController {
         return getProjectList.getProjectList(principal.userId());
     }
 
-    //프로젝트 상세 조회(사용자 + PM 가능)
+    // 프로젝트 상세 조회 (USER + PM)
     @GetMapping("/{projectId}")
     public ProjectDetailViewDTO getProjectDetail(
             @PathVariable Long projectId
     ) {
         return getProjectDetail.getProjectDetail(projectId);
     }
-    // 프로젝트 등록 - 초기 데이터 조회(드롭다운) (PM만 가능)
+
+    // 프로젝트 등록 초기 데이터 조회 (PM만)
     @GetMapping("/registration-view")
     @PreAuthorize("hasRole('PM')")
     public ProjectRegistrationViewDTO getProjectRegistrationView() {
         return getProjectRegistrationView.getView();
     }
 
-    // 프로젝트 등록 -  입력(PM만 가능)
+    // 프로젝트 등록 (PM만)
     @PostMapping
     @PreAuthorize("hasRole('PM')")
     public Map<String, Long> registerProject(
-            @RequestBody RegisterProjectCommandDTO command
+            @Valid @RequestBody RegisterProjectCommandDTO command,
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
-        Long projectId = registerProject.registerProject(command);
+        Long projectId =
+                registerProject.registerProject(command, principal.userId());
+
         return Map.of("projectId", projectId);
     }
 }

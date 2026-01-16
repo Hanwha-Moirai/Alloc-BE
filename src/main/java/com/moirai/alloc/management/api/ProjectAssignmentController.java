@@ -25,21 +25,21 @@ public class ProjectAssignmentController {
     private final SelectAssignmentCandidates selectAssignmentCandidates;
     private final SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
 
-    // 인력 추천 및 선발 현황 화면 조회(선발현황 + 후보 리스트) (사용자 + PM 가능)
+    //인력 추천 및 선발 현황 화면 조회
+    //이미 선택된 인원 + 추천 후보를 하나의 리스트로 반환
+    //사용자 / PM 모두 접근 가능
+
     @GetMapping("/assign")
     public AssignmentCandidatePageView getAssignmentCandidatePage(
             @PathVariable Long projectId
     ) {
-        AssignmentCandidatesView view =
-                getAssignmentCandidates.getAssignmentCandidates(projectId);
-
-        return new AssignmentCandidatePageView(
-                view.getJobSummaries(),
-                view.getCandidates()
-        );
+        return getAssignmentCandidates.getAssignmentCandidates(projectId);
     }
 
-    // 프로젝트 상세보기; 인력 선발 현황 + 면담/승인 등 인력 배치 현황(사용자 + PM 가능)
+//    프로젝트 인력 배치 관리 화면
+//    선발된 인원 목록
+//    응답 상태 요약
+//    직군별 부족 인원 현황
     @GetMapping("/members")
     public AssignmentManagementPageView getAssignmentManagementPage(
             @PathVariable Long projectId
@@ -51,7 +51,9 @@ public class ProjectAssignmentController {
         );
     }
 
-    //선발한 최초 인력 선발 저장 (PM만 가능)
+
+     //최초 인력 선발 저장 (PM만 가능)
+
     @PreAuthorize("hasRole('PM')")
     @PostMapping("/assignments")
     public void assignCandidates(
@@ -64,7 +66,7 @@ public class ProjectAssignmentController {
         selectAssignmentCandidates.selectAssignmentCandidates(command);
     }
 
-    // 선발한 인력 배치 현황 조회 (사용자 + PM 가능)
+    //프로젝트 인력 배치 현황 조회(사용자 / PM 가능)
     @GetMapping("/assignments")
     public AssignmentStatusDTO getAssignmentStatus(
             @PathVariable Long projectId
@@ -72,9 +74,9 @@ public class ProjectAssignmentController {
         return getAssignmentStatus.getStatus(projectId);
     }
 
-    //선발 이후, 부족 인원 발생 → 추가 후보 생성 (PM만 가능)
-    @PostMapping("/assignments/additional")
+    //추가 후보 생성 (pm만)
     @PreAuthorize("hasRole('PM')")
+    @PostMapping("/assignments/additional")
     public void addMoreCandidates(
             @PathVariable Long projectId
     ) {

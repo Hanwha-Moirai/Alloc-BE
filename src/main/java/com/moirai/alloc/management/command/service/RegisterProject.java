@@ -16,7 +16,7 @@ public class RegisterProject {
     public RegisterProject(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
     }
-    public Long registerProject(RegisterProjectCommandDTO command) {
+    public Long registerProject(RegisterProjectCommandDTO command, Long pmUserId ) {
 //        1) project 내용을 입력한다.
 //        2) project를 저장한다.
 

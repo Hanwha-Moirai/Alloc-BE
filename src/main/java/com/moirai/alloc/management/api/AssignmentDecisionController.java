@@ -24,7 +24,7 @@ public class AssignmentDecisionController {
 
     //직원 응답; (사용자만 가능)
     @PostMapping("/response")
-    //@PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')")
     public void respondAssignment(
             @PathVariable Long assignmentId,
             @RequestParam AssignmentStatus status,
@@ -57,3 +57,4 @@ public class AssignmentDecisionController {
     }
 
 }
+//todo : (프로젝트 멤버만 접근 / 해당 프로젝트 PM만 가능)
