@@ -3,10 +3,12 @@ package com.moirai.alloc.management.api;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
+import com.moirai.alloc.management.query.dto.AssignedMemberDTO;
 import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidatesView;
 import com.moirai.alloc.management.query.dto.controller_dto.AssignmentCandidatePageView;
 import com.moirai.alloc.management.query.dto.controller_dto.AssignmentManagementPageView;
 import com.moirai.alloc.management.query.dto.select_list.AssignmentStatusDTO;
+import com.moirai.alloc.management.query.service.GetAssignedMembers;
 import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
 import com.moirai.alloc.management.query.service.GetAssignmentMembers;
 import com.moirai.alloc.management.query.service.GetAssignmentStatus;
@@ -14,17 +16,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects/{projectId}")
 public class ProjectAssignmentController {
 
     private final GetAssignmentCandidates getAssignmentCandidates;
-    private final GetAssignmentMembers getAssignmentMembers;
+    private final GetAssignmentMembers getAssignmentMembers; //배치 관리 화면용 유스케이스
     private final GetAssignmentStatus getAssignmentStatus;
     private final SelectAssignmentCandidates selectAssignmentCandidates;
     private final SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
-
+    private final GetAssignedMembers getAssignedMembers; //최종 확정 인원 조회 유스케이스
     //인력 추천 및 선발 현황 화면 조회
     //이미 선택된 인원 + 추천 후보를 하나의 리스트로 반환
     //사용자 / PM 모두 접근 가능
@@ -83,4 +87,13 @@ public class ProjectAssignmentController {
         selectAdditionalAssignmentCandidates
                 .selectAdditionalCandidates(projectId);
     }
+    // 최종 선정된 팀원 리스트
+    @GetMapping("/assignments/assigned")
+    @PreAuthorize("hasRole('PM') or hasRole('USER')")
+    public List<AssignedMemberDTO> getAssignedMembers(
+            @PathVariable Long projectId
+    ) {
+        return getAssignedMembers.getAssignedMembers(projectId);
+    }
+
 }
