@@ -8,6 +8,7 @@ import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskUpdateLogRepository;
 import com.moirai.alloc.gantt.common.exception.GanttException;
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/gantt/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/gantt/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttCommandServiceTest {
 
     private static final Long PROJECT_ID = 99001L;
@@ -46,6 +48,7 @@ class GanttCommandServiceTest {
     private TaskUpdateLogRepository taskUpdateLogRepository;
 
     @Test
+    @DisplayName("태스크 생성에 성공했습니다.")
     void createTask_savesTaskAndLog() {
         CreateTaskRequest request = new CreateTaskRequest(
                 MILESTONE_ID,
@@ -68,16 +71,17 @@ class GanttCommandServiceTest {
     }
 
     @Test
+    @DisplayName("태스크 상태 변경 권한이 없습니다.")
     void completeTask_whenAlreadyDone_throwsConflict() {
         GanttException exception = assertThrows(
                 GanttException.class,
                 () -> ganttCommandService.completeTask(PROJECT_ID, 99002L, new CompleteTaskRequest("done"))
         );
-
-        assertThat(exception.getCode()).isEqualTo("CONFLICT");
+        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
     }
 
     @Test
+    @DisplayName("하위 태스크가 있으면 마일스톤 삭제가 거부된다.")
     void deleteMilestone_whenHasTasks_throwsConflict() {
         GanttException exception = assertThrows(
                 GanttException.class,

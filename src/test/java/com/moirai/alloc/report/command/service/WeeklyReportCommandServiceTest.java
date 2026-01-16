@@ -13,6 +13,7 @@ import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
 import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,8 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-//@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-@EnableJpaAuditing
+@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class WeeklyReportCommandServiceTest {
 
     private static final Long PROJECT_ID = 77001L;
@@ -50,6 +50,7 @@ class WeeklyReportCommandServiceTest {
     private IssueBlockerCommandRepository issueBlockerCommandRepository;
 
     @Test
+    @DisplayName("주간보고 생성 시 초안 상태로 저장된다.")
     void createWeeklyReport_createsDraft() {
         CreateWeeklyReportRequest request = new CreateWeeklyReportRequest(
                 PROJECT_ID,
@@ -74,6 +75,7 @@ class WeeklyReportCommandServiceTest {
     }
 
     @Test
+    @DisplayName("주간보고 수정 시 태스크와 이슈 블로커가 저장된다.")
     void updateWeeklyReport_savesTasksAndIssueBlockers() {
         UpdateWeeklyReportRequest request = new UpdateWeeklyReportRequest(
                 REPORT_ID,
@@ -109,6 +111,7 @@ class WeeklyReportCommandServiceTest {
     }
 
     @Test
+    @DisplayName("주간보고 삭제 시 삭제 플래그가 설정된다.")
     void deleteWeeklyReport_marksDeleted() {
         UserPrincipal principal = new UserPrincipal(
                 PM_USER_ID,

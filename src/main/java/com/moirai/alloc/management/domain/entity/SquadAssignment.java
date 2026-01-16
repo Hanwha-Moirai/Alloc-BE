@@ -42,11 +42,16 @@ public class SquadAssignment {
 
     private LocalDateTime decidedAt;
 
-    public static SquadAssignment propose(Long projectId, Long userId) {
+    @Column(nullable = true)
+    private Integer fitnessScore; // 적합도 저장할 메서드 필요함
+
+    public static SquadAssignment propose(Long projectId, Long userId, int fitnessScore) {
         SquadAssignment sa = new SquadAssignment();
         sa.projectId = projectId;
         sa.userId = userId;
+        sa.fitnessScore = fitnessScore;
         sa.proposedAt = LocalDateTime.now();
+        // 선발되면 기본 상태
         sa.assignmentStatus = AssignmentStatus.REQUESTED;
         sa.finalDecision = FinalDecision.PENDING;
         return sa;
@@ -59,37 +64,55 @@ public class SquadAssignment {
             );
         }
     }
-
-    public void accept() {
+    private void validateAssignedUser(Long actorUserId) {
+        if (!this.userId.equals(actorUserId)) {
+            throw new IllegalStateException("배정 대상자만 수행할 수 있는 작업입니다.");
+        }
+    }
+    // 직원 액션
+    // 직원 수락
+    public void acceptAssignment(Long actorUserId) {
+        validateAssignedUser(actorUserId);
         validateNotDecided();
+
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 수락할 수 있습니다.");
         }
-        this.assignmentStatus = AssignmentStatus.ACCEPTED;
-    }
 
-    public void requestInterview() {
+        this.assignmentStatus = AssignmentStatus.ACCEPTED;
+        this.finalDecision = FinalDecision.ASSIGNED;
+        this.decidedAt = LocalDateTime.now();
+    }
+    // 직원 인터뷰 요청
+    public void requestInterview(Long actorUserId) {
+        validateAssignedUser(actorUserId);
         validateNotDecided();
+
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 인터뷰 요청이 가능합니다.");
         }
+
         this.assignmentStatus = AssignmentStatus.INTERVIEW_REQUESTED;
     }
-
-    public void assign() {
-        if (this.finalDecision != FinalDecision.PENDING) {
-            throw new IllegalStateException("이미 최종 결정이 내려졌습니다.");
-        }
+    // pm 액션
+    public void finalAssign() {
+        validateNotDecided();
         this.finalDecision = FinalDecision.ASSIGNED;
         this.decidedAt = LocalDateTime.now();
     }
 
-    public void exclude() {
-        if (this.finalDecision != FinalDecision.PENDING) {
-            throw new IllegalStateException("이미 최종 결정이 내려졌습니다.");
-        }
+    public void finalExclude() {
+        validateNotDecided();
         this.finalDecision = FinalDecision.EXCLUDED;
         this.decidedAt = LocalDateTime.now();
+    }
+    //조회용
+    public boolean isPending() {
+        return this.finalDecision == FinalDecision.PENDING;
+    }
+
+    public boolean isFinallyAssigned() {
+        return this.finalDecision == FinalDecision.ASSIGNED;
     }
 
 }
