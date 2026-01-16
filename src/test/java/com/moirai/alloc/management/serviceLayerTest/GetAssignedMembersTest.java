@@ -5,7 +5,7 @@ import com.moirai.alloc.hr.command.domain.JobStandard;
 import com.moirai.alloc.hr.command.domain.TitleStandard;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.management.query.dto.AssignedMemberDTO;
+import com.moirai.alloc.management.query.dto.selectedWorker.AssignedMemberDTO;
 import com.moirai.alloc.management.query.service.GetAssignedMembers;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;

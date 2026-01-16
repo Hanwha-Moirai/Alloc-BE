@@ -3,7 +3,7 @@ package com.moirai.alloc.management.controllerLayerTest;
 import com.moirai.alloc.management.api.ProjectAssignmentController;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
-import com.moirai.alloc.management.query.dto.AssignedMemberDTO;
+import com.moirai.alloc.management.query.dto.selectedWorker.AssignedMemberDTO;
 import com.moirai.alloc.management.query.service.GetAssignedMembers;
 import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
 import com.moirai.alloc.management.query.service.GetAssignmentMembers;
