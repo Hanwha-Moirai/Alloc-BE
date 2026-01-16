@@ -1,10 +1,13 @@
 package com.moirai.alloc.management.api;
 
+import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.management.command.service.AcceptAssignment;
 import com.moirai.alloc.management.command.service.DecideFinalAssignment;
 import com.moirai.alloc.management.command.service.RequestInterview;
 import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +22,16 @@ public class AssignmentDecisionController {
     private final RequestInterview requestInterview;
     private final DecideFinalAssignment decideFinalAssignment;
 
+    //직원 응답; (사용자만 가능)
     @PostMapping("/response")
+    //@PreAuthorize("hasRole('USER')")
     public void respondAssignment(
             @PathVariable Long assignmentId,
             @RequestParam AssignmentStatus status,
-            @RequestParam Long userId   // 그냥 식별자; 권한 안 불림
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
+        Long userId = principal.userId();
+
         if (status == AssignmentStatus.ACCEPTED) {
             acceptAssignment.acceptAssignment(assignmentId, userId);
         } else if (status == AssignmentStatus.INTERVIEW_REQUESTED) {
@@ -34,15 +41,17 @@ public class AssignmentDecisionController {
         }
     }
 
+    //최종 결정; PM만 가능
     @PostMapping("/decision")
+    @PreAuthorize("hasRole('PM')")
     public void decideAssignment(
             @PathVariable Long assignmentId,
             @RequestParam FinalDecision decision,
-            @RequestParam Long pmUserId   // 그냥 식별자; 권한 안 붙임
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
         decideFinalAssignment.decideFinalAssignment(
                 assignmentId,
-                pmUserId,
+                principal.userId(),
                 decision
         );
     }
