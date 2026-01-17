@@ -1,6 +1,7 @@
 package com.moirai.alloc.report.command.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,31 +26,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class WeeklyReportDocsCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
+    @DisplayName("주간보고 생성 요청이 성공한다.")
     void createReport_returnsCreatedResponse() throws Exception {
-        String body = """
-                {
-                  "projectId": 77001,
-                  "weekStartDate": "2025-01-06",
-                  "weekEndDate": "2025-01-12"
-                }
-                """;
-
         mockMvc.perform(post("/api/projects/{projectId}/docs/report/create", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.reportId").isNumber());
     }
 
     @Test
+    @DisplayName("주간보고 수정 요청이 성공한다.")
     void saveReport_returnsUpdatedAt() throws Exception {
         String body = """
                 {
@@ -73,6 +68,7 @@ class WeeklyReportDocsCommandControllerTest {
     }
 
     @Test
+    @DisplayName("주간보고 삭제 요청이 성공한다.")
     void deleteReport_returnsOk() throws Exception {
         String body = """
                 {
@@ -90,6 +86,7 @@ class WeeklyReportDocsCommandControllerTest {
     }
 
     @Test
+    @DisplayName("PM이 아니면 주간보고 수정 요청이 거부된다.")
     void saveReport_forbiddenWhenUserRoleIsNotPm() throws Exception {
         String body = """
                 {

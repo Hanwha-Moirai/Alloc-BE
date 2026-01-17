@@ -47,7 +47,7 @@ public class GanttQueryService {
 
         List<TaskProjection> tasks = taskQueryMapper.findTasks(
                 projectId,
-                request.assigneeId(),
+                userId,
                 request.status() == null ? null : request.status().name(),
                 request.startDate(),
                 request.endDate()
@@ -102,6 +102,24 @@ public class GanttQueryService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public Double findMilestoneCompletionRate(Long projectId) {
+        Long userId = authenticatedUserProvider.getCurrentUserId();
+        validateProject(projectId);
+        validateMember(projectId, userId);
+
+        List<Boolean> completionStates = milestoneQueryMapper.findMilestoneCompletionStates(projectId);
+        if (completionStates.isEmpty()) {
+            return 0.0;
+        }
+
+        long completedCount = completionStates.stream()
+                .filter(Boolean.TRUE::equals)
+                .count();
+
+        return completedCount * 100.0 / completionStates.size();
+    }
+
     private void validateMember(Long projectId, Long userId) {
         if (!projectMembershipPort.isMember(projectId, userId)) {
             throw GanttException.notFound("프로젝트 멤버가 아닙니다.");
@@ -118,7 +136,7 @@ public class GanttQueryService {
         return new TaskResponse(
                 projection.taskId(),
                 projection.milestoneId(),
-                projection.userId(),
+                projection.userName(),
                 projection.taskCategory(),
                 projection.taskName(),
                 projection.taskDescription(),

@@ -22,3 +22,13 @@ spring:
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
+
+
+notification:
+  sse:
+    heartbeat:
+      enabled: true
+      fixed-delay-ms: 25000
+      initial-delay-ms: 5000
+      event-name: PING
+      data: ok

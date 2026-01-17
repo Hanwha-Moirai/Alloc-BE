@@ -11,12 +11,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "employee")
 public class Employee {
+
 
     public enum EmployeeType { FULL_TIME, CONTRACT, INTERN, VENDOR }
 
@@ -68,6 +73,26 @@ public class Employee {
 
         this.employeeType = (employeeType == null) ? EmployeeType.FULL_TIME : employeeType;
     }
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
+    private List<EmployeeSkill> skills = new ArrayList<>();
+
+    //스킬 조회용
+    public int getSkillLevel(Long techId) {
+        for (EmployeeSkill skill : this.skills) {
+            if (skill.getTech().getTechId().equals(techId)) {
+                return skill.getProficiency().ordinal() + 1;
+            }
+        }
+        return 0; // 기술 없으면 0
+    }
+    // 경험한 기술 조회용
+    public Set<Long> getExperiencedTechIds() {
+        return this.skills.stream()
+                .map(skill -> skill.getTech().getTechId())
+                .collect(Collectors.toSet());
+    }
+
+
 
     public void changeJob(JobStandard job) {
         this.job = job;
