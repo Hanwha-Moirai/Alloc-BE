@@ -9,4 +9,6 @@ public interface JobStandardRepository extends JpaRepository<JobStandard, Long> 
 
     // 드롭다운 정렬
     List<JobStandard> findAllByOrderByJobNameAsc();
+
+    boolean existsByJobNameIgnoreCase(String jobName);
 }
