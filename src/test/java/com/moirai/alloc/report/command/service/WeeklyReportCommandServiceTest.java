@@ -2,7 +2,6 @@ package com.moirai.alloc.report.command.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.report.command.dto.request.CompletedTaskRequest;
-import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.request.IncompleteTaskRequest;
 import com.moirai.alloc.report.command.dto.request.NextWeekTaskRequest;
 import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
@@ -52,11 +51,7 @@ class WeeklyReportCommandServiceTest {
     @Test
     @DisplayName("주간보고 생성 시 초안 상태로 저장된다.")
     void createWeeklyReport_createsDraft() {
-        CreateWeeklyReportRequest request = new CreateWeeklyReportRequest(
-                PROJECT_ID,
-                LocalDate.of(2025, 1, 6),
-                LocalDate.of(2025, 1, 12)
-        );
+        LocalDate today = LocalDate.now();
         UserPrincipal principal = new UserPrincipal(
                 PM_USER_ID,
                 "pm_77001",
@@ -67,11 +62,13 @@ class WeeklyReportCommandServiceTest {
         );
 
         WeeklyReportCreateResponse response =
-                weeklyReportCommandService.createWeeklyReport(PROJECT_ID, request, principal);
+                weeklyReportCommandService.createWeeklyReport(PROJECT_ID, principal);
 
         WeeklyReport report = weeklyReportCommandRepository.findByReportIdAndIsDeletedFalse(response.reportId())
                 .orElseThrow();
         assertThat(report.getReportStatus()).isEqualTo(WeeklyReport.ReportStatus.DRAFT);
+        assertThat(report.getWeekStartDate()).isEqualTo(today);
+        assertThat(report.getWeekEndDate()).isEqualTo(today);
     }
 
     @Test
