@@ -89,6 +89,14 @@ class GanttQueryServiceTest {
         assertThat(responses.stream().anyMatch(item -> item.milestoneId().equals(99003L))).isFalse();
     }
 
+    @Test
+    @DisplayName("프로젝트 마일스톤 달성률을 계산한다.")
+    void findMilestoneCompletionRate_returnsRate() {
+        Double rate = ganttQueryService.findMilestoneCompletionRate(PROJECT_ID);
+
+        assertThat(rate).isEqualTo(50.0);
+    }
+
     @TestConfiguration
     static class TestAuthConfig {
         @Bean

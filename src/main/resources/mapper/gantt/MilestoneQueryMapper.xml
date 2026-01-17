@@ -19,4 +19,12 @@
             AND is_deleted = false
         ORDER BY start_date ASC, milestone_id ASC
     </select>
+
+    <select id="findMilestoneCompletionStates" resultType="java.lang.Boolean">
+        SELECT
+            is_completed
+        FROM milestone
+        WHERE project_id = #{projectId}
+            AND is_deleted = false
+    </select>
 </mapper>
