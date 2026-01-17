@@ -66,6 +66,16 @@ class GanttQueryControllerTest {
                 .andExpect(jsonPath("$.data[*].milestoneId", not(hasItem(99003))));
     }
 
+    @Test
+    @WithMockUser
+    @DisplayName("프로젝트 마일스톤 달성률 조회가 성공한다.")
+    void findMilestoneCompletionRate_returnsRate() throws Exception {
+        mockMvc.perform(get("/api/projects/{projectId}/achievement-rate", 99001))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data").value(50.0));
+    }
+
     @TestConfiguration
     static class TestAuthConfig {
         @Bean

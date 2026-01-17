@@ -43,6 +43,9 @@ public class Milestone extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @Column(name = "is_completed", nullable = false)
+    private Boolean isCompleted = false;
+
     @Builder
     private Milestone(Long projectId,
                       String milestoneName,
@@ -56,6 +59,7 @@ public class Milestone extends BaseTimeEntity {
         this.endDate = endDate;
         this.achievementRate = achievementRate;
         this.isDeleted = (isDeleted == null) ? false : isDeleted;
+        this.isCompleted = (isCompleted == null) ? false : isCompleted;
     }
 
     public void changeName(String milestoneName) {
