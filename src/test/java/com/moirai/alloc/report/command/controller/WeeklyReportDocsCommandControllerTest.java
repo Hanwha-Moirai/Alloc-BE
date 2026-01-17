@@ -35,18 +35,9 @@ class WeeklyReportDocsCommandControllerTest {
     @Test
     @DisplayName("주간보고 생성 요청이 성공한다.")
     void createReport_returnsCreatedResponse() throws Exception {
-        String body = """
-                {
-                  "projectId": 77001,
-                  "weekStartDate": "2025-01-06",
-                  "weekEndDate": "2025-01-12"
-                }
-                """;
-
         mockMvc.perform(post("/api/projects/{projectId}/docs/report/create", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.reportId").isNumber());

@@ -2,7 +2,6 @@ package com.moirai.alloc.report.command.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.request.DeleteWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportDeleteResponse;
@@ -31,11 +30,10 @@ public class WeeklyReportDocsCommandController {
     @PreAuthorize("hasRole('PM')")
     public ResponseEntity<ApiResponse<WeeklyReportCreateResponse>> createReport(
             @PathVariable("project_id") Long projectId,
-            @RequestBody CreateWeeklyReportRequest request,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         WeeklyReportCreateResponse response =
-                weeklyReportCommandService.createWeeklyReport(projectId, request, principal);
+                weeklyReportCommandService.createWeeklyReport(projectId, principal);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
