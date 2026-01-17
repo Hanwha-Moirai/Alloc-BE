@@ -1,6 +1,8 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
 import com.moirai.alloc.management.api.ProjectController;
+import com.moirai.alloc.management.command.dto.EditProjectDTO;
+import com.moirai.alloc.management.command.service.EditProject;
 import com.moirai.alloc.management.command.service.RegisterProject;
 import com.moirai.alloc.management.query.service.GetProjectDetail;
 import com.moirai.alloc.management.query.service.GetProjectList;
@@ -13,12 +15,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import org.springframework.http.MediaType;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,6 +37,8 @@ class ProjectControllerTest extends ControllerTestSupport {
     private RegisterProject registerProject;
     @MockBean
     private GetProjectRegistrationView getProjectRegistrationView;
+    @MockBean
+    private EditProject editProject;
 
     private String validRegisterProjectJson() {
         return """
@@ -78,7 +81,7 @@ class ProjectControllerTest extends ControllerTestSupport {
     @Test
     void getProjects_returnsForbidden_whenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/projects"))
-                .andExpect(status().isForbidden()); // ✅ 401 → 403
+                .andExpect(status().isForbidden());
     }
     /**
      * [GET /api/projects]
@@ -140,7 +143,7 @@ class ProjectControllerTest extends ControllerTestSupport {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validRegisterProjectJson()))
-                .andExpect(status().isForbidden()); // ✅ 401 → 403
+                .andExpect(status().isForbidden());
     }
     /**
      * [POST /api/projects]
@@ -155,5 +158,40 @@ class ProjectControllerTest extends ControllerTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateProject_returnsOk_forPm() throws Exception {
+        mockMvc.perform(
+                        put("/api/projects/{projectId}", 1L)
+                                .with(authenticatedUser("PM"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                {
+                                  "projectId": 1,
+                                  "projectName": "수정 프로젝트",
+                                  "startDate": "2025-02-01",
+                                  "endDate": "2025-07-31",
+                                  "clientName": "고객사",
+                                  "description": "설명",
+                                  "budget": 2000
+                                }
+                                """)
+                )
+                .andExpect(status().isOk());
+
+        verify(editProject, times(1))
+                .update(any(EditProjectDTO.class));
+    }
+
+    @Test
+    void updateProject_returnsForbidden_forUser() throws Exception {
+        mockMvc.perform(
+                        put("/api/projects/{projectId}", 1L)
+                                .with(authenticatedUser("USER"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}")
+                )
+                .andExpect(status().isForbidden());
     }
 }

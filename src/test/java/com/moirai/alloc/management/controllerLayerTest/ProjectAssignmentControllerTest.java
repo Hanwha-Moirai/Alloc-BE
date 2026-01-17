@@ -3,12 +3,8 @@ package com.moirai.alloc.management.controllerLayerTest;
 import com.moirai.alloc.management.api.ProjectAssignmentController;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
-import com.moirai.alloc.management.query.dto.candidate_list.AssignmentCandidatesView;
-import com.moirai.alloc.management.query.dto.controller_dto.AssignmentCandidatePageView;
-import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
-import com.moirai.alloc.management.query.service.GetAssignmentMembers;
-import com.moirai.alloc.management.query.service.GetAssignmentStatus;
-import com.moirai.alloc.management.query.service.GetProjectList;
+import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
+import com.moirai.alloc.management.query.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -35,6 +31,8 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
     @MockBean private SelectAssignmentCandidates selectAssignmentCandidates;
     @MockBean private SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
     @MockBean private GetProjectList getProjectList;
+    @MockBean private GetAssignedMembers getAssignedMembers;
+
 
     /**
      * [GET /api/projects/{projectId}/assign]

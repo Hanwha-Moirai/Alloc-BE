@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.query.dto.select_list;
+package com.moirai.alloc.management.query.dto.selectedList;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

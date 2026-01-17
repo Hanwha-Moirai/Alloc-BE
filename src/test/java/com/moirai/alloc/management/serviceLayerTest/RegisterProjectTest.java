@@ -1,6 +1,7 @@
 package com.moirai.alloc.management.serviceLayerTest;
 
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
+import com.moirai.alloc.management.command.service.AssignProjectManager;
 import com.moirai.alloc.management.command.service.RegisterProject;
 import com.moirai.alloc.management.domain.entity.TechReqLevel;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
@@ -19,7 +20,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 import org.mockito.ArgumentCaptor;
 import static org.assertj.core.api.Assertions.assertThat;
-
+// 시나리오: 프로젝트 등록 시, 프로젝트 저장하고 PM을 자동 배정한다.
 @ExtendWith(MockitoExtension.class)
 class RegisterProjectTest {
 
@@ -28,6 +29,9 @@ class RegisterProjectTest {
 
     @Mock
     private ProjectRepository projectRepository;
+
+    @Mock
+    private AssignProjectManager assignProjectManager;
 
     @Test
     void registerProject() {
@@ -59,13 +63,14 @@ class RegisterProjectTest {
 
         when(projectRepository.save(any(Project.class)))
                 .thenReturn(savedProject);
+        Long pmUserId = 1L;
 
         // when
         Long projectId = registerProject.registerProject(command,1L);
 
-        // then
+        // 반환된 PROJECTID 검증
         assertThat(projectId).isEqualTo(100L);
-
+        // 프로젝트 저장 시 전달 된 값 검증
         ArgumentCaptor<Project> captor = ArgumentCaptor.forClass(Project.class);
         verify(projectRepository).save(captor.capture());
 
@@ -73,5 +78,9 @@ class RegisterProjectTest {
         assertThat(project.getName()).isEqualTo("AI 프로젝트");
         assertThat(project.getJobRequirements()).hasSize(2);
         assertThat(project.getTechRequirements()).hasSize(2);
+
+        // 도메인 정책 검증; 프로젝트 저장 후 생성자를 PM로 자동 배정하는 정책이 실행되는지
+        verify(assignProjectManager)
+                .assignPm(100L, pmUserId);
     }
 }

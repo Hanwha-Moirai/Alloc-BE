@@ -99,4 +99,11 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             Long userId,
             FinalDecision finalDecision
     );
+    @Query("""
+        select sa
+        from SquadAssignment sa
+        where sa.projectId = :projectId
+          and sa.finalDecision = 'ASSIGNED'
+    """)
+    List<SquadAssignment> findAssignedByProjectId(@Param("projectId") Long projectId);
 }

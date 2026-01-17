@@ -1,10 +1,12 @@
 package com.moirai.alloc.management.api;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import com.moirai.alloc.management.command.dto.EditProjectDTO;
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
+import com.moirai.alloc.management.command.service.EditProject;
 import com.moirai.alloc.management.command.service.RegisterProject;
-import com.moirai.alloc.management.query.dto.project_detail.ProjectDetailViewDTO;
-import com.moirai.alloc.management.query.dto.project_list.ProjectListItemDTO;
+import com.moirai.alloc.management.query.dto.projectDetail.ProjectDetailViewDTO;
+import com.moirai.alloc.management.query.dto.projectList.ProjectListItemDTO;
 import com.moirai.alloc.management.query.dto.registration.ProjectRegistrationViewDTO;
 import com.moirai.alloc.management.query.service.GetProjectDetail;
 import com.moirai.alloc.management.query.service.GetProjectList;
@@ -27,7 +29,7 @@ public class ProjectController {
     private final GetProjectDetail getProjectDetail;
     private final RegisterProject registerProject;
     private final GetProjectRegistrationView getProjectRegistrationView;
-
+    private final EditProject editProject;
     // 프로젝트 목록 조회 (USER + PM)
     @GetMapping
     public List<ProjectListItemDTO> getProjects(
@@ -62,5 +64,18 @@ public class ProjectController {
                 registerProject.registerProject(command, principal.userId());
 
         return Map.of("projectId", projectId);
+    }
+
+    //프로젝트 기본 정보 수정 (PM 전용)
+    @PreAuthorize("hasRole('PM')")
+    @PutMapping("/{projectId}")
+    public void updateProject(
+            @PathVariable Long projectId,
+            @RequestBody EditProjectDTO command
+    ) {
+        if (!projectId.equals(command.getProjectId())) {
+            throw new IllegalArgumentException("Project ID mismatch");
+        }
+        editProject.update(command);
     }
 }

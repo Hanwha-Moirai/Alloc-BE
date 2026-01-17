@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.query.dto.project_detail;
+package com.moirai.alloc.management.query.dto.projectDetail;
 
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.AllArgsConstructor;
