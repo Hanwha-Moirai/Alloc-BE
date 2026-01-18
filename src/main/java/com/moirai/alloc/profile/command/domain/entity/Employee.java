@@ -98,5 +98,17 @@ public class Employee {
         this.job = job;
     }
 
+    public void changeDepartment(Department department) {
+        this.department = department;
+    }
+
+    public void changeTitleStandard(TitleStandard titleStandard) {
+        this.titleStandard = titleStandard;
+    }
+
+    public void changeEmployeeType(EmployeeType employeeType) {
+        this.employeeType = employeeType;
+    }
+
 }
 
