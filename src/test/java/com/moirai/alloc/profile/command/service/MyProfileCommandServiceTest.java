@@ -32,8 +32,8 @@ import static org.assertj.core.api.Assertions.*;
         SqlScriptsTestExecutionListener.class,
         TransactionalTestExecutionListener.class
 })
-//@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-//@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
 class MyProfileCommandServiceTest {
 
     private static final Long USER_ID_KMJ = 77001L;
