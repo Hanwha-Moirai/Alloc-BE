@@ -5,7 +5,6 @@ import com.moirai.alloc.gantt.command.domain.entity.Task;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
-import com.moirai.alloc.report.command.dto.request.CreateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.request.IncompleteTaskRequest;
 import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
@@ -22,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
 
 @Service
 public class WeeklyReportCommandService {
@@ -49,17 +50,14 @@ public class WeeklyReportCommandService {
 
     @Transactional
     public WeeklyReportCreateResponse createWeeklyReport(Long projectId,
-                                                         CreateWeeklyReportRequest request,
                                                          UserPrincipal principal) {
-        if (request.projectId() == null || !request.projectId().equals(projectId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "프로젝트 정보가 일치하지 않습니다.");
-        }
-        validateMembership(request.projectId(), principal.userId());
+        validateMembership(projectId, principal.userId());
+        LocalDate reportDate = LocalDate.now();
         WeeklyReport report = WeeklyReport.create(
                 principal.userId(),
-                request.projectId(),
-                request.weekStartDate(),
-                request.weekEndDate()
+                projectId,
+                reportDate,
+                reportDate
         );
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())

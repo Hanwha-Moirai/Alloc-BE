@@ -13,6 +13,8 @@ public class MyProfileUpdateResponse {
     private String email;
     private String phone;
 
+    private java.time.LocalDate birthday;
+
     private Long jobId;
     private String jobName;
 

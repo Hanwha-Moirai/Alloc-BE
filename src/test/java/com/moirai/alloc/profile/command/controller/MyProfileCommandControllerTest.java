@@ -20,6 +20,8 @@ import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDate;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,6 +46,10 @@ class MyProfileCommandControllerTest {
     private static final Long EMPLOYEE_TECH_ID_JAVA = 1001L;
     private static final Long TECH_ID_JAVA = 1L;
 
+    private static final Long JOB_ID_BACKEND = 1L;               // BackendDeveloper
+
+    private static final LocalDate NEW_BIRTHDAY = LocalDate.of(1999, 1, 1);
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -67,13 +73,15 @@ class MyProfileCommandControllerTest {
         }
 
         @Test
-        @DisplayName("이메일과 연락처를 수정한다")
+        @DisplayName("이메일/연락처/생년월일/직군을 수정한다")
         @WithUserDetails("kmj")
-        void updateProfile_success() throws Exception {
+        void updateProfile_allFields_success() throws Exception {
             String requestJson = """
                     {
-                        "email": "updated@alloc.co.kr",
-                        "phone": "010-1111-2222"
+                      "email": "updated@alloc.co.kr",
+                      "phone": "010-1111-2222",
+                      "birthday": "1999-01-01",
+                      "jobId": 1
                     }
                     """;
 
@@ -86,25 +94,8 @@ class MyProfileCommandControllerTest {
                     .andExpect(jsonPath("$.data.userName").value("김명진"))
                     .andExpect(jsonPath("$.data.email").value("updated@alloc.co.kr"))
                     .andExpect(jsonPath("$.data.phone").value("010-1111-2222"))
-                    .andDo(print());
-        }
-
-        @Test
-        @DisplayName("직군을 수정한다")
-        @WithUserDetails("kmj")
-        void updateJob_success() throws Exception {
-            String requestJson = """
-                    {
-                        "jobId": 1
-                    }
-                    """;
-
-            mockMvc.perform(put("/api/users/me/profile")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(requestJson))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.jobId").value(1))
+                    .andExpect(jsonPath("$.data.birthday").value("1999-01-01"))
+                    .andExpect(jsonPath("$.data.jobId").value(JOB_ID_BACKEND))
                     .andExpect(jsonPath("$.data.jobName").value("BackendDeveloper"))
                     .andDo(print());
         }

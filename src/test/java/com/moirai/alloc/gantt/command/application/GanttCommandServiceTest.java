@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/gantt/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/gantt/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class GanttCommandServiceTest {
 
     private static final Long PROJECT_ID = 99001L;
@@ -80,14 +81,14 @@ class GanttCommandServiceTest {
     }
 
     @Test
-    @DisplayName("PM 권한이 없으면 태스크 삭제 권한 불허")
+    @DisplayName("하위 태스크가 있으면 마일스톤 삭제가 거부된다.")
     void deleteMilestone_whenHasTasks_throwsConflict() {
         GanttException exception = assertThrows(
                 GanttException.class,
                 () -> ganttCommandService.deleteMilestone(PROJECT_ID, MILESTONE_ID)
         );
 
-        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
+        assertThat(exception.getCode()).isEqualTo("CONFLICT");
     }
 
     @TestConfiguration

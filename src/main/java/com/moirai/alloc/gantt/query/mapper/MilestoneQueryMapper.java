@@ -9,4 +9,6 @@ import java.util.List;
 @Mapper
 public interface MilestoneQueryMapper {
     List<MilestoneProjection> findMilestones(@Param("projectId") Long projectId);
+
+    List<Boolean> findMilestoneCompletionStates(@Param("projectId") Long projectId);
 }

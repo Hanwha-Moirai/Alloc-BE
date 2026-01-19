@@ -28,12 +28,10 @@ public class GanttQueryController {
     // 태스크 조회
     @GetMapping("/tasks")
     public ApiResponse<List<TaskResponse>> findTasks(@PathVariable Long projectId,
-                                                     @RequestParam(required = false) String userName,
                                                      @RequestParam(required = false) String status,
                                                      @RequestParam(required = false) LocalDate startDate,
                                                      @RequestParam(required = false) LocalDate endDate) {
         TaskSearchRequest request = new TaskSearchRequest(
-                userName,
                 status == null ? null : TaskStatus.valueOf(status),
                 startDate,
                 endDate
@@ -56,4 +54,12 @@ public class GanttQueryController {
         List<MilestoneResponse> milestones = ganttQueryService.findMilestones(projectId);
         return ApiResponse.success(milestones);
     }
+
+    // 프로젝트 마일스톤 달성률 조회
+    @GetMapping("/achievement-rate")
+    public ApiResponse<Double> findMilestoneCompletionRate(@PathVariable Long projectId) {
+        Double completionRate = ganttQueryService.findMilestoneCompletionRate(projectId);
+        return ApiResponse.success(completionRate);
+    }
+
 }
