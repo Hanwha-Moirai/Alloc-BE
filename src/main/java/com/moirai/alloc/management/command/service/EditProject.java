@@ -27,5 +27,7 @@ public class EditProject {
                 command.getDescription(),
                 command.getPredictedCost()
         );
+        project.changeProjectStatus(command.getProjectStatus());
+        project.changeProjectType(command.getProjectType());
     }
 }
