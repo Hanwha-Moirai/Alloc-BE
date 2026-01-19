@@ -11,21 +11,13 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class EditProjectDTO {
-    @NotNull
     private Long projectId;
-    @NotBlank
     private String projectName;
-    @NotNull
     private LocalDate startDate;
-    @NotNull
     private LocalDate endDate;
-    @NotNull
     private Integer predictedCost;
-    @NotNull
     private Project.ProjectType projectType;
-    @NotNull
     private Project.ProjectStatus projectStatus;
-
     private String partners;
     private String description;
 
