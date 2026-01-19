@@ -16,9 +16,12 @@ public class EditProjectDTO {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer predictedCost;
-    private Project.ProjectType projectType;
-    private Project.ProjectStatus projectStatus;
     private String partners;
     private String description;
+
+    @NotNull
+    private Project.ProjectType projectType;
+    @NotNull
+    private Project.ProjectStatus projectStatus;
 
 }
