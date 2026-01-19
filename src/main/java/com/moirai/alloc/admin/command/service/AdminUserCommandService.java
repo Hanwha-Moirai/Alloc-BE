@@ -38,7 +38,7 @@ public class AdminUserCommandService {
 
         // 1) 중복 검증
         if (userRepository.existsByLoginId(req.getLoginId())) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 ID 입니다.");
+            throw new IllegalArgumentException("이미 존재하는 로그인 ID 입니다.");
         }
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
