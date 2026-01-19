@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.List;
 
+/* 사용자 등록 시 사용자 정보 드롭다운 조회 response */
 @Getter
 @Builder
 public class AdminUserMetaResponse {
