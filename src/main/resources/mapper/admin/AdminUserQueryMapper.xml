@@ -9,7 +9,7 @@
         LEFT JOIN employee e ON e.user_id = u.user_id
         LEFT JOIN job_standard j ON j.job_id = e.job_id
         LEFT JOIN department d ON d.dept_id = e.dept_id
-        LEFT JOIN title_standard ts ON ts.title_standard = e.title_standard
+        LEFT JOIN title_standard ts ON ts.title_standard_id = e.title_standard_id
     </sql>
 
     <sql id="Where">
