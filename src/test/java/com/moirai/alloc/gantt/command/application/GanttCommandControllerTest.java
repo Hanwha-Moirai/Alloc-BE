@@ -59,6 +59,15 @@ class GanttCommandControllerTest {
                                 .templateContext("태스크 {{taskName}} 담당자로 지정되었습니다.")
                                 .build()
                 ));
+        alarmTemplateRepository
+                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.MILESTONE)
+                .orElseGet(() -> alarmTemplateRepository.save(
+                        AlarmTemplate.builder()
+                                .alarmTemplateType(AlarmTemplateType.MILESTONE)
+                                .templateTitle("마일스톤 생성")
+                                .templateContext("마일스톤 {{milestoneName}} 이 생성되었습니다.")
+                                .build()
+                ));
     }
 
     @Test
@@ -123,6 +132,35 @@ class GanttCommandControllerTest {
 
         long afterUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
         org.assertj.core.api.Assertions.assertThat(afterUnread).isEqualTo(beforeUnread + 1);
+    }
+
+    @Test
+    @DisplayName("마일스톤 생성 시 프로젝트 멤버 모두에게 알림 로그가 생성된다.")
+    void createMilestone_createsAlarmLogsForProjectMembers() throws Exception {
+        long beforePmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
+        long beforeUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
+
+        String body = """
+                {
+                  "milestoneName": "New Milestone",
+                  "startDate": "2025-01-05",
+                  "endDate": "2025-01-10",
+                  "achievementRate": 0
+                }
+                """;
+
+        mockMvc.perform(post("/api/projects/{projectId}/ganttchart/milestones", 99001)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        long afterPmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
+        long afterUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
+
+        org.assertj.core.api.Assertions.assertThat(afterPmUnread).isEqualTo(beforePmUnread + 1);
+        org.assertj.core.api.Assertions.assertThat(afterUserUnread).isEqualTo(beforeUserUnread + 1);
     }
 
     @Test

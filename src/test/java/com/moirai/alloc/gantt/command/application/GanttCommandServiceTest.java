@@ -1,6 +1,7 @@
 package com.moirai.alloc.gantt.command.application;
 
 import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
+import com.moirai.alloc.gantt.command.application.dto.request.CreateMilestoneRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
 import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
@@ -70,6 +71,15 @@ class GanttCommandServiceTest {
                                 .alarmTemplateType(AlarmTemplateType.TASK_ASSIGN)
                                 .templateTitle("태스크 담당자 배정")
                                 .templateContext("태스크 {{taskName}} 담당자로 지정되었습니다.")
+                                .build()
+                ));
+        alarmTemplateRepository
+                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.MILESTONE)
+                .orElseGet(() -> alarmTemplateRepository.save(
+                        AlarmTemplate.builder()
+                                .alarmTemplateType(AlarmTemplateType.MILESTONE)
+                                .templateTitle("마일스톤 생성")
+                                .templateContext("마일스톤 {{milestoneName}} 이 생성되었습니다.")
                                 .build()
                 ));
     }
@@ -149,6 +159,37 @@ class GanttCommandServiceTest {
         assertThat(latestLog.getTargetType()).isEqualTo(TargetType.TASK);
         assertThat(latestLog.getTargetId()).isEqualTo(99001L);
         assertThat(latestLog.getLinkUrl()).isEqualTo("/projects/99001/tasks");
+    }
+
+    @Test
+    @DisplayName("마일스톤 생성 시 프로젝트 멤버 모두에게 알림 로그가 생성된다.")
+    void createMilestone_createsAlarmLogsForProjectMembers() {
+        long beforePmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
+        long beforeUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
+
+        Long milestoneId = ganttCommandService.createMilestone(PROJECT_ID, new CreateMilestoneRequest(
+                "TEST_MILESTONE_CREATE_99001",
+                LocalDate.of(2025, 1, 5),
+                LocalDate.of(2025, 1, 10),
+                0L
+        ));
+
+        long afterPmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
+        long afterUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
+
+        assertThat(afterPmUnread).isEqualTo(beforePmUnread + 1);
+        assertThat(afterUserUnread).isEqualTo(beforeUserUnread + 1);
+
+        var pmLatest = alarmLogRepository
+                .findByUserIdAndDeletedFalseOrderByCreatedAtDesc(99001L, PageRequest.of(0, 1))
+                .getContent()
+                .stream()
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(pmLatest.getTargetType()).isEqualTo(TargetType.MILESTONE);
+        assertThat(pmLatest.getTargetId()).isEqualTo(milestoneId);
+        assertThat(pmLatest.getLinkUrl()).isEqualTo("/projects/99001/gantt");
     }
 
     @TestConfiguration
