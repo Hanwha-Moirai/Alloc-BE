@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CalendarEventItemResponse {
     private Long eventId;
+    private Long ownerUserId;
     private String title;
     private LocalDateTime start;
     private LocalDateTime end;
