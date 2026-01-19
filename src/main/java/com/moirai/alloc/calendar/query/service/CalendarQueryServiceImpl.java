@@ -41,15 +41,11 @@ public class CalendarQueryServiceImpl implements CalendarQueryService {
 
         List<CalendarEventItemResponse> items = new ArrayList<>();
 
-        // 이벤트(Events): 권한 기반 노출 필터링 포함
         List<Events> events = eventsRepository.findVisibleEvents(projectId, fromStart, toExclusive, principal.userId());
         for (Events event : events) {
-            Map<String, Object> meta = new HashMap<>();
-            meta.put("eventType", event.getEventType());
-            meta.put("eventState", event.getEventState());
-
             items.add(CalendarEventItemResponse.builder()
                     .eventId(event.getId())
+                    .ownerUserId(event.getOwnerUserId())
                     .title(event.getEventName())
                     .start(event.getStartDate())
                     .end(event.getEndDate())
