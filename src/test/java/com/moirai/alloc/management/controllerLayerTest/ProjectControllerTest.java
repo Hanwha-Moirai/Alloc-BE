@@ -161,22 +161,25 @@ class ProjectControllerTest extends ControllerTestSupport {
     }
 
     @Test
-    void updateProject_returnsOk_forPm() throws Exception {
+    void updateProjectReturnsOkForPm() throws Exception {
         mockMvc.perform(
                         put("/api/projects/{projectId}", 1L)
                                 .with(authenticatedUser("PM"))
+                                .with(csrf()) // ⭐ 중요
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                {
-                                  "projectId": 1,
-                                  "projectName": "수정 프로젝트",
-                                  "startDate": "2025-02-01",
-                                  "endDate": "2025-07-31",
-                                  "clientName": "고객사",
-                                  "description": "설명",
-                                  "budget": 2000
-                                }
-                                """)
+                            {
+                              "projectId": 1,
+                              "projectName": "수정 프로젝트",
+                              "startDate": "2025-02-01",
+                              "endDate": "2025-07-31",
+                              "partners": "고객사",
+                              "description": "설명",
+                              "predictedCost": 2000,
+                              "projectType": "NEW",
+                              "projectStatus": "ACTIVE"
+                            }
+                            """)
                 )
                 .andExpect(status().isOk());
 
@@ -184,14 +187,30 @@ class ProjectControllerTest extends ControllerTestSupport {
                 .update(any(EditProjectDTO.class));
     }
 
+
     @Test
-    void updateProject_returnsForbidden_forUser() throws Exception {
+    void updateProjectReturnsForbiddenForUser() throws Exception {
         mockMvc.perform(
                         put("/api/projects/{projectId}", 1L)
                                 .with(authenticatedUser("USER"))
+                                .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}")
+                                .content("""
+                            {
+                              "projectId": 1,
+                              "projectName": "수정 프로젝트",
+                              "startDate": "2025-02-01",
+                              "endDate": "2025-07-31",
+                              "partners": "고객사",
+                              "description": "설명",
+                              "predictedCost": 2000,
+                              "projectType": "NEW",
+                              "projectStatus": "ACTIVE"
+                            }
+                            """)
                 )
                 .andExpect(status().isForbidden());
     }
+
+
 }
