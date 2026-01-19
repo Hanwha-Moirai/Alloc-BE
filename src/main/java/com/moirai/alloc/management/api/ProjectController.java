@@ -71,7 +71,7 @@ public class ProjectController {
     @PutMapping("/{projectId}")
     public void updateProject(
             @PathVariable Long projectId,
-            @Valid @RequestBody EditProjectDTO command
+            @RequestBody EditProjectDTO command
     ) {
         if (!projectId.equals(command.getProjectId())) {
             throw new IllegalArgumentException("Project ID mismatch");
