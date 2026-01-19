@@ -20,10 +20,16 @@ import com.moirai.alloc.gantt.common.exception.GanttException;
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
+import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
+import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
+import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -37,6 +43,7 @@ public class GanttCommandService {
     private final TaskQueryMapper taskQueryMapper;
     private final TaskUpdateLogRepository taskUpdateLogRepository;
     private final MilestoneUpdateLogRepository milestoneUpdateLogRepository;
+    private final NotificationCommandService notificationCommandService;
 
     public GanttCommandService(ProjectInfoPort projectInfoPort,
                                ProjectMembershipPort projectMembershipPort,
@@ -45,7 +52,8 @@ public class GanttCommandService {
                                TaskRepository taskRepository,
                                TaskQueryMapper taskQueryMapper,
                                TaskUpdateLogRepository taskUpdateLogRepository,
-                               MilestoneUpdateLogRepository milestoneUpdateLogRepository) {
+                               MilestoneUpdateLogRepository milestoneUpdateLogRepository,
+                               NotificationCommandService notificationCommandService) {
         this.projectInfoPort = projectInfoPort;
         this.projectMembershipPort = projectMembershipPort;
         this.authenticatedUserProvider = authenticatedUserProvider;
@@ -54,6 +62,7 @@ public class GanttCommandService {
         this.taskQueryMapper = taskQueryMapper;
         this.taskUpdateLogRepository = taskUpdateLogRepository;
         this.milestoneUpdateLogRepository = milestoneUpdateLogRepository;
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Transactional
@@ -81,6 +90,7 @@ public class GanttCommandService {
 
         taskRepository.save(task);
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "CREATE"));
+        notifyTaskAssignee(projectId, task.getTaskId(), task.getUserId(), task.getTaskName());
         return task.getTaskId();
     }
 
@@ -93,6 +103,7 @@ public class GanttCommandService {
             throw GanttException.notFound("태스크가 존재하지 않습니다.");
         }
 
+        Long previousAssigneeId = task.getUserId();
         Long assigneeId = request.assigneeId() == null ? task.getUserId() : request.assigneeId();
         if (!Objects.equals(task.getUserId(), assigneeId)) {
             validateProjectMember(projectId, assigneeId);
@@ -127,6 +138,9 @@ public class GanttCommandService {
         );
 
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "UPDATE"));
+        if (!Objects.equals(previousAssigneeId, assigneeId)) {
+            notifyTaskAssignee(projectId, task.getTaskId(), assigneeId, task.getTaskName());
+        }
     }
 
     @Transactional
@@ -305,5 +319,17 @@ public class GanttCommandService {
             return fallback;
         }
         return requestValue;
+    }
+
+    private void notifyTaskAssignee(Long projectId, Long taskId, Long assigneeId, String taskName) {
+        InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
+                AlarmTemplateType.TASK_ASSIGN,
+                List.of(assigneeId),
+                Map.of("taskName", taskName),
+                TargetType.TASK,
+                taskId,
+                "/projects/" + projectId + "/tasks"
+        );
+        notificationCommandService.createInternalNotifications(request);
     }
 }
