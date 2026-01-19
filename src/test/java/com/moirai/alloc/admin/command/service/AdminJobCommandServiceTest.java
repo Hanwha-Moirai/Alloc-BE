@@ -55,6 +55,7 @@ class AdminJobCommandServiceTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("직무 이름이 필요합니다.");
         }
+
     }
 
     @Nested

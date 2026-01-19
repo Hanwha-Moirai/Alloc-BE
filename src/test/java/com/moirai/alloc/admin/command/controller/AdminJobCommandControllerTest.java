@@ -142,6 +142,22 @@ class AdminJobCommandControllerTest {
                     .andExpect(status().isBadRequest())
                     .andDo(print());
         }
+
+        @Test
+        @DisplayName("공백만 다른 동일 직무는 중복으로 400을 반환한다")
+        void createJob_duplicate_ignoringSpaces_badRequest() throws Exception {
+            String requestJson = """
+            { "jobName": "Backend Developer" }
+            """;
+
+            mockMvc.perform(post("/api/admin/jobs")
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.success").value(false))
+                    .andDo(print());
+        }
     }
 
     @Nested
@@ -200,6 +216,22 @@ class AdminJobCommandControllerTest {
                     .andExpect(status().isNotFound())
                     .andDo(print());
         }
+
+        @Test
+        @DisplayName("공백만 다른 동일 이름으로 수정하면 400을 반환한다")
+        void updateJob_duplicate_ignoringSpaces_badRequest() throws Exception {
+            String requestJson = """
+            { "jobName": "Frontend Developer" }
+            """;
+
+            mockMvc.perform(patch("/api/admin/jobs/{job_id}", JOB_ID_BACKEND)
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(requestJson))
+                    .andExpect(status().isBadRequest())
+                    .andDo(print());
+        }
+
     }
 
     @Nested
