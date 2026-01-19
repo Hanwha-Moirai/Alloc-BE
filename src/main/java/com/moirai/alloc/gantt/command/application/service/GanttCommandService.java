@@ -20,6 +20,7 @@ import com.moirai.alloc.gantt.common.exception.GanttException;
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
+import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
 import com.moirai.alloc.notification.command.domain.entity.TargetType;
 import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
@@ -44,6 +45,7 @@ public class GanttCommandService {
     private final TaskUpdateLogRepository taskUpdateLogRepository;
     private final MilestoneUpdateLogRepository milestoneUpdateLogRepository;
     private final NotificationCommandService notificationCommandService;
+    private final SquadAssignmentRepository squadAssignmentRepository;
 
     public GanttCommandService(ProjectInfoPort projectInfoPort,
                                ProjectMembershipPort projectMembershipPort,
@@ -53,7 +55,8 @@ public class GanttCommandService {
                                TaskQueryMapper taskQueryMapper,
                                TaskUpdateLogRepository taskUpdateLogRepository,
                                MilestoneUpdateLogRepository milestoneUpdateLogRepository,
-                               NotificationCommandService notificationCommandService) {
+                               NotificationCommandService notificationCommandService,
+                               SquadAssignmentRepository squadAssignmentRepository) {
         this.projectInfoPort = projectInfoPort;
         this.projectMembershipPort = projectMembershipPort;
         this.authenticatedUserProvider = authenticatedUserProvider;
@@ -63,6 +66,7 @@ public class GanttCommandService {
         this.taskUpdateLogRepository = taskUpdateLogRepository;
         this.milestoneUpdateLogRepository = milestoneUpdateLogRepository;
         this.notificationCommandService = notificationCommandService;
+        this.squadAssignmentRepository = squadAssignmentRepository;
     }
 
     @Transactional
@@ -192,6 +196,7 @@ public class GanttCommandService {
 
         milestoneRepository.save(milestone);
         milestoneUpdateLogRepository.save(MilestoneUpdateLog.create(milestone.getMilestoneId(), "CREATE"));
+        notifyMilestoneCreated(projectId, milestone.getMilestoneId(), milestone.getMilestoneName());
         return milestone.getMilestoneId();
     }
 
@@ -329,6 +334,26 @@ public class GanttCommandService {
                 TargetType.TASK,
                 taskId,
                 "/projects/" + projectId + "/tasks"
+        );
+        notificationCommandService.createInternalNotifications(request);
+    }
+
+    private void notifyMilestoneCreated(Long projectId, Long milestoneId, String milestoneName) {
+        List<Long> targetUserIds = squadAssignmentRepository.findAssignedByProjectId(projectId).stream()
+                .map(assignment -> assignment.getUserId())
+                .distinct()
+                .toList();
+        if (targetUserIds.isEmpty()) {
+            return;
+        }
+
+        InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
+                AlarmTemplateType.MILESTONE,
+                targetUserIds,
+                Map.of("milestoneName", milestoneName),
+                TargetType.MILESTONE,
+                milestoneId,
+                "/projects/" + projectId + "/gantt"
         );
         notificationCommandService.createInternalNotifications(request);
     }
