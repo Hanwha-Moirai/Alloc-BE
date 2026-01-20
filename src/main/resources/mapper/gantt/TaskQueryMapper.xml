@@ -23,8 +23,11 @@
         LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.is_deleted = false
-        <if test="assigneeId != null">
-            AND t.user_id = #{assigneeId}
+        <if test="assigneeNames != null and assigneeNames.size() > 0">
+            AND u.user_name IN
+            <foreach collection="assigneeNames" item="name" open="(" separator="," close=")">
+                #{name}
+            </foreach>
         </if>
         <if test="status != null">
             AND t.task_status = #{status}
@@ -34,6 +37,35 @@
         </if>
         <if test="endDate != null">
             AND t.end_date &lt;= #{endDate}
+        </if>
+        <if test="taskCategories != null and taskCategories.size() > 0">
+            AND t.task_category IN
+            <foreach collection="taskCategories" item="category" open="(" separator="," close=")">
+                #{category}
+            </foreach>
+        </if>
+        <if test="periods != null and periods.size() > 0">
+            AND (
+            <foreach collection="periods" item="period" separator=" OR ">
+                <choose>
+                    <when test="period == 'OVERDUE'">
+                        t.end_date &lt; CURDATE()
+                    </when>
+                    <when test="period == 'D7'">
+                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 0 AND 7
+                    </when>
+                    <when test="period == 'D14'">
+                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 8 AND 14
+                    </when>
+                    <when test="period == 'D21'">
+                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 15 AND 21
+                    </when>
+                    <otherwise>
+                        1 = 0
+                    </otherwise>
+                </choose>
+            </foreach>
+            )
         </if>
         ORDER BY t.start_date ASC, t.task_id ASC
     </select>
