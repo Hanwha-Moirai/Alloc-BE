@@ -96,6 +96,11 @@ public class Task extends BaseTimeEntity {
         this.isCompleted = true;
     }
 
+    public void changeStatus(TaskStatus taskStatus) {
+        this.taskStatus = taskStatus;
+        this.isCompleted = TaskStatus.DONE.equals(taskStatus);
+    }
+
     public void softDelete() {
         this.isDeleted = true;
     }

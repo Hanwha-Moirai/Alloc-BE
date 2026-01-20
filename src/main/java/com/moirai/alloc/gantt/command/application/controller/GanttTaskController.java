@@ -2,7 +2,6 @@ package com.moirai.alloc.gantt.command.application.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
-import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.response.CreatedIdResponse;
@@ -36,7 +35,7 @@ public class GanttTaskController {
 
     // 태스크 수정
     @PatchMapping("/{taskId}")
-    @PreAuthorize("hasRole('PM')")
+    @PreAuthorize("hasAnyRole('PM','USER')")
     public ApiResponse<Void> updateTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId,
                                         @RequestBody UpdateTaskRequest request) {
@@ -53,12 +52,5 @@ public class GanttTaskController {
         return ApiResponse.success(null);
     }
 
-    // 태스크 완료 (태스크 상태 변경)
-    @PatchMapping("/{taskId}/complete")
-    public ApiResponse<Void> completeTask(@PathVariable Long projectId,
-                                          @PathVariable Long taskId,
-                                          @RequestBody(required = false) CompleteTaskRequest request) {
-        ganttCommandService.completeTask(projectId, taskId, request);
-        return ApiResponse.success(null);
-    }
+    // 태스크 상태 변경은 통합 엔드포인트에서 처리
 }
