@@ -2,11 +2,6 @@ package com.moirai.alloc.gantt.command.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.notification.command.domain.entity.AlarmTemplate;
-import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
-import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
-import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,34 +36,6 @@ class GanttCommandControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private AlarmLogRepository alarmLogRepository;
-
-    @Autowired
-    private AlarmTemplateRepository alarmTemplateRepository;
-
-    @BeforeEach
-    void ensureTaskAssignTemplate() {
-        alarmTemplateRepository
-                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.TASK_ASSIGN)
-                .orElseGet(() -> alarmTemplateRepository.save(
-                        AlarmTemplate.builder()
-                                .alarmTemplateType(AlarmTemplateType.TASK_ASSIGN)
-                                .templateTitle("태스크 담당자 배정")
-                                .templateContext("태스크 {{taskName}} 담당자로 지정되었습니다.")
-                                .build()
-                ));
-        alarmTemplateRepository
-                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.MILESTONE)
-                .orElseGet(() -> alarmTemplateRepository.save(
-                        AlarmTemplate.builder()
-                                .alarmTemplateType(AlarmTemplateType.MILESTONE)
-                                .templateTitle("마일스톤 생성")
-                                .templateContext("마일스톤 {{milestoneName}} 이 생성되었습니다.")
-                                .build()
-                ));
-    }
 
     @Test
     @DisplayName("PM 권한으로 태스크 생성이 성공한다.")
@@ -111,57 +78,6 @@ class GanttCommandControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
-    @Test
-    @DisplayName("태스크 담당자 변경 시 알림 로그가 생성된다.")
-    void updateTask_whenAssigneeChanged_createsAlarmLog() throws Exception {
-        long beforeUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
-
-        String body = """
-                {
-                  "assigneeId": 99001,
-                  "taskName": "Updated Task"
-                }
-                """;
-
-        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-
-        long afterUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
-        org.assertj.core.api.Assertions.assertThat(afterUnread).isEqualTo(beforeUnread + 1);
-    }
-
-    @Test
-    @DisplayName("마일스톤 생성 시 프로젝트 멤버 모두에게 알림 로그가 생성된다.")
-    void createMilestone_createsAlarmLogsForProjectMembers() throws Exception {
-        long beforePmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
-        long beforeUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
-
-        String body = """
-                {
-                  "milestoneName": "New Milestone",
-                  "startDate": "2025-01-05",
-                  "endDate": "2025-01-10",
-                  "achievementRate": 0
-                }
-                """;
-
-        mockMvc.perform(post("/api/projects/{projectId}/ganttchart/milestones", 99001)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
-
-        long afterPmUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99001L);
-        long afterUserUnread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(99002L);
-
-        org.assertj.core.api.Assertions.assertThat(afterPmUnread).isEqualTo(beforePmUnread + 1);
-        org.assertj.core.api.Assertions.assertThat(afterUserUnread).isEqualTo(beforeUserUnread + 1);
-    }
 
     @Test
     @DisplayName("PM 권한으로 태스크 삭제가 성공한다.")

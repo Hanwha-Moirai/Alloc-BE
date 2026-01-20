@@ -14,6 +14,7 @@ import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,15 +49,15 @@ public class GanttQueryService {
         List<String> taskCategories = request.taskCategories() == null
                 ? null
                 : request.taskCategories().stream().map(Enum::name).toList();
-        List<String> periods = normalizePeriods(request.periods());
+        LocalDate startDate = request.startDate() == null ? LocalDate.of(1900, 1, 1) : request.startDate();
+        LocalDate endDate = request.endDate() == null ? LocalDate.of(2999, 12, 31) : request.endDate();
         List<TaskProjection> tasks = taskQueryMapper.findTasks(
                 projectId,
                 normalizeAssigneeNames(request.assigneeNames()),
                 request.status() == null ? null : request.status().name(),
-                request.startDate(),
-                request.endDate(),
-                taskCategories,
-                periods
+                startDate,
+                endDate,
+                taskCategories
         );
 
         return tasks.stream()
@@ -76,7 +77,7 @@ public class GanttQueryService {
                 .findFirst()
                 .orElseThrow(() -> GanttException.notFound("마일스톤이 존재하지 않습니다."));
 
-        List<TaskResponse> tasks = taskQueryMapper.findTasks(projectId, null, null, null, null, null, null)
+        List<TaskResponse> tasks = taskQueryMapper.findTasks(projectId, null, null, null, null, null)
                 .stream()
                 .filter(task -> task.milestoneId().equals(milestoneId))
                 .map(this::toTaskResponse)
@@ -92,7 +93,7 @@ public class GanttQueryService {
         validateMember(projectId, userId);
 
         List<MilestoneProjection> milestones = milestoneQueryMapper.findMilestones(projectId);
-        List<TaskResponse> allTasks = taskQueryMapper.findTasks(projectId, null, null, null, null, null, null)
+        List<TaskResponse> allTasks = taskQueryMapper.findTasks(projectId, null, null, null, null, null)
                 .stream()
                 .map(this::toTaskResponse)
                 .toList();
@@ -149,37 +150,6 @@ public class GanttQueryService {
         return normalized.isEmpty() ? null : normalized;
     }
 
-    private List<String> normalizePeriods(List<String> periods) {
-        if (periods == null) {
-            return null;
-        }
-        List<String> normalized = periods.stream()
-                .filter(p -> p != null && !p.isBlank())
-                .map(String::trim)
-                .map(this::normalizePeriod)
-                .filter(p -> p != null && !p.isBlank())
-                .distinct()
-                .toList();
-        return normalized.isEmpty() ? null : normalized;
-    }
-
-    private String normalizePeriod(String period) {
-        if (period == null || period.isBlank()) {
-            return null;
-        }
-        String trimmed = period.trim();
-        if ("지연됨".equals(trimmed)) {
-            return "OVERDUE";
-        }
-        String normalized = trimmed.toUpperCase();
-        return switch (normalized) {
-            case "OVERDUE", "DELAYED" -> "OVERDUE";
-            case "D-7", "7", "D7" -> "D7";
-            case "D-14", "14", "D14" -> "D14";
-            case "D-21", "21", "D21" -> "D21";
-            default -> null;
-        };
-    }
 
     private TaskResponse toTaskResponse(TaskProjection projection) {
         return new TaskResponse(
