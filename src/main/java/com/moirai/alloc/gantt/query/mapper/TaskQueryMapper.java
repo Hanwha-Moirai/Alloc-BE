@@ -15,8 +15,7 @@ public interface TaskQueryMapper {
             @Param("status") String status,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("taskCategories") List<String> taskCategories,
-            @Param("periods") List<String> periods
+            @Param("taskCategories") List<String> taskCategories
     );
 
     TaskProjection findTaskById(

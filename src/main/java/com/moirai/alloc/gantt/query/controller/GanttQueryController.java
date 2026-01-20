@@ -31,7 +31,6 @@ public class GanttQueryController {
     public ApiResponse<List<TaskResponse>> findTasks(@PathVariable Long projectId,
                                                      @RequestParam(required = false) List<String> taskCategory,
                                                      @RequestParam(required = false) List<String> assigneeName,
-                                                     @RequestParam(required = false) List<String> period,
                                                      @RequestParam(required = false) String status,
                                                      @RequestParam(required = false) LocalDate startDate,
                                                      @RequestParam(required = false) LocalDate endDate) {
@@ -43,8 +42,7 @@ public class GanttQueryController {
                 startDate,
                 endDate,
                 categories,
-                assigneeName,
-                period
+                assigneeName
         );
         List<TaskResponse> tasks = ganttQueryService.findTasks(projectId, request);
         return ApiResponse.success(tasks);
