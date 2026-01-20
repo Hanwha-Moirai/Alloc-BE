@@ -96,7 +96,17 @@ class GanttCommandServiceTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> USER_ID;
+            return new AuthenticatedUserProvider() {
+                @Override
+                public Long getCurrentUserId() {
+                    return USER_ID;
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return "USER";
+                }
+            };
         }
     }
 }

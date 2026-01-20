@@ -1,6 +1,7 @@
 package com.moirai.alloc.gantt.query.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
+import com.moirai.alloc.gantt.command.domain.entity.Task.TaskCategory;
 import com.moirai.alloc.gantt.query.application.GanttQueryService;
 import com.moirai.alloc.gantt.query.dto.request.TaskSearchRequest;
 import com.moirai.alloc.gantt.query.dto.response.MilestoneResponse;
@@ -28,13 +29,22 @@ public class GanttQueryController {
     // 태스크 조회
     @GetMapping("/tasks")
     public ApiResponse<List<TaskResponse>> findTasks(@PathVariable Long projectId,
+                                                     @RequestParam(required = false) List<String> taskCategory,
+                                                     @RequestParam(required = false) List<String> assigneeName,
+                                                     @RequestParam(required = false) List<String> period,
                                                      @RequestParam(required = false) String status,
                                                      @RequestParam(required = false) LocalDate startDate,
                                                      @RequestParam(required = false) LocalDate endDate) {
+        List<TaskCategory> categories = taskCategory == null
+                ? null
+                : taskCategory.stream().map(TaskCategory::valueOf).toList();
         TaskSearchRequest request = new TaskSearchRequest(
                 status == null ? null : TaskStatus.valueOf(status),
                 startDate,
-                endDate
+                endDate,
+                categories,
+                assigneeName,
+                period
         );
         List<TaskResponse> tasks = ganttQueryService.findTasks(projectId, request);
         return ApiResponse.success(tasks);
