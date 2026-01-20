@@ -36,3 +36,4 @@ public class InternalNotificationCreateRequest {
     @Size(max = 255, message = "linkUrl은 255자 이하여야 합니다.")
     private String linkUrl;
 }
+
