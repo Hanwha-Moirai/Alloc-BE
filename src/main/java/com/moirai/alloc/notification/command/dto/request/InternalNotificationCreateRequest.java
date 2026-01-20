@@ -35,5 +35,22 @@ public class InternalNotificationCreateRequest {
 
     @Size(max = 255, message = "linkUrl은 255자 이하여야 합니다.")
     private String linkUrl;
-}
 
+    public static InternalNotificationCreateRequest of(
+            AlarmTemplateType templateType,
+            List<Long> targetUserIds,
+            Map<String, String> variables,
+            TargetType targetType,
+            Long targetId,
+            String linkUrl
+    ) {
+        InternalNotificationCreateRequest request = new InternalNotificationCreateRequest();
+        request.templateType = templateType;
+        request.targetUserIds = targetUserIds;
+        request.variables = variables;
+        request.targetType = targetType;
+        request.targetId = targetId;
+        request.linkUrl = linkUrl;
+        return request;
+    }
+}
