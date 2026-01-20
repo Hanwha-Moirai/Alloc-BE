@@ -94,7 +94,7 @@ public class GanttCommandService {
 
         taskRepository.save(task);
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "CREATE"));
-        notifyTaskAssignee(projectId, task.getTaskId(), task.getUserId(), task.getTaskName());
+        //notifyTaskAssignee(projectId, task.getTaskId(), task.getUserId(), task.getTaskName());
         return task.getTaskId();
     }
 
@@ -143,7 +143,7 @@ public class GanttCommandService {
 
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "UPDATE"));
         if (!Objects.equals(previousAssigneeId, assigneeId)) {
-            notifyTaskAssignee(projectId, task.getTaskId(), assigneeId, task.getTaskName());
+            //notifyTaskAssignee(projectId, task.getTaskId(), assigneeId, task.getTaskName());
         }
     }
 
@@ -196,7 +196,7 @@ public class GanttCommandService {
 
         milestoneRepository.save(milestone);
         milestoneUpdateLogRepository.save(MilestoneUpdateLog.create(milestone.getMilestoneId(), "CREATE"));
-        notifyMilestoneCreated(projectId, milestone.getMilestoneId(), milestone.getMilestoneName());
+        //notifyMilestoneCreated(projectId, milestone.getMilestoneId(), milestone.getMilestoneName());
         return milestone.getMilestoneId();
     }
 
@@ -326,6 +326,7 @@ public class GanttCommandService {
         return requestValue;
     }
 
+    /*
     private void notifyTaskAssignee(Long projectId, Long taskId, Long assigneeId, String taskName) {
         InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
                 AlarmTemplateType.TASK_ASSIGN,
@@ -357,4 +358,6 @@ public class GanttCommandService {
         );
         notificationCommandService.createInternalNotifications(request);
     }
+
+     */
 }
