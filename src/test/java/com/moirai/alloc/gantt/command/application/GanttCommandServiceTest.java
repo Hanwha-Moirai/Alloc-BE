@@ -1,6 +1,5 @@
 package com.moirai.alloc.gantt.command.application;
 
-import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateMilestoneRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
@@ -18,10 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 
@@ -53,6 +49,9 @@ class GanttCommandServiceTest {
     @Autowired
     private TaskUpdateLogRepository taskUpdateLogRepository;
 
+    @Autowired
+    private TestAuthenticatedUserProvider authenticatedUserProvider;
+
     @Test
     @DisplayName("태스크 생성에 성공했습니다.")
     void createTask_savesTaskAndLog() {
@@ -79,13 +78,14 @@ class GanttCommandServiceTest {
     @Test
     @DisplayName("태스크 수정에 성공하면 변경된 값이 저장된다.")
     void updateTask_updatesFields() {
+        authenticatedUserProvider.setRole("PM");
         UpdateTaskRequest request = new UpdateTaskRequest(
                 null,
                 ASSIGNEE_ID,
                 Task.TaskCategory.TESTING,
                 "UPDATED_TASK_99001",
                 "updated",
-                Task.TaskStatus.INPROGRESS,
+                null,
                 LocalDate.of(2025, 1, 2),
                 LocalDate.of(2025, 1, 4)
         );
@@ -95,12 +95,13 @@ class GanttCommandServiceTest {
         Task task = taskRepository.findById(99001L).orElseThrow();
         assertThat(task.getTaskName()).isEqualTo("UPDATED_TASK_99001");
         assertThat(task.getTaskCategory()).isEqualTo(Task.TaskCategory.TESTING);
-        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.INPROGRESS);
+        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.TODO);
     }
 
     @Test
     @DisplayName("프로젝트 멤버가 아닌 담당자로 변경 시 예외가 발생한다.")
     void updateTask_whenAssigneeNotMember_throwsNotFound() {
+        authenticatedUserProvider.setRole("PM");
         UpdateTaskRequest request = new UpdateTaskRequest(
                 null,
                 99999L,
@@ -123,6 +124,7 @@ class GanttCommandServiceTest {
     @Test
     @DisplayName("프로젝트 기간을 벗어난 태스크 수정은 거부된다.")
     void updateTask_whenOutOfProjectPeriod_throwsBadRequest() {
+        authenticatedUserProvider.setRole("PM");
         UpdateTaskRequest request = new UpdateTaskRequest(
                 null,
                 null,
@@ -145,6 +147,7 @@ class GanttCommandServiceTest {
     @Test
     @DisplayName("마일스톤 기간을 벗어난 태스크 수정은 거부된다.")
     void updateTask_whenOutOfMilestonePeriod_throwsBadRequest() {
+        authenticatedUserProvider.setRole("PM");
         UpdateTaskRequest request = new UpdateTaskRequest(
                 99002L,
                 null,
@@ -187,33 +190,38 @@ class GanttCommandServiceTest {
     }
 
     @Test
-    @DisplayName("태스크 담당자는 완료 처리가 가능하다.")
-    void completeTask_whenAssignee_returnsOk() {
-        UpdateTaskRequest assignToRequester = new UpdateTaskRequest(
+    @DisplayName("태스크 담당자는 상태 변경이 가능하다.")
+    void updateTask_whenAssignee_updatesStatus() {
+        authenticatedUserProvider.setRole("USER");
+        authenticatedUserProvider.setUserId(ASSIGNEE_ID);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
                 null,
-                USER_ID,
                 null,
                 null,
                 null,
                 null,
+                Task.TaskStatus.INPROGRESS,
                 null,
                 null
         );
 
-        ganttCommandService.updateTask(PROJECT_ID, 99001L, assignToRequester);
-        ganttCommandService.completeTask(PROJECT_ID, 99001L, new CompleteTaskRequest("done"));
+        ganttCommandService.updateTask(PROJECT_ID, 99001L, request);
 
         Task task = taskRepository.findById(99001L).orElseThrow();
-        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.DONE);
-        assertThat(task.getIsCompleted()).isTrue();
+        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.INPROGRESS);
+        assertThat(task.getIsCompleted()).isFalse();
     }
 
     @Test
-    @DisplayName("이미 완료된 태스크는 완료 처리할 수 없다.")
-    void completeTask_whenAlreadyDone_throwsConflict() {
-        UpdateTaskRequest assignToRequester = new UpdateTaskRequest(
+    @DisplayName("태스크 담당자가 완료 상태로 변경하면 완료 플래그가 설정된다.")
+    void updateTask_whenAssigneeMarksDone_setsCompleted() {
+        authenticatedUserProvider.setRole("USER");
+        authenticatedUserProvider.setUserId(ASSIGNEE_ID);
+
+        UpdateTaskRequest request = new UpdateTaskRequest(
                 null,
-                USER_ID,
+                null,
                 null,
                 null,
                 null,
@@ -222,14 +230,11 @@ class GanttCommandServiceTest {
                 null
         );
 
-        ganttCommandService.updateTask(PROJECT_ID, 99001L, assignToRequester);
+        ganttCommandService.updateTask(PROJECT_ID, 99001L, request);
 
-        GanttException exception = assertThrows(
-                GanttException.class,
-                () -> ganttCommandService.completeTask(PROJECT_ID, 99001L, new CompleteTaskRequest("done"))
-        );
-
-        assertThat(exception.getCode()).isEqualTo("CONFLICT");
+        Task task = taskRepository.findById(99001L).orElseThrow();
+        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.DONE);
+        assertThat(task.getIsCompleted()).isTrue();
     }
 
     @Test
@@ -294,11 +299,66 @@ class GanttCommandServiceTest {
     }
 
     @Test
-    @DisplayName("태스크 상태 변경 권한이 없습니다.")
-    void completeTask_whenNotAssignee_throwsForbidden() {
+    @DisplayName("태스크 담당자가 아니면 상태 변경이 거부된다.")
+    void updateTask_whenNotAssignee_throwsForbidden() {
+        authenticatedUserProvider.setRole("USER");
+        authenticatedUserProvider.setUserId(USER_ID);
+
         GanttException exception = assertThrows(
                 GanttException.class,
-                () -> ganttCommandService.completeTask(PROJECT_ID, 99002L, new CompleteTaskRequest("done"))
+                () -> ganttCommandService.updateTask(PROJECT_ID, 99001L, new UpdateTaskRequest(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Task.TaskStatus.INPROGRESS,
+                        null,
+                        null
+                ))
+        );
+        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
+    }
+
+    @Test
+    @DisplayName("태스크 담당자는 내용 변경을 할 수 없다.")
+    void updateTask_whenAssigneeChangesContent_throwsForbidden() {
+        authenticatedUserProvider.setRole("USER");
+        authenticatedUserProvider.setUserId(ASSIGNEE_ID);
+
+        GanttException exception = assertThrows(
+                GanttException.class,
+                () -> ganttCommandService.updateTask(PROJECT_ID, 99001L, new UpdateTaskRequest(
+                        null,
+                        null,
+                        null,
+                        "CONTENT_CHANGE",
+                        null,
+                        null,
+                        null,
+                        null
+                ))
+        );
+        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
+    }
+
+    @Test
+    @DisplayName("PM은 태스크 상태 변경이 허용되지 않는다.")
+    void updateTask_whenPmChangesStatus_throwsForbidden() {
+        authenticatedUserProvider.setRole("PM");
+
+        GanttException exception = assertThrows(
+                GanttException.class,
+                () -> ganttCommandService.updateTask(PROJECT_ID, 99001L, new UpdateTaskRequest(
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        Task.TaskStatus.INPROGRESS,
+                        null,
+                        null
+                ))
         );
         assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
     }
@@ -319,18 +379,31 @@ class GanttCommandServiceTest {
     static class TestAuthConfig {
         @Bean
         @Primary
-        AuthenticatedUserProvider authenticatedUserProvider() {
-            return new AuthenticatedUserProvider() {
-                @Override
-                public Long getCurrentUserId() {
-                    return USER_ID;
-                }
+        TestAuthenticatedUserProvider authenticatedUserProvider() {
+            return new TestAuthenticatedUserProvider();
+        }
+    }
 
-                @Override
-                public String getCurrentUserRole() {
-                    return "USER";
-                }
-            };
+    static class TestAuthenticatedUserProvider implements AuthenticatedUserProvider {
+        private Long userId = USER_ID;
+        private String role = "PM";
+
+        void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        void setRole(String role) {
+            this.role = role;
+        }
+
+        @Override
+        public Long getCurrentUserId() {
+            return userId;
+        }
+
+        @Override
+        public String getCurrentUserRole() {
+            return role;
         }
     }
 }
