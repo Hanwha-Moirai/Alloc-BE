@@ -75,6 +75,10 @@ public class Milestone extends BaseTimeEntity {
         this.achievementRate = achievementRate;
     }
 
+    public void changeCompletion(boolean completed) {
+        this.isCompleted = completed;
+    }
+
     public void softDelete() {
         this.isDeleted = true;
     }
