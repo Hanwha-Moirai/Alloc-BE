@@ -1,8 +1,8 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.search.query.model.SearchCondition;
-import com.moirai.alloc.search.query.model.SkillLevel;
-import com.moirai.alloc.search.query.model.WorkingType;
+import com.moirai.alloc.search.query.domain.model.SearchCondition;
+import com.moirai.alloc.search.query.domain.model.SkillLevel;
+import com.moirai.alloc.search.query.domain.model.WorkingType;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor

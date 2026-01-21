@@ -1,5 +1,7 @@
-package com.moirai.alloc.search.query.model;
+package com.moirai.alloc.search.query.presentation.dto;
 
+import com.moirai.alloc.search.query.domain.model.SkillLevel;
+import com.moirai.alloc.search.query.domain.model.WorkingType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,8 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 public class PersonView {
-    // 인력 리스트 돌려줄 dto
-    // 검색 결과를 화면/응답 전용 모델로 정리
+    //API 응답 형태 정의; json으로 나갈 데이터 구조.dto
     private Long personId;
     private String name;
     private String jobTitle;

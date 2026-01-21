@@ -1,9 +1,10 @@
-package com.moirai.alloc.search.query.api;
+package com.moirai.alloc.search.query.presentation.api;
 
 import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
-import com.moirai.alloc.search.query.model.PersonView;
-import com.moirai.alloc.search.query.model.SearchCondition;
+import com.moirai.alloc.search.query.presentation.dto.PersonView;
+import com.moirai.alloc.search.query.presentation.mapper.PersonViewMapper;
+import com.moirai.alloc.search.query.domain.model.SearchCondition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,24 +18,13 @@ import java.util.List;
 @RequestMapping("/api/people")
 public class PeopleSearchController {
     private final OpenSearchPersonSearcher searcher;
+    private final PersonViewMapper mapper;
 
     @PostMapping("/search")
     public List<PersonView> search(@RequestBody SearchCondition condition) {
         List<PersonDocument> documents = searcher.search(condition);
-        return documents.stream()
-                .map(this::toView)
-                .toList();
+
+        return mapper.toViews(documents);
     }
-    private PersonView toView(PersonDocument doc) {
-        return PersonView.builder()
-                .personId(doc.getPersonId())
-                .name(doc.getName())
-                .jobTitle(doc.getJobTitle())
-                .techs(doc.getTechs())
-                .skillLevel(doc.getSkillLevel())
-                .activeProjectCount(doc.getActiveProjectCount())
-                .department(doc.getDepartment())
-                .workingType(doc.getWorkingType())
-                .build();
-    }
+
 }

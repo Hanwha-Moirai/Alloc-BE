@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.query.model;
+package com.moirai.alloc.search.query.domain.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
