@@ -69,7 +69,7 @@ public class WeeklyReportCommandService {
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
-        notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
+        //notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
         return new WeeklyReportCreateResponse(
                 detail.reportId(),
                 detail.projectId(),
@@ -177,6 +177,7 @@ public class WeeklyReportCommandService {
         }
     }
 
+    /*
     private void notifyWeeklyReportCreated(Long reportId, Long projectId, String reporterName, Long userId) {
         InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
                 AlarmTemplateType.WEEKLY_REPORT,
@@ -188,4 +189,5 @@ public class WeeklyReportCommandService {
         );
         notificationCommandService.createInternalNotifications(request);
     }
+     */
 }
