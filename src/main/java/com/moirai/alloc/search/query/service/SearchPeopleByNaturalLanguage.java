@@ -22,12 +22,12 @@ public class SearchPeopleByNaturalLanguage {
     //3. openSearch 조회
     //4. view 반환
 
-    private final SearchIntentParser searchPeopleByNaturalLanguage;
+    private final SearchIntentParser searchIntentParser;
     private final OpenSearchPersonSearcher searcher;
 
     public List<PersonDocument> search(String nl) {
         //자연어-> searchintent(gpt)
-        SearchIntent intent = searchPeopleByNaturalLanguage.parse(nl);
+        SearchIntent intent = searchIntentParser.parse(nl);
 
         // searchintent -> searchcondition으로
         SearchCondition condition = toCondition(intent);

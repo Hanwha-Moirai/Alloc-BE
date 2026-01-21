@@ -1,11 +1,15 @@
 package com.moirai.alloc.search.query.domain.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class SearchCondition {
     // 이런 <직무,기술,숙련도 etc>찾아줘
     // 검색용 조건; 검색에 쓰기 좋은 형태로 한 번 더 정리(dto)
