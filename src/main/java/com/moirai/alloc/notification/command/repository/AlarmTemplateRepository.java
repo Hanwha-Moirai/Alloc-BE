@@ -1,7 +1,7 @@
 package com.moirai.alloc.notification.command.repository;
 
 import com.moirai.alloc.notification.command.domain.entity.AlarmTemplate;
-import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,8 +1,8 @@
 package com.moirai.alloc.notification.command.service;
 
 import com.moirai.alloc.notification.command.domain.entity.*;
-import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmSendLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
@@ -35,47 +35,43 @@ public class NotificationCommandService {
      * - alarm_send_log: 수신자별 발송 기록 1건 생성(감사/장애 분석용 스냅샷 보관)
      * - 이벤트: AlarmCreatedEvent(수신자별) 발행 → AFTER_COMMIT 핸들러가 SSE push + 미읽음 카운트 갱신
      */
-    public InternalNotificationCreateResponse createInternalNotifications(InternalNotificationCreateRequest request) {
+    public InternalNotificationCreateResponse createInternalNotifications(InternalNotificationCommand cmd) {
 
         AlarmTemplate template = alarmTemplateRepository
-                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(request.getTemplateType())
+                .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(cmd.templateType())
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "알림 템플릿을 찾을 수 없습니다. type=" + request.getTemplateType()
+                        HttpStatus.NOT_FOUND, "알림 템플릿을 찾을 수 없습니다. type=" + cmd.templateType()
                 ));
 
-        // 템플릿 문자열에 variables를 치환(예: {{taskName}})
-        String mergedTitle = mergeVariables(template.getTemplateTitle(), request.getVariables());
-        String mergedBody  = mergeVariables(template.getTemplateContext(), request.getVariables());
+        String mergedTitle = mergeVariables(template.getTemplateTitle(), cmd.variables());
+        String mergedBody  = mergeVariables(template.getTemplateContext(), cmd.variables());
 
-        // alarm_log: 수신자별 1건 생성
-        List<AlarmLog> logs = request.getTargetUserIds().stream()
+        List<AlarmLog> logs = cmd.targetUserIds().stream()
                 .map(uid -> AlarmLog.builder()
                         .userId(uid)
                         .templateId(template.getId())
                         .alarmTitle(mergedTitle)
                         .alarmContext(mergedBody)
-                        .targetType(request.getTargetType())
-                        .targetId(request.getTargetId())
-                        .linkUrl(request.getLinkUrl())
+                        .targetType(cmd.targetType())
+                        .targetId(cmd.targetId())
+                        .linkUrl(cmd.linkUrl())
                         .build())
                 .toList();
 
         List<AlarmLog> saved = alarmLogRepository.saveAll(logs);
 
-        // alarm_send_log: 수신자별 1건 기록(요구 ERD 반영: user_id 존재)
         List<AlarmSendLog> sendLogs = saved.stream()
                 .map(alarm -> AlarmSendLog.builder()
                         .templateId(template.getId())
                         .userId(alarm.getUserId())
                         .logStatus(SendLogStatus.SUCCESS)
-                        .templateContext(mergedBody) // 당시 바디 스냅샷
+                        .templateContext(mergedBody)
                         .sentAt(LocalDateTime.now())
                         .build())
                 .toList();
 
         alarmSendLogRepository.saveAll(sendLogs);
 
-        // 트랜잭션 커밋 이후 SSE 전송(핸들러에서 AFTER_COMMIT로 처리)
         for (AlarmLog alarm : saved) {
             eventPublisher.publishEvent(AlarmCreatedEvent.builder()
                     .userId(alarm.getUserId())

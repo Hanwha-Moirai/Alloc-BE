@@ -1,7 +1,7 @@
 package com.moirai.alloc.notification.command.dto.request;
 
-import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
-import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

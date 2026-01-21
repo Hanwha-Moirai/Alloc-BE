@@ -2,7 +2,7 @@ package com.moirai.alloc.notification.command.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

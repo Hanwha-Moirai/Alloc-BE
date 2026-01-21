@@ -2,6 +2,7 @@ package com.moirai.alloc.notification.command.init;
 
 import com.moirai.alloc.notification.command.domain.entity.*;
 import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.*;
 import org.springframework.stereotype.Component;

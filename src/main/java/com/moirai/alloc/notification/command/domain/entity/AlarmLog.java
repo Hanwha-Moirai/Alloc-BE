@@ -1,6 +1,7 @@
 package com.moirai.alloc.notification.command.domain.entity;
 
 import com.moirai.alloc.common.model.entity.BaseTimeEntity;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import jakarta.persistence.*;
 import lombok.*;
 

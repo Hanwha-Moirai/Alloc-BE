@@ -20,16 +20,11 @@ import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
-import com.moirai.alloc.notification.command.domain.entity.TargetType;
-import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
 import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service

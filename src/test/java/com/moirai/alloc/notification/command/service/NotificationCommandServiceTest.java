@@ -2,10 +2,12 @@ package com.moirai.alloc.notification.command.service;
 
 import com.moirai.alloc.notification.command.domain.entity.*;
 import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmSendLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import org.junit.jupiter.api.*;
