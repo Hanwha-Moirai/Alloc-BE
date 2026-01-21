@@ -96,6 +96,9 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // 이메일 인증 관련
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // Bean Validation 관련
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
