@@ -40,7 +40,7 @@ class GanttQueryServiceTest {
     void findTasks_returnsProjectTasks() {
         List<TaskResponse> responses = ganttQueryService.findTasks(
                 PROJECT_ID,
-                new TaskSearchRequest(null, null, null)
+                new TaskSearchRequest(null, null, null, null, null, null)
         );
 
         assertThat(responses).isNotEmpty();
@@ -52,7 +52,7 @@ class GanttQueryServiceTest {
     void findTasks_returnsUserName() {
         List<TaskResponse> responses = ganttQueryService.findTasks(
                 PROJECT_ID,
-                new TaskSearchRequest(null, null, null)
+                new TaskSearchRequest(null, null, null, null, null, null)
         );
 
         assertThat(responses).hasSize(2);
@@ -102,7 +102,17 @@ class GanttQueryServiceTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> USER_ID;
+            return new AuthenticatedUserProvider() {
+                @Override
+                public Long getCurrentUserId() {
+                    return USER_ID;
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return "USER";
+                }
+            };
         }
     }
 }

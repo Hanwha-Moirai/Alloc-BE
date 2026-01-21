@@ -113,6 +113,13 @@ public class Project {
         this.description = description;
         this.predictedCost = predictedCost;
     }
+    public void changeProjectStatus(ProjectStatus projectStatus) {
+        this.projectStatus = projectStatus;
+    }
+    public void changeProjectType(ProjectType projectType) {
+        this.projectType = projectType;
+    }
+
     private void validatePeriod(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("프로젝트 기간은 필수입니다.");

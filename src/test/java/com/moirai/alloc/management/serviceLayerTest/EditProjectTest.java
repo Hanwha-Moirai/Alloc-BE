@@ -24,7 +24,7 @@ class EditProjectTest {
     private EditProject editProject;
 
     @Test
-    void updateUpdatesProjectBasicInfo() {
+    void updateUpdatesProjectBasicInfoAndStatusAndType() {
         // given
         Project project = Project.builder()
                 .name("기존 프로젝트")
@@ -33,6 +33,8 @@ class EditProjectTest {
                 .partners("기존 고객")
                 .description("기존 설명")
                 .predictedCost(1000)
+                .projectType(Project.ProjectType.NEW)
+                .projectStatus(Project.ProjectStatus.DRAFT)
                 .build();
 
         ReflectionTestUtils.setField(project, "projectId", 1L);
@@ -48,6 +50,8 @@ class EditProjectTest {
         ReflectionTestUtils.setField(command, "partners", "수정 고객");
         ReflectionTestUtils.setField(command, "description", "수정 설명");
         ReflectionTestUtils.setField(command, "predictedCost", 2000);
+        ReflectionTestUtils.setField(command, "projectType", Project.ProjectType.OPERATION);
+        ReflectionTestUtils.setField(command, "projectStatus", Project.ProjectStatus.ACTIVE);
 
         // when
         editProject.update(command);
@@ -58,5 +62,10 @@ class EditProjectTest {
         assertThat(project.getPartners()).isEqualTo("수정 고객");
         assertThat(project.getStartDate()).isEqualTo(LocalDate.of(2025, 2, 1));
         assertThat(project.getEndDate()).isEqualTo(LocalDate.of(2025, 7, 31));
+
+        assertThat(project.getProjectType())
+                .isEqualTo(Project.ProjectType.OPERATION);
+        assertThat(project.getProjectStatus())
+                .isEqualTo(Project.ProjectStatus.ACTIVE);
     }
 }

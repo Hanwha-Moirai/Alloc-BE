@@ -1,5 +1,8 @@
 package com.moirai.alloc.management.command.dto;
 
+import com.moirai.alloc.project.command.domain.Project;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,8 +15,13 @@ public class EditProjectDTO {
     private String projectName;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Integer predictedCost;
     private String partners;
     private String description;
-    private Integer predictedCost;
+
+    @NotNull
+    private Project.ProjectType projectType;
+    @NotNull
+    private Project.ProjectStatus projectStatus;
 
 }
