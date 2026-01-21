@@ -4,6 +4,7 @@ import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
+import com.moirai.alloc.report.query.dto.WeeklyReportMissingResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportSearchCondition;
 import com.moirai.alloc.report.query.dto.WeeklyReportSummaryResponse;
 import com.moirai.alloc.report.query.service.WeeklyReportQueryService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/mydocs/report")
@@ -71,6 +73,19 @@ public class WeeklyReportMyDocsQueryController {
     ) {
         WeeklyReportDetailResponse response =
                 weeklyReportQueryService.getMyDocsReportDetail(principal, reportId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 작성하지 않은 주간 보고 주차 목록
+    @GetMapping("/missing")
+    public ResponseEntity<ApiResponse<List<WeeklyReportMissingResponse>>> getMissingWeeks(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam Long projectId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        List<WeeklyReportMissingResponse> response =
+                weeklyReportQueryService.getMissingWeeks(principal, projectId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
