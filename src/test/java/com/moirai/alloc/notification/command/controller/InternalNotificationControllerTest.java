@@ -2,6 +2,7 @@ package com.moirai.alloc.notification.command.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import org.junit.jupiter.api.DisplayName;
@@ -88,17 +89,18 @@ class InternalNotificationControllerTest {
                     // ApiResponse wrapper의 필드명은 프로젝트마다 다를 수 있어, 최소 계약(핵심 필드 존재)만 문자열로 확인
                     .andExpect(content().string(containsString("createdCount")));
 
-            ArgumentCaptor<InternalNotificationCreateRequest> captor =
-                    ArgumentCaptor.forClass(InternalNotificationCreateRequest.class);
+            ArgumentCaptor<InternalNotificationCommand> captor =
+                    ArgumentCaptor.forClass(InternalNotificationCommand.class);
+
             verify(commandService, times(1)).createInternalNotifications(captor.capture());
 
-            InternalNotificationCreateRequest req = captor.getValue();
-            assertThat(req.getTemplateType().name()).isEqualTo("TASK_ASSIGN");
-            assertThat(req.getTargetUserIds()).containsExactly(1L, 2L);
-            assertThat(req.getVariables().get("taskName")).isEqualTo("API 구현");
-            assertThat(req.getTargetType().name()).isEqualTo("TASK");
-            assertThat(req.getTargetId()).isEqualTo(10L);
-            assertThat(req.getLinkUrl()).isEqualTo("/tasks/10");
+            InternalNotificationCommand cmd = captor.getValue();
+            assertThat(cmd.templateType().name()).isEqualTo("TASK_ASSIGN");
+            assertThat(cmd.targetUserIds()).containsExactly(1L, 2L);
+            assertThat(cmd.variables().get("taskName")).isEqualTo("API 구현");
+            assertThat(cmd.targetType().name()).isEqualTo("TASK");
+            assertThat(cmd.targetId()).isEqualTo(10L);
+            assertThat(cmd.linkUrl()).isEqualTo("/tasks/10");
         }
 
         @Test

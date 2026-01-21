@@ -1,8 +1,8 @@
 package com.moirai.alloc.notification.command.service;
 
 import com.moirai.alloc.notification.command.domain.entity.*;
-import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
 import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmSendLogRepository;
@@ -33,17 +33,11 @@ class NotificationCommandServiceTest {
     @Mock AlarmLogRepository alarmLogRepository;
     @Mock AlarmTemplateRepository alarmTemplateRepository;
     @Mock AlarmSendLogRepository alarmSendLogRepository;
-    @Mock
-    ApplicationEventPublisher eventPublisher;
+    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks NotificationCommandService service;
 
     private static final LocalDateTime FIXED_NOW = LocalDateTime.of(2026, 1, 16, 9, 0, 0);
-
-    @BeforeEach
-    void setUp() {
-        // 공통 셋업 없음
-    }
 
     // -------------------------------------------------------------------------
     // createInternalNotifications()
@@ -55,7 +49,7 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("성공: 템플릿 조회 → alarm_log N건 + alarm_send_log N건 생성 → AlarmCreatedEvent N회 발행 → 응답(createdCount, alarmIds) 반환")
         void success_createsLogsSendLogs_andPublishesEvents() {
-            // given
+            // given: template exists
             AlarmTemplate template = AlarmTemplate.builder()
                     .alarmTemplateType(AlarmTemplateType.TASK_ASSIGN)
                     .templateTitle("태스크 {{taskName}} 담당자 배정")
@@ -66,7 +60,8 @@ class NotificationCommandServiceTest {
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.TASK_ASSIGN))
                     .thenReturn(Optional.of(template));
 
-            InternalNotificationCreateRequest req = newRequest(
+            // given: command (2 users) - match expected assertions
+            InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
                     List.of(101L, 102L),
                     Map.of("taskName", "API 구현"),
@@ -75,7 +70,7 @@ class NotificationCommandServiceTest {
                     "/tasks/555"
             );
 
-            // alarm_log saveAll 스텁: 들어온 엔티티에 id/createdAt을 세팅해 저장된 것처럼 반환
+            // alarm_log saveAll stub: assign id/createdAt like JPA did
             when(alarmLogRepository.saveAll(any()))
                     .thenAnswer(inv -> {
                         Iterable<AlarmLog> it = inv.getArgument(0);
@@ -89,6 +84,7 @@ class NotificationCommandServiceTest {
                         return saved;
                     });
 
+            // alarm_send_log saveAll stub: return as-is
             when(alarmSendLogRepository.saveAll(any()))
                     .thenAnswer(inv -> {
                         Iterable<AlarmSendLog> it = inv.getArgument(0);
@@ -98,7 +94,7 @@ class NotificationCommandServiceTest {
                     });
 
             // when
-            InternalNotificationCreateResponse res = service.createInternalNotifications(req);
+            InternalNotificationCreateResponse res = service.createInternalNotifications(cmd);
 
             // then - response
             assertEquals(2, res.getCreatedCount());
@@ -111,13 +107,17 @@ class NotificationCommandServiceTest {
 
             List<AlarmLog> passedLogs = toList(alarmLogCaptor.getValue());
             assertEquals(2, passedLogs.size());
-            assertEquals("태스크 API 구현 담당자 배정", passedLogs.get(0).getAlarmTitle());
-            assertEquals("태스크 API 구현 담당자로 지정되었습니다.", passedLogs.get(0).getAlarmContext());
-            assertEquals(TargetType.TASK, passedLogs.get(0).getTargetType());
-            assertEquals(555L, passedLogs.get(0).getTargetId());
-            assertEquals("/tasks/555", passedLogs.get(0).getLinkUrl());
-            assertFalse(passedLogs.get(0).isRead());
-            assertFalse(passedLogs.get(0).isDeleted());
+
+            AlarmLog first = passedLogs.get(0);
+            assertEquals(101L, first.getUserId());
+            assertEquals(10L, first.getTemplateId());
+            assertEquals("태스크 API 구현 담당자 배정", first.getAlarmTitle());
+            assertEquals("태스크 API 구현 담당자로 지정되었습니다.", first.getAlarmContext());
+            assertEquals(TargetType.TASK, first.getTargetType());
+            assertEquals(555L, first.getTargetId());
+            assertEquals("/tasks/555", first.getLinkUrl());
+            assertFalse(first.isRead());
+            assertFalse(first.isDeleted());
 
             // then - alarm_send_log 저장 내용
             @SuppressWarnings("unchecked")
@@ -127,7 +127,6 @@ class NotificationCommandServiceTest {
             List<AlarmSendLog> passedSendLogs = toList(sendLogCaptor.getValue());
             assertEquals(2, passedSendLogs.size());
 
-            // userId별로 1개씩 생성되는지 + status SUCCESS인지
             Map<Long, AlarmSendLog> byUser = new HashMap<>();
             for (AlarmSendLog s : passedSendLogs) byUser.put(s.getUserId(), s);
 
@@ -149,8 +148,10 @@ class NotificationCommandServiceTest {
                     .toList();
 
             assertEquals(2, createdEvents.size());
-            assertEquals(Set.of(101L, 102L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::userId).toList()));
-            assertEquals(Set.of(1L, 2L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::alarmId).toList()));
+            assertEquals(Set.of(101L, 102L),
+                    new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::userId).toList()));
+            assertEquals(Set.of(1L, 2L),
+                    new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::alarmId).toList()));
             assertEquals("태스크 API 구현 담당자 배정", createdEvents.get(0).title());
             assertEquals("태스크 API 구현 담당자로 지정되었습니다.", createdEvents.get(0).content());
         }
@@ -162,18 +163,18 @@ class NotificationCommandServiceTest {
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(any()))
                     .thenReturn(Optional.empty());
 
-            InternalNotificationCreateRequest req = newRequest(
+            InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
-                    List.of(1L),
-                    Map.of("taskName", "X"),
+                    List.of(101L, 102L),
+                    Map.of("taskName", "API 구현"),
                     TargetType.TASK,
-                    10L,
-                    null
+                    555L,
+                    "/tasks/555"
             );
 
             // when
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> service.createInternalNotifications(req));
+                    () -> service.createInternalNotifications(cmd));
 
             // then
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -286,7 +287,7 @@ class NotificationCommandServiceTest {
     // -------------------------------------------------------------------------
     // helpers
     // -------------------------------------------------------------------------
-    private static InternalNotificationCreateRequest newRequest(
+    private static InternalNotificationCommand newCommand(
             AlarmTemplateType templateType,
             List<Long> targetUserIds,
             Map<String, String> variables,
@@ -294,14 +295,14 @@ class NotificationCommandServiceTest {
             Long targetId,
             String linkUrl
     ) {
-        InternalNotificationCreateRequest req = new InternalNotificationCreateRequest();
-        ReflectionTestUtils.setField(req, "templateType", templateType);
-        ReflectionTestUtils.setField(req, "targetUserIds", targetUserIds);
-        ReflectionTestUtils.setField(req, "variables", variables);
-        ReflectionTestUtils.setField(req, "targetType", targetType);
-        ReflectionTestUtils.setField(req, "targetId", targetId);
-        ReflectionTestUtils.setField(req, "linkUrl", linkUrl);
-        return req;
+        return InternalNotificationCommand.builder()
+                .templateType(templateType)
+                .targetUserIds(targetUserIds)
+                .variables(variables)
+                .targetType(targetType)
+                .targetId(targetId)
+                .linkUrl(linkUrl)
+                .build();
     }
 
     private static <T> List<T> toList(Iterable<T> it) {
