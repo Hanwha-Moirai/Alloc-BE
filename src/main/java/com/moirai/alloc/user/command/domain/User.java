@@ -90,4 +90,11 @@ public class User {
             this.birthday = birthday;
         }
     }
+
+    public void changePassword(String encodedPassword) {
+        if (encodedPassword == null || encodedPassword.isBlank()) {
+            throw new IllegalArgumentException("비밀번호는 비어 있을 수 없습니다.");
+        }
+        this.password = encodedPassword;
+    }
 }
