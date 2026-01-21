@@ -2,6 +2,7 @@ package com.moirai.alloc.report.query.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
+import com.moirai.alloc.report.query.dto.WeeklyReportMissingResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportSearchCondition;
 import com.moirai.alloc.report.query.dto.WeeklyReportSummaryResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -83,5 +87,36 @@ class WeeklyReportQueryServiceTest {
         WeeklyReportDetailResponse detail = weeklyReportQueryService.getMyDocsReportDetail(principal, REPORT_ID);
 
         assertThat(detail.reportId()).isEqualTo(REPORT_ID);
+    }
+
+    @Test
+    @DisplayName("작성하지 않은 주차 목록을 반환한다.")
+    void getMissingWeeks_returnsMissingWeeks() {
+        UserPrincipal principal = new UserPrincipal(
+                PM_USER_ID,
+                "pm_77001",
+                "pm77001@example.com",
+                "PM",
+                "PM",
+                "pw"
+        );
+
+        List<WeeklyReportMissingResponse> missing =
+                weeklyReportQueryService.getMissingWeeks(
+                        principal,
+                        PROJECT_ID,
+                        LocalDate.of(2025, 1, 1),
+                        LocalDate.of(2025, 1, 31)
+                );
+
+        assertThat(missing).hasSize(4);
+        assertThat(missing)
+                .extracting(WeeklyReportMissingResponse::weekStartDate)
+                .contains(
+                        LocalDate.of(2024, 12, 30),
+                        LocalDate.of(2025, 1, 13),
+                        LocalDate.of(2025, 1, 20),
+                        LocalDate.of(2025, 1, 27)
+                );
     }
 }
