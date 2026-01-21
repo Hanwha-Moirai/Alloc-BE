@@ -17,14 +17,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/people")
 public class PeopleSearchController {
-    private final OpenSearchPersonSearcher searcher;
+    private final OpenSearchPersonSearcher searchPeopleByNaturalLanguage;
     private final PersonViewMapper mapper;
 
     @PostMapping("/search")
-    public List<PersonView> search(@RequestBody SearchCondition condition) {
-        List<PersonDocument> documents = searcher.search(condition);
+    public List<PersonView> search(@RequestBody String query) {
+        List<PersonDocument> documents = searchPeopleByNaturalLanguage.search(query);
 
         return mapper.toViews(documents);
     }
-
 }
