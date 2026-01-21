@@ -11,10 +11,11 @@ import java.util.List;
 public interface TaskQueryMapper {
     List<TaskProjection> findTasks(
             @Param("projectId") Long projectId,
-            @Param("assigneeId") Long assigneeId,
+            @Param("assigneeNames") List<String> assigneeNames,
             @Param("status") String status,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("endDate") LocalDate endDate,
+            @Param("taskCategories") List<String> taskCategories
     );
 
     TaskProjection findTaskById(

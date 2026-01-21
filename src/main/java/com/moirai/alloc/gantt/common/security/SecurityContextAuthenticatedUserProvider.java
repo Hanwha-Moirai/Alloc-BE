@@ -20,4 +20,17 @@ public class SecurityContextAuthenticatedUserProvider implements AuthenticatedUs
         }
         throw new IllegalStateException("사용자 정보를 확인할 수 없습니다.");
     }
+
+    @Override
+    public String getCurrentUserRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new IllegalStateException("인증 정보가 없습니다.");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserPrincipal userPrincipal) {
+            return userPrincipal.role();
+        }
+        throw new IllegalStateException("사용자 정보를 확인할 수 없습니다.");
+    }
 }
