@@ -2,9 +2,16 @@ package com.moirai.alloc.search.query.infra.openSearch;
 
 import com.moirai.alloc.search.query.model.SkillLevel;
 import com.moirai.alloc.search.query.model.WorkingType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
-
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class PersonDocument {
     // 이 사람이 가진 <이름,직무명, 숙련도..etc>
     // 검색 결과 원본
@@ -23,5 +30,9 @@ public class PersonDocument {
 
     private String department;
     private WorkingType workingType;
+
+    private String experience;
+    private String profileSummary; // 기존 필드 이어 붙여서, 검색 잘 되도록 요약, (가공은 백엔드 assembler가)
+
 
 }
