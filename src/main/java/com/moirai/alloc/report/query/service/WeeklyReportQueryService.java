@@ -2,6 +2,7 @@ package com.moirai.alloc.report.query.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
+import com.moirai.alloc.report.query.dto.WeeklyReportMissingResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportSearchCondition;
 import com.moirai.alloc.report.query.dto.WeeklyReportSummaryResponse;
 import com.moirai.alloc.report.query.repository.ReportMembershipRepository;
@@ -13,7 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.WeekFields;
 
 @Service
 public class WeeklyReportQueryService {
@@ -78,5 +87,53 @@ public class WeeklyReportQueryService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 멤버가 아닙니다.");
         }
         return detail;
+    }
+
+    @Transactional(readOnly = true)
+    public List<WeeklyReportMissingResponse> getMissingWeeks(UserPrincipal principal,
+                                                             Long projectId,
+                                                             LocalDate startDate,
+                                                             LocalDate endDate) {
+        if (!membershipRepository.existsMembership(projectId, principal.userId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "프로젝트 멤버가 아닙니다.");
+        }
+        if (startDate == null || endDate == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "조회 기간이 필요합니다.");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "종료일은 시작일보다 빠를 수 없습니다.");
+        }
+
+        LocalDate rangeStart = toWeekStart(startDate);
+        LocalDate rangeEnd = toWeekStart(endDate);
+        List<LocalDate> reportedStarts = weeklyReportQueryRepository.findWeekStartDates(
+                projectId,
+                principal.userId(),
+                rangeStart,
+                rangeEnd
+        );
+        Set<LocalDate> reportedSet = new HashSet<>(reportedStarts);
+        List<WeeklyReportMissingResponse> missing = new ArrayList<>();
+        for (LocalDate cursor = rangeStart; !cursor.isAfter(rangeEnd); cursor = cursor.plusWeeks(1)) {
+            if (reportedSet.contains(cursor)) {
+                continue;
+            }
+            missing.add(new WeeklyReportMissingResponse(
+                    cursor,
+                    cursor.plusDays(6),
+                    toWeekLabel(cursor)
+            ));
+        }
+        return missing;
+    }
+
+    private LocalDate toWeekStart(LocalDate date) {
+        DayOfWeek firstDayOfWeek = WeekFields.of(Locale.KOREA).getFirstDayOfWeek();
+        return date.with(TemporalAdjusters.previousOrSame(firstDayOfWeek));
+    }
+
+    private String toWeekLabel(LocalDate weekStartDate) {
+        int week = weekStartDate.get(WeekFields.of(Locale.KOREA).weekOfMonth());
+        return String.format("%d년 %d월 %d주차", weekStartDate.getYear(), weekStartDate.getMonthValue(), week);
     }
 }
