@@ -44,29 +44,6 @@
                 #{category}
             </foreach>
         </if>
-        <if test="periods != null and periods.size() > 0">
-            AND (
-            <foreach collection="periods" item="period" separator=" OR ">
-                <choose>
-                    <when test="period == 'OVERDUE'">
-                        t.end_date &lt; CURDATE()
-                    </when>
-                    <when test="period == 'D7'">
-                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 0 AND 7
-                    </when>
-                    <when test="period == 'D14'">
-                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 8 AND 14
-                    </when>
-                    <when test="period == 'D21'">
-                        DATEDIFF(t.end_date, CURDATE()) BETWEEN 15 AND 21
-                    </when>
-                    <otherwise>
-                        1 = 0
-                    </otherwise>
-                </choose>
-            </foreach>
-            )
-        </if>
         ORDER BY t.start_date ASC, t.task_id ASC
     </select>
 

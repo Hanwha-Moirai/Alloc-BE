@@ -11,7 +11,6 @@ public record TaskSearchRequest(
         LocalDate startDate,
         LocalDate endDate,
         List<TaskCategory> taskCategories,
-        List<String> assigneeNames,
-        List<String> periods
+        List<String> assigneeNames
 ) {
 }

@@ -17,9 +17,9 @@ ON DUPLICATE KEY UPDATE assignment_status = VALUES(assignment_status);
 
 INSERT INTO milestone (milestone_id, project_id, milestone_name, start_date, end_date, achievement_rate, is_deleted, is_completed, created_at, updated_at)
 VALUES
-    (99001, 99001, 'M1', '2025-01-01', '2025-01-15', 0, 0, 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-    (99002, 99001, 'M2', '2025-01-16', '2025-01-31', 0, 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-    (99003, 99001, 'M3', '2025-02-01', '2025-02-15', 0, 1, 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
+    (99001, 99001, 'M1', '2025-01-01', '2025-01-15', 0, 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
+    (99002, 99001, 'M2', '2025-01-16', '2025-01-31', 0, 0, 1, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
+    (99003, 99001, 'M3', '2025-02-01', '2025-02-15', 0, 1, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
 ON DUPLICATE KEY UPDATE milestone_name = VALUES(milestone_name);
 
 INSERT INTO task (task_id, milestone_id, user_id, task_category, task_name, task_description, task_status, start_date, end_date, is_completed, is_deleted, created_at, updated_at)
