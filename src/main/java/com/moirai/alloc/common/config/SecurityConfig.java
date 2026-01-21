@@ -58,15 +58,13 @@ public class SecurityConfig {
                         .requestMatchers("/", "/error", "/favicon.ico").permitAll()
 
                         // 인증(로그인) 관련: 필요한 것만 permitAll
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-
-                        // 관리자 로그인/초기 진입은 허용
-                        .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
+                        // 비밀번호 재설정 관련 API는 모두 허용
+                        .requestMatchers(HttpMethod.POST, "/api/auth/password/reset/**").permitAll()
 
                         // 관리자 전용 API
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 );
