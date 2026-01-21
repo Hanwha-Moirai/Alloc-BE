@@ -93,7 +93,7 @@ public class GanttCommandService {
 
         taskRepository.save(task);
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "CREATE"));
-        syncMilestoneCompletion(milestone);
+        syncMilestoneCompletion(milestone.getMilestoneId());
         //notifyTaskAssignee(projectId, task.getTaskId(), task.getUserId(), task.getTaskName());
         return task.getTaskId();
     }
@@ -103,6 +103,7 @@ public class GanttCommandService {
         validateProject(projectId);
 
         Task task = findTaskWithinProject(projectId, taskId);
+        Long previousMilestoneId = task.getMilestone() == null ? null : task.getMilestone().getMilestoneId();
         if (Boolean.TRUE.equals(task.getIsDeleted())) {
             throw GanttException.notFound("태스크가 존재하지 않습니다.");
         }
@@ -111,7 +112,6 @@ public class GanttCommandService {
         boolean isPm = "PM".equalsIgnoreCase(role);
 
         if (isPm) {
-            Milestone previousMilestone = task.getMilestone();
             if (request.taskStatus() != null && !Objects.equals(request.taskStatus(), task.getTaskStatus())) {
                 throw GanttException.forbidden("PM은 태스크 상태를 변경할 수 없습니다.");
             }
@@ -150,12 +150,11 @@ public class GanttCommandService {
             );
 
             taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "UPDATE"));
+            if (!Objects.equals(previousMilestoneId, targetMilestone.getMilestoneId())) {
+                syncMilestoneCompletion(previousMilestoneId, targetMilestone.getMilestoneId());
+            }
             if (!Objects.equals(previousAssigneeId, assigneeId)) {
                 //notifyTaskAssignee(projectId, task.getTaskId(), assigneeId, task.getTaskName());
-            }
-            if (!Objects.equals(previousMilestone.getMilestoneId(), targetMilestone.getMilestoneId())) {
-                syncMilestoneCompletion(previousMilestone);
-                syncMilestoneCompletion(targetMilestone);
             }
             return;
         }
@@ -182,7 +181,7 @@ public class GanttCommandService {
 
         task.changeStatus(request.taskStatus());
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "UPDATE"));
-        syncMilestoneCompletion(task.getMilestone());
+        syncMilestoneCompletion(previousMilestoneId);
     }
 
     @Transactional
@@ -190,12 +189,13 @@ public class GanttCommandService {
         validateProject(projectId);
 
         Task task = findTaskWithinProject(projectId, taskId);
+        Long milestoneId = task.getMilestone() == null ? null : task.getMilestone().getMilestoneId();
         if (Boolean.TRUE.equals(task.getIsDeleted())) {
             throw GanttException.notFound("태스크가 존재하지 않습니다.");
         }
         task.softDelete();
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "DELETE"));
-        syncMilestoneCompletion(task.getMilestone());
+        syncMilestoneCompletion(milestoneId);
     }
 
     @Transactional
@@ -303,22 +303,6 @@ public class GanttCommandService {
                 });
     }
 
-    private void syncMilestoneCompletion(Milestone milestone) {
-        if (milestone == null) {
-            return;
-        }
-        Long milestoneId = milestone.getMilestoneId();
-        long totalTasks = taskRepository.countByMilestone_MilestoneIdAndIsDeletedFalse(milestoneId);
-        if (totalTasks == 0L) {
-            milestone.changeCompletion(false);
-            return;
-        }
-        long completedTasks = taskRepository.countByMilestone_MilestoneIdAndIsDeletedFalseAndTaskStatus(
-                milestoneId,
-                Task.TaskStatus.DONE
-        );
-        milestone.changeCompletion(completedTasks == totalTasks);
-    }
 
     private Task findTaskWithinProject(Long projectId, Long taskId) {
         TaskProjection projection = taskQueryMapper.findTaskById(projectId, taskId);
@@ -331,6 +315,25 @@ public class GanttCommandService {
     private Task getTaskEntity(TaskProjection projection) {
         return taskRepository.findById(projection.taskId())
                 .orElseThrow(() -> GanttException.notFound("태스크가 존재하지 않습니다."));
+    }
+
+    private void syncMilestoneCompletion(Long... milestoneIds) {
+        if (milestoneIds == null) {
+            return;
+        }
+        for (Long milestoneId : milestoneIds) {
+            if (milestoneId == null) {
+                continue;
+            }
+            long totalTasks = taskRepository.countByMilestone_MilestoneIdAndIsDeletedFalse(milestoneId);
+            boolean completed = totalTasks > 0
+                    && taskRepository.countByMilestone_MilestoneIdAndIsDeletedFalseAndTaskStatus(
+                            milestoneId,
+                            Task.TaskStatus.DONE
+                    ) == totalTasks;
+            milestoneRepository.findById(milestoneId)
+                    .ifPresent(milestone -> milestone.changeCompletion(completed));
+        }
     }
 
     private String requireNonNull(String value, String fieldName) {
