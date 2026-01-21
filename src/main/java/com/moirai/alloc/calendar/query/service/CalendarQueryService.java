@@ -1,9 +1,13 @@
 package com.moirai.alloc.calendar.query.service;
 
 import com.moirai.alloc.calendar.command.dto.response.CalendarViewResponse;
+import com.moirai.alloc.calendar.query.dto.ProjectUpcomingEventsResponse;
+import com.moirai.alloc.calendar.query.dto.TodayEventsResponse;
+import com.moirai.alloc.calendar.query.dto.WeeklyEventCountResponse;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface CalendarQueryService {
 
@@ -15,4 +19,21 @@ public interface CalendarQueryService {
      * - 결과는 시작일시 기준 정렬하여 반환
      */
     CalendarViewResponse getCalendarView(Long projectId, LocalDate from, LocalDate to, String view, UserPrincipal principal);
+
+    WeeklyEventCountResponse getMyWeeklyEventCount(UserPrincipal principal);
+
+    TodayEventsResponse getMyTodayEvents(
+            int limit,
+            LocalDateTime cursorStart,
+            Long cursorId,
+            UserPrincipal principal
+    );
+
+    ProjectUpcomingEventsResponse getProjectUpcomingEvents(
+            Long projectId,
+            int limit,
+            LocalDateTime cursorStart,
+            Long cursorId,
+            UserPrincipal principal
+    );
 }
