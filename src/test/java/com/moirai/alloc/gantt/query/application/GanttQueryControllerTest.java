@@ -81,7 +81,17 @@ class GanttQueryControllerTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> 99002L;
+            return new AuthenticatedUserProvider() {
+                @Override
+                public Long getCurrentUserId() {
+                    return 99002L;
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return "USER";
+                }
+            };
         }
     }
 }

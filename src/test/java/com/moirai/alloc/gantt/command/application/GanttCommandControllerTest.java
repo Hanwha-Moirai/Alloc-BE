@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -78,6 +77,7 @@ class GanttCommandControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
+
     @Test
     @DisplayName("PM 권한으로 태스크 삭제가 성공한다.")
     void deleteTask_returnsOk() throws Exception {
@@ -88,11 +88,27 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @DisplayName("PM 권한이 없으면 태스크 수정이 금지된다.")
+    @DisplayName("PM이 아니면 태스크 내용 수정이 금지된다.")
     void updateTask_forbiddenWhenUserRoleIsNotPm() throws Exception {
         String body = """
                 {
                   "taskName": "Updated Task"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("담당자가 아니면 태스크 상태 변경이 금지된다.")
+    void updateTask_forbiddenWhenRequesterIsNotAssignee() throws Exception {
+        String body = """
+                {
+                  "taskStatus": "INPROGRESS"
                 }
                 """;
 
@@ -104,20 +120,18 @@ class GanttCommandControllerTest {
     }
 
     @Test
-    @DisplayName("담당자가 아니면 태스크 완료가 금지된다.")
-    void completeTask_forbiddenWhenRequesterIsNotAssignee() throws Exception {
-        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99001, 99001)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
-    }
+    @DisplayName("담당자일 때 태스크 상태 변경이 성공한다.")
+    void updateTask_returnsOkWhenRequesterIsAssignee() throws Exception {
+        String body = """
+                {
+                  "taskStatus": "INPROGRESS"
+                }
+                """;
 
-    @Test
-    @DisplayName("담당자일 때 태스크 완료가 성공한다.")
-    void completeTask_returnsOkWhenRequesterIsAssignee() throws Exception {
-        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}/complete", 99001, 99001)
+        mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
