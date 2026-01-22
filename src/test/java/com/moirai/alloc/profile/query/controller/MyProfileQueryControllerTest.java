@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener;
 import org.springframework.test.context.web.ServletTestExecutionListener;
@@ -27,9 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestExecutionListeners({
         DependencyInjectionTestExecutionListener.class,
         ServletTestExecutionListener.class,
-        WithSecurityContextTestExecutionListener.class,
-        SqlScriptsTestExecutionListener.class
+        SqlScriptsTestExecutionListener.class,
+        WithSecurityContextTestExecutionListener.class
 })
+@Sql(scripts = "/sql/profile/setup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class MyProfileQueryControllerTest {
 
     @Autowired
@@ -44,7 +46,7 @@ class MyProfileQueryControllerTest {
 
     @Test
     @DisplayName("상단바 프로필 요약 정보를 조회한다")
-    @WithUserDetails("nostack")
+    @WithUserDetails("kmj")
     void getMySummary() throws Exception {
         mockMvc.perform(get("/api/users/me/summary"))
                 .andExpect(status().isOk())

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
@@ -24,7 +25,7 @@ import static org.assertj.core.api.Assertions.*;
         TransactionalTestExecutionListener.class
 })
 //@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-//@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/profile/setup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class MyProfileQueryServiceTest {
 
     private static final Long USER_ID = 77001L;
@@ -43,7 +44,7 @@ class MyProfileQueryServiceTest {
         assertThat(response.getUserName()).isEqualTo("김명진");
         assertThat(response.getJobName()).isEqualTo("BackendDeveloper");
         assertThat(response.getTitleName()).isEqualTo("사원");
-        assertThat(response.getProfileImageUrl()).isEqualTo("(NULL)");
+        assertThat(response.getProfileImageUrl()).isNull();
     }
 
     @Test

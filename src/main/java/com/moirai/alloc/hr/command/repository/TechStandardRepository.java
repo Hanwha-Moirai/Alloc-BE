@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface TechStandardRepository extends JpaRepository<TechStandard, Long> {
 
+    boolean existsByTechNameIgnoreCase(String techName);
+
     /* keyword 없이: 커서 이후 목록 techName ASC, techId ASC */
     @Query("""
         select t
