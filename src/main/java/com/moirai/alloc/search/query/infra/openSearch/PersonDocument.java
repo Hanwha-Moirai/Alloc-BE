@@ -7,7 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -23,9 +24,8 @@ public class PersonDocument {
     private String name;
 
     private String jobTitle;
-    private List<String> techs;
+    private Map<String, SkillLevel> techSkills;
 
-    private SkillLevel skillLevel;
     private Integer activeProjectCount;
 
     private String department;
