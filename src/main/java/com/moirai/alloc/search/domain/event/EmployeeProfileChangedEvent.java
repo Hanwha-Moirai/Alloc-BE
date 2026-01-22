@@ -14,5 +14,6 @@ public class EmployeeProfileChangedEvent {
     employee_type, hiring_date 중
     검색에 영향을 주는 값 변경시
      */
+    private final Long employeeId;
 
 }
