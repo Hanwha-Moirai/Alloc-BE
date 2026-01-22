@@ -9,12 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -41,6 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
+            if ("internal".equals(typ) || hasInternalScope(claims.get("scope"))) {
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                "internal",
+                                null,
+                                List.of(new SimpleGrantedAuthority("INTERNAL"))
+                        );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                chain.doFilter(req, res);
+                return;
+            }
+
             Long userId = Long.parseLong(claims.getSubject());
             UserDetails userDetails = customUserDetailsService.loadUserById(userId);
 
@@ -55,6 +69,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(req, res);
+    }
+
+    private boolean hasInternalScope(Object scope) {
+        if (scope instanceof List<?> scopes) {
+            return scopes.contains("INTERNAL");
+        }
+        if (scope instanceof String scopeString) {
+            return scopeString.contains("INTERNAL");
+        }
+        return false;
     }
 
     private String resolveToken(HttpServletRequest request) {
