@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ProfileSummaryBuilder {
-
+    // 검색에서 여러 필드를 매번 조합하면 효율 떨어짐으로
+    // 이름 + 직급 + 기술 + 경험을 하나의 summary문자열로 미리 조합
+    // 성능 최적화 + 검색 품질 향상
     private ProfileSummaryBuilder() {}
 
     public static String build(

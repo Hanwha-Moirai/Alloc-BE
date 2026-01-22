@@ -39,7 +39,7 @@ public class EmployeeIndexer {
 
     @Transactional(readOnly = true)
     public void reindex(Long employeeId) {
-        // 검색 인덱싱의 "기본 재료" (fetch join 안전 영역)
+        // 검색 인덱싱(fetch join)
         Employee employee = employeeRepository.findByIdForIndexing(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
 
@@ -59,17 +59,14 @@ public class EmployeeIndexer {
                 squadAssignmentRepository.countActiveProjects(employeeId);
 
         // 경험 텍스트용 프로젝트 타입
-        // 1️⃣ 먼저 DB에서 가져오고
         List<Project.ProjectType> experiencedProjectTypes =
                 squadAssignmentRepository.findExperiencedProjectTypes(employeeId);
 
-// 2️⃣ Search 전용 enum으로 변환
         List<ProjectType> searchProjectTypes =
                 experiencedProjectTypes.stream()
                         .map(pt -> ProjectType.valueOf(pt.name()))
                         .toList();
 
-// 3️⃣ 그 다음 가공 경험 문자열 생성
         String experience =
                 ExperienceTextBuilder.from(searchProjectTypes);
 
