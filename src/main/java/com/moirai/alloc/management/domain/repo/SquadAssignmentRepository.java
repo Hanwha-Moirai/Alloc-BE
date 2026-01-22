@@ -128,5 +128,17 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             @Param("employeeId") Long employeeId
     );
 
+    @Query("""
+    select distinct p.name
+    from SquadAssignment sa
+    join Project p on sa.projectId = p.projectId
+    where sa.userId = :employeeId
+      and sa.finalDecision = 'ASSIGNED'
+""")
+    List<String> findExperiencedProjectTitles(
+            @Param("employeeId") Long employeeId
+    );
+
+
 
 }

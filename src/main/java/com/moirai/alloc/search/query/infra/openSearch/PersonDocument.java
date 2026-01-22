@@ -31,7 +31,8 @@ public class PersonDocument {
     private String department;
     private WorkingType workingType;
 
-    private String experience;
+    private String experienceDomainText;  // 금융 IT, ERP, 차세대 등
+
     private String profileSummary; // 기존 필드 이어 붙여서, 검색 잘 되도록 요약, (가공은 백엔드 assembler가)
 
 

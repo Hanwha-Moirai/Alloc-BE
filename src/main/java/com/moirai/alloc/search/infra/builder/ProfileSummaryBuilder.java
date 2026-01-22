@@ -15,17 +15,16 @@ public class ProfileSummaryBuilder {
     public static String build(
             Employee employee,
             Map<String, SkillLevel> techSkills,
-            String experience
+            String experienceDomainText
     ) {
-        String techSummary = techSkills.keySet().stream()
-                .collect(Collectors.joining(", "));
+        String techSummary = String.join(", ", techSkills.keySet());
 
         return String.format(
-                "%s %s, 기술: %s, %s",
+                "%s %s, 기술: %s, 경험: %s %s",
                 employee.getTitleStandard().getTitleName(),
                 employee.getUser().getUserName(),
                 techSummary,
-                experience
+                experienceDomainText
         );
     }
 }

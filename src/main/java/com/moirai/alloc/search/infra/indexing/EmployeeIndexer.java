@@ -2,14 +2,11 @@ package com.moirai.alloc.search.infra.indexing;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
-import com.moirai.alloc.profile.command.domain.entity.EmployeeSkill;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
-import com.moirai.alloc.project.command.domain.Project;
-import com.moirai.alloc.search.infra.builder.ExperienceTextBuilder;
+import com.moirai.alloc.search.infra.builder.ExperienceDomainTextBuilder;
 import com.moirai.alloc.search.infra.builder.ProfileSummaryBuilder;
 import com.moirai.alloc.search.infra.opensearch.OpenSearchPersonWriter;
-import com.moirai.alloc.search.query.domain.model.ProjectType;
 import com.moirai.alloc.search.query.domain.model.SkillLevel;
 import com.moirai.alloc.search.query.domain.model.WorkingType;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
@@ -58,19 +55,14 @@ public class EmployeeIndexer {
         int activeProjectCount =
                 squadAssignmentRepository.countActiveProjects(employeeId);
 
-        // 경험 텍스트용 프로젝트 타입
-        List<Project.ProjectType> experiencedProjectTypes =
-                squadAssignmentRepository.findExperiencedProjectTypes(employeeId);
+        // 프로젝트 제목 (자연어 경험)
+        List<String> projectTitles =
+                squadAssignmentRepository.findExperiencedProjectTitles(employeeId);
 
-        List<ProjectType> searchProjectTypes =
-                experiencedProjectTypes.stream()
-                        .map(pt -> ProjectType.valueOf(pt.name()))
-                        .toList();
+        String experienceDomainText =
+                ExperienceDomainTextBuilder.from(projectTitles);
 
-        String experience =
-                ExperienceTextBuilder.from(searchProjectTypes);
-
-        //검색용 Document 조립 (Projection)
+        // PersonDocument 조립
         PersonDocument document = PersonDocument.builder()
                 .personId(employee.getUserId())
                 .name(employee.getUser().getUserName())
@@ -79,10 +71,10 @@ public class EmployeeIndexer {
                 .workingType(WorkingType.valueOf(employee.getEmployeeType().name()))
                 .techSkills(techSkills)
                 .activeProjectCount(activeProjectCount)
-                .experience(experience)
-                .profileSummary(ProfileSummaryBuilder.build(
-                        employee, techSkills, experience
-                ))
+                .experienceDomainText(experienceDomainText)
+                .profileSummary(
+                        ProfileSummaryBuilder.build(employee, techSkills, experienceDomainText)
+                )
                 .build();
 
 
