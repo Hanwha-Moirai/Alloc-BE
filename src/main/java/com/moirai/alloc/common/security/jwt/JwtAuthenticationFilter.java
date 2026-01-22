@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if ("internal".equals(typ) || hasInternalScope(claims.get("scope"))) {
+            if ("internal".equals(typ)) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 "internal",

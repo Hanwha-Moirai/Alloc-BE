@@ -14,11 +14,6 @@ public class NotificationHttpProperties {
     private String baseUrl;
 
     /**
-     * 내부 호출용 토큰(예: 게이트웨이/서비스 토큰)
-     */
-    private String internalToken;
-
-    /**
      * 내부 엔드포인트 경로(기본값)
      */
     private String createPath = "/api/internal/notifications";

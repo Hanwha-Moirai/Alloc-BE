@@ -2,10 +2,12 @@ package com.moirai.alloc.notification.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.common.port.NotificationPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -19,21 +21,26 @@ public class HttpNotificationPort implements NotificationPort {
     private final WebClient notificationWebClient;
     private final NotificationHttpProperties props;
     private final ObjectMapper objectMapper;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    /**
+     * 내부 토큰 subject(서비스 식별자).
+     * - spring.application.name 을 기본으로 사용
+     * - 없으면 "alloc-service"로 fallback
+     */
+    @Value("${spring.application.name:alloc-service}")
+    private String internalSubject;
 
     @Override
     public InternalNotificationCreateResponse notify(InternalNotificationCommand cmd) {
+        // 매 요청마다 내부 토큰 생성
+        String internalJwt = jwtTokenProvider.createInternalToken(internalSubject);
+
         JsonNode root = notificationWebClient.post()
                 .uri(props.getCreatePath())
+                .headers(h -> h.setBearerAuth(internalJwt))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                // 보안 방식에 맞춰 헤더 조정 (예: Bearer / 내부 토큰 등)
-                .headers(headers -> {
-                    String token = props.getInternalToken();
-                    if (token != null && !token.isBlank()) {
-                        // headers.setBearerAuth(token); // 동일 의미(가독성 옵션)
-                        headers.set("Authorization", "Bearer " + token);
-                    }
-                })
                 .bodyValue(cmd)
                 .retrieve()
                 .onStatus(
