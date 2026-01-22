@@ -34,8 +34,8 @@ public class Employee {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "job_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id")
     private JobStandard job;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -96,6 +96,18 @@ public class Employee {
 
     public void changeJob(JobStandard job) {
         this.job = job;
+    }
+
+    public void changeDepartment(Department department) {
+        this.department = department;
+    }
+
+    public void changeTitleStandard(TitleStandard titleStandard) {
+        this.titleStandard = titleStandard;
+    }
+
+    public void changeEmployeeType(EmployeeType employeeType) {
+        this.employeeType = employeeType;
     }
 
 }

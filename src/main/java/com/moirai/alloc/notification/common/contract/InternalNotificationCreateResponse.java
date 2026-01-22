@@ -1,4 +1,4 @@
-package com.moirai.alloc.notification.command.dto.response;
+package com.moirai.alloc.notification.common.contract;
 
 import lombok.Builder;
 import lombok.Getter;

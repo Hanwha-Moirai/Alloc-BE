@@ -1,8 +1,9 @@
 package com.moirai.alloc.notification.command.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,16 @@ public class InternalNotificationController {
     public ResponseEntity<ApiResponse<InternalNotificationCreateResponse>> create(
             @Valid @RequestBody InternalNotificationCreateRequest request
     ) {
-        var res = commandService.createInternalNotifications(request);
+        InternalNotificationCommand cmd = InternalNotificationCommand.builder()
+                .templateType(request.getTemplateType())
+                .targetUserIds(request.getTargetUserIds())
+                .variables(request.getVariables())
+                .targetType(request.getTargetType())
+                .targetId(request.getTargetId())
+                .linkUrl(request.getLinkUrl())
+                .build();
+
+        var res = commandService.createInternalNotifications(cmd);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(res));
     }
 }

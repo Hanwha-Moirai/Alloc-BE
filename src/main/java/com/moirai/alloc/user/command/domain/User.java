@@ -91,10 +91,26 @@ public class User {
         }
     }
 
+    public void changeBasicInfo(String userName, LocalDate birthday, String email, String phone, String profileImg) {
+        if (userName != null) this.userName = userName;
+        if (birthday != null) this.birthday = birthday;
+        if (email != null) this.email = email;
+        if (phone != null) this.phone = phone;
+        if (profileImg != null) this.profileImg = profileImg;
+    }
+
     public void changePassword(String encodedPassword) {
         if (encodedPassword == null || encodedPassword.isBlank()) {
             throw new IllegalArgumentException("비밀번호는 비어 있을 수 없습니다.");
         }
         this.password = encodedPassword;
+    }
+
+    public void changeAuth(Auth auth) {
+        if (auth != null) this.auth = auth;
+    }
+
+    public void changeStatus(Status status) {
+        if (status != null) this.status = status;
     }
 }
