@@ -28,6 +28,9 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-exp}")
     private long refreshExpSeconds;
 
+    @Value("${jwt.internal-exp:300}")
+    private long internalExpSeconds;
+
     private Key key;
 
     @PostConstruct
@@ -50,6 +53,18 @@ public class JwtTokenProvider {
                 String.valueOf(userId),
                 Map.of("typ", "refresh"),
                 refreshExpSeconds
+        );
+    }
+
+    // ===== Internal Token =====
+    public String createInternalToken(String subject) {
+        return createToken(
+                subject,
+                Map.of(
+                        "typ", "internal",
+                        "scope", java.util.List.of("INTERNAL")
+                ),
+                internalExpSeconds
         );
     }
 

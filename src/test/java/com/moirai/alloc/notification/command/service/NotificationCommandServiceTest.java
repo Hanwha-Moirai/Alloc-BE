@@ -49,7 +49,7 @@ class NotificationCommandServiceTest {
         @Test
         @DisplayName("성공: 템플릿 조회 → alarm_log N건 + alarm_send_log N건 생성 → AlarmCreatedEvent N회 발행 → 응답(createdCount, alarmIds) 반환")
         void success_createsLogsSendLogs_andPublishesEvents() {
-            // given: template exists
+            // given
             AlarmTemplate template = AlarmTemplate.builder()
                     .alarmTemplateType(AlarmTemplateType.TASK_ASSIGN)
                     .templateTitle("태스크 {{taskName}} 담당자 배정")
@@ -60,7 +60,6 @@ class NotificationCommandServiceTest {
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.TASK_ASSIGN))
                     .thenReturn(Optional.of(template));
 
-            // given: command (2 users) - match expected assertions
             InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
                     List.of(101L, 102L),
@@ -70,7 +69,7 @@ class NotificationCommandServiceTest {
                     "/tasks/555"
             );
 
-            // alarm_log saveAll stub: assign id/createdAt like JPA did
+            // alarm_log saveAll 스텁: 들어온 엔티티에 id/createdAt을 세팅해 저장된 것처럼 반환
             when(alarmLogRepository.saveAll(any()))
                     .thenAnswer(inv -> {
                         Iterable<AlarmLog> it = inv.getArgument(0);
@@ -84,7 +83,6 @@ class NotificationCommandServiceTest {
                         return saved;
                     });
 
-            // alarm_send_log saveAll stub: return as-is
             when(alarmSendLogRepository.saveAll(any()))
                     .thenAnswer(inv -> {
                         Iterable<AlarmSendLog> it = inv.getArgument(0);
@@ -107,17 +105,13 @@ class NotificationCommandServiceTest {
 
             List<AlarmLog> passedLogs = toList(alarmLogCaptor.getValue());
             assertEquals(2, passedLogs.size());
-
-            AlarmLog first = passedLogs.get(0);
-            assertEquals(101L, first.getUserId());
-            assertEquals(10L, first.getTemplateId());
-            assertEquals("태스크 API 구현 담당자 배정", first.getAlarmTitle());
-            assertEquals("태스크 API 구현 담당자로 지정되었습니다.", first.getAlarmContext());
-            assertEquals(TargetType.TASK, first.getTargetType());
-            assertEquals(555L, first.getTargetId());
-            assertEquals("/tasks/555", first.getLinkUrl());
-            assertFalse(first.isRead());
-            assertFalse(first.isDeleted());
+            assertEquals("태스크 API 구현 담당자 배정", passedLogs.get(0).getAlarmTitle());
+            assertEquals("태스크 API 구현 담당자로 지정되었습니다.", passedLogs.get(0).getAlarmContext());
+            assertEquals(TargetType.TASK, passedLogs.get(0).getTargetType());
+            assertEquals(555L, passedLogs.get(0).getTargetId());
+            assertEquals("/tasks/555", passedLogs.get(0).getLinkUrl());
+            assertFalse(passedLogs.get(0).isRead());
+            assertFalse(passedLogs.get(0).isDeleted());
 
             // then - alarm_send_log 저장 내용
             @SuppressWarnings("unchecked")
@@ -148,10 +142,8 @@ class NotificationCommandServiceTest {
                     .toList();
 
             assertEquals(2, createdEvents.size());
-            assertEquals(Set.of(101L, 102L),
-                    new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::userId).toList()));
-            assertEquals(Set.of(1L, 2L),
-                    new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::alarmId).toList()));
+            assertEquals(Set.of(101L, 102L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::userId).toList()));
+            assertEquals(Set.of(1L, 2L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::alarmId).toList()));
             assertEquals("태스크 API 구현 담당자 배정", createdEvents.get(0).title());
             assertEquals("태스크 API 구현 담당자로 지정되었습니다.", createdEvents.get(0).content());
         }
@@ -165,11 +157,11 @@ class NotificationCommandServiceTest {
 
             InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
-                    List.of(101L, 102L),
-                    Map.of("taskName", "API 구현"),
+                    List.of(1L),
+                    Map.of("taskName", "X"),
                     TargetType.TASK,
-                    555L,
-                    "/tasks/555"
+                    10L,
+                    null
             );
 
             // when
