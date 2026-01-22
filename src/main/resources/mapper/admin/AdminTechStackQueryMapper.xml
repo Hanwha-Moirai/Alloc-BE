@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moirai.alloc.admin.query.mapper.AdminTechStackQueryMapper">
+
+    <sql id="Where">
+        WHERE 1=1
+        <if test="q != null and q != ''">
+            AND t.tech_name LIKE CONCAT('%', #{q}, '%')
+        </if>
+    </sql>
+
+    <select id="selectTechStacks"
+            resultType="com.moirai.alloc.admin.query.dto.AdminTechStackListItem">
+        SELECT
+        t.tech_id    AS techId,
+        t.tech_name  AS techName,
+        t.created_at AS createdAt,
+        t.updated_at AS updatedAt
+        FROM tech_standard t
+        <include refid="Where"/>
+        ORDER BY t.tech_name ASC, t.tech_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countTechStacks" resultType="long">
+        SELECT COUNT(*)
+        FROM tech_standard t
+        <include refid="Where"/>
+    </select>
+
+</mapper>

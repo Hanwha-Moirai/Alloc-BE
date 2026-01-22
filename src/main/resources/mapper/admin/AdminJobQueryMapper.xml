@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moirai.alloc.admin.query.mapper.AdminJobQueryMapper">
+    <!--검색어 비교 시 공백 무시 + 대소문자 무시 -->
+    <sql id="Where">
+        WHERE 1=1
+        <if test="q != null and q != ''">
+            AND LOWER(REPLACE(j.job_name, ' ', ''))
+            LIKE LOWER(CONCAT('%', REPLACE(#{q}, ' ', ''), '%'))
+        </if>
+    </sql>
+
+    <select id="selectJobs"
+            resultType="com.moirai.alloc.admin.query.dto.AdminJobListItem">
+        SELECT
+        j.job_id     AS jobId,
+        j.job_name   AS jobName,
+        j.created_at AS createdAt,
+        j.updated_at AS updatedAt
+        FROM job_standard j
+        <include refid="Where"/>
+        ORDER BY j.job_name ASC, j.job_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countJobs" resultType="long">
+        SELECT COUNT(*)
+        FROM job_standard j
+        <include refid="Where"/>
+    </select>
+
+</mapper>

@@ -13,7 +13,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findById(Long userId);
 
-    boolean existsByEmail(String userEmail); // 필드명에 맞게 조정
+    boolean existsByEmail(String userEmail);
+
+    //수정 시 이메일 중복 체크
+    boolean existsByEmailAndUserIdNot(String email, Long userId);
 
 }
 
