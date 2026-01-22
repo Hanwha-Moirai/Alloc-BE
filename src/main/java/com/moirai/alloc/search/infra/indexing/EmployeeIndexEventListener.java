@@ -7,7 +7,7 @@ import com.moirai.alloc.search.domain.event.EmployeeSkillChangedEvent;
 import org.springframework.context.event.EventListener;
 
 public class EmployeeIndexEventListener {
-    // 연결하는 역할. 도메인 이벤트와 검색 커멘드서비스 연결
+    // 도메인 이벤트를 받아서 검색 인덱싱 유스케이스를 호출
 
     private final IndexPeopleToSearch indexPeopleToSearch;
 
