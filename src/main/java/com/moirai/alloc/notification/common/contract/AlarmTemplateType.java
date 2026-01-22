@@ -1,4 +1,4 @@
-package com.moirai.alloc.notification.command.domain.entity;
+package com.moirai.alloc.notification.common.contract;
 
 public enum AlarmTemplateType {
     POST_TEMP,

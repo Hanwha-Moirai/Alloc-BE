@@ -1,7 +1,7 @@
 package com.moirai.alloc.notification.query.service;
 
 import com.moirai.alloc.notification.command.domain.entity.AlarmLog;
-import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.query.dto.response.NotificationPageResponse;
 import com.moirai.alloc.notification.query.dto.response.NotificationSummaryResponse;

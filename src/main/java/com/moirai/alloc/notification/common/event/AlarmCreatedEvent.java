@@ -1,6 +1,6 @@
 package com.moirai.alloc.notification.common.event;
 
-import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
