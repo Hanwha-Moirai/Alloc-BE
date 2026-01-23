@@ -1,6 +1,7 @@
 package com.moirai.alloc.admin.query.service;
 
 import com.moirai.alloc.admin.query.dto.AdminUserListItem;
+import com.moirai.alloc.admin.query.dto.AdminUserMetaResponse;
 import com.moirai.alloc.common.dto.PageResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -95,5 +96,24 @@ class AdminUserQueryServiceTest {
         assertThat(res.getCurrentPage()).isEqualTo(1);
         assertThat(res.getSize()).isEqualTo(1);
         assertThat(res.getContent()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("사용자 메타 조회 시 직급/부서/근무형태/권한/계정상태 옵션이 포함된다")
+    void getUserMeta_includes_titles_and_departments() {
+        AdminUserMetaResponse res = service.getUserMeta();
+
+        assertThat(res.getEmployeeTypes()).isNotNull();
+        assertThat(res.getAuths()).isNotNull();
+        assertThat(res.getStatuses()).isNotNull();
+
+        assertThat(res.getTitles()).isNotNull().isNotEmpty();
+        assertThat(res.getDepartments()).isNotNull().isNotEmpty();
+
+        assertThat(res.getTitles().get(0).getId()).isNotNull();
+        assertThat(res.getTitles().get(0).getLabel()).isNotBlank();
+
+        assertThat(res.getDepartments().get(0).getId()).isNotNull();
+        assertThat(res.getDepartments().get(0).getLabel()).isNotBlank();
     }
 }

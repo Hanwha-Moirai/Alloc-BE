@@ -62,11 +62,12 @@ VALUES
     (77003, 'pmuser',   '{noop}password1234', 'PM사용자',  '1994-04-04', 'pm@alloc.co.kr',       '010-3333-4444', 'PM',    'SUSPENDED', NULL);
 
 -- 3) department (manager_id NOT NULL)
-INSERT INTO department (dept_id, dept_name, manager_id, created_at, updated_at)
-VALUES (1, 'Dev', 77001, NOW(), NOW())
+INSERT INTO department (dept_id, dept_name, manager_id, is_active, created_at, updated_at)
+VALUES (1, '정보보안팀', 77001, TRUE, NOW(), NOW())
     ON DUPLICATE KEY UPDATE
                          dept_name  = VALUES(dept_name),
                          manager_id = VALUES(manager_id),
+                         is_active  = VALUES(is_active),
                          updated_at = NOW();
 
 -- 4) employee (onlyuser 제외)

@@ -129,7 +129,7 @@ class AdminUserQueryControllerTest {
     class GetUserMeta {
 
         @Test
-        @DisplayName("관리자는 사용자 메타 데이터를 조회할 수 있다")
+        @DisplayName("관리자는 사용자 메타 데이터를 조회할 수 있다 +(직급/부서 포함)")
         void getUserMeta_asAdmin_success() throws Exception {
             mockMvc.perform(get("/api/admin/users/meta")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
@@ -139,6 +139,16 @@ class AdminUserQueryControllerTest {
                     .andExpect(jsonPath("$.data.employeeTypes").isArray())
                     .andExpect(jsonPath("$.data.auths").isArray())
                     .andExpect(jsonPath("$.data.statuses").isArray())
+
+                    .andExpect(jsonPath("$.data.titles").isArray())
+                    .andExpect(jsonPath("$.data.titles.length()").value(org.hamcrest.Matchers.greaterThan(0)))
+                    .andExpect(jsonPath("$.data.titles[0].id").exists())
+                    .andExpect(jsonPath("$.data.titles[0].label").exists())
+
+                    .andExpect(jsonPath("$.data.departments").isArray())
+                    .andExpect(jsonPath("$.data.departments.length()").value(org.hamcrest.Matchers.greaterThan(0)))
+                    .andExpect(jsonPath("$.data.departments[0].id").exists())
+                    .andExpect(jsonPath("$.data.departments[0].label").exists())
                     .andDo(print());
         }
     }
