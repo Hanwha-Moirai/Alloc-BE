@@ -39,6 +39,8 @@ public class AdminUserQueryService {
                 .employeeTypes(toEmployeeTypeOptions())
                 .auths(toOptions(User.Auth.values()))
                 .statuses(toOptions(User.Status.values()))
+                .titles(mapper.selectTitleOptions())
+                .departments(mapper.selectDepartmentOptions())
                 .build();
     }
 
