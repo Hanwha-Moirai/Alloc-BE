@@ -1,7 +1,7 @@
-package com.moirai.alloc.search.infra.builder;
+package com.moirai.alloc.search.command.infra.builder;
 
 import com.moirai.alloc.profile.command.domain.entity.Employee;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 
 import java.util.Map;
 

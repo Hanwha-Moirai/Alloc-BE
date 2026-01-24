@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.infra.opensearch;
+package com.moirai.alloc.search.command.infra.opensearch;
 
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import lombok.RequiredArgsConstructor;

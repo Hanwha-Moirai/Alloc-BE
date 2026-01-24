@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.query.domain.model;
+package com.moirai.alloc.search.query.domain.condition;
 
 public enum ComparisonType {
     EQUAL,                 // ==

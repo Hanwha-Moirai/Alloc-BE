@@ -1,5 +1,9 @@
-package com.moirai.alloc.search.query.domain.model;
+package com.moirai.alloc.search.query.domain.intent;
 
+import com.moirai.alloc.search.query.domain.condition.ComparisonType;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

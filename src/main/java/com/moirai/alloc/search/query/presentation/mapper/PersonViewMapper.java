@@ -1,6 +1,6 @@
 package com.moirai.alloc.search.query.presentation.mapper;
 
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import com.moirai.alloc.search.query.presentation.dto.PersonView;
 import org.springframework.stereotype.Component;

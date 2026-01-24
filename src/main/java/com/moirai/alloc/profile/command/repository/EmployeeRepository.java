@@ -1,8 +1,6 @@
 package com.moirai.alloc.profile.command.repository;
 
 import com.moirai.alloc.profile.command.domain.entity.Employee;
-import com.moirai.alloc.project.command.domain.Project;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

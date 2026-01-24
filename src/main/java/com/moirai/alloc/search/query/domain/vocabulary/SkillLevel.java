@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.query.domain.model;
+package com.moirai.alloc.search.query.domain.vocabulary;
 
 public enum SkillLevel {
     LV1(1), LV2(2), LV3(3);

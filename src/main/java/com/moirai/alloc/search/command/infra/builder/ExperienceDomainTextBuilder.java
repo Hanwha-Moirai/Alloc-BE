@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.infra.builder;
+package com.moirai.alloc.search.command.infra.builder;
 
 import java.util.List;
 import java.util.stream.Collectors;

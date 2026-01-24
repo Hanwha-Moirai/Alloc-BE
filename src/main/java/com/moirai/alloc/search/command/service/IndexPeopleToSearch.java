@@ -1,6 +1,6 @@
 package com.moirai.alloc.search.command.service;
 
-import com.moirai.alloc.search.infra.indexing.EmployeeIndexer;
+import com.moirai.alloc.search.command.infra.indexing.EmployeeIndexer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

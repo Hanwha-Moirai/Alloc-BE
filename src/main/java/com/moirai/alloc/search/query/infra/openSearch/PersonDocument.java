@@ -1,8 +1,8 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
-import com.moirai.alloc.search.query.domain.model.WorkingType;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

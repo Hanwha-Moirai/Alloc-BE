@@ -1,6 +1,12 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.search.query.domain.model.*;
+import com.moirai.alloc.search.query.domain.condition.ComparisonType;
+import com.moirai.alloc.search.query.domain.condition.LogicalOperator;
+import com.moirai.alloc.search.query.domain.condition.SearchCondition;
+import com.moirai.alloc.search.query.domain.condition.SkillCondition;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;

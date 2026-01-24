@@ -1,6 +1,10 @@
 package com.moirai.alloc.search.query.service;
 
-import com.moirai.alloc.search.query.domain.model.*;
+import com.moirai.alloc.search.query.domain.condition.ComparisonType;
+import com.moirai.alloc.search.query.domain.condition.LogicalOperator;
+import com.moirai.alloc.search.query.domain.condition.SearchCondition;
+import com.moirai.alloc.search.query.domain.condition.SkillCondition;
+import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 import com.moirai.alloc.search.query.infra.gpt.SearchIntentParser;
 import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;

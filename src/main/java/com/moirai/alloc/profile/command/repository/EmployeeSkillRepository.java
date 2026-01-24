@@ -1,9 +1,7 @@
 package com.moirai.alloc.profile.command.repository;
 
 import com.moirai.alloc.profile.command.domain.entity.EmployeeSkill;
-import com.moirai.alloc.profile.query.dto.MyTechStackResponse;
-import com.moirai.alloc.search.infra.indexing.TechSkillRow;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
+import com.moirai.alloc.search.command.infra.indexing.TechSkillRow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 

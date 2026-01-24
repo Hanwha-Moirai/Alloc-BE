@@ -1,16 +1,16 @@
-package com.moirai.alloc.search.infra.indexing;
+package com.moirai.alloc.search.command.infra.indexing;
 
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
-import com.moirai.alloc.search.infra.builder.ExperienceDomainTextBuilder;
-import com.moirai.alloc.search.infra.builder.ProfileSummaryBuilder;
-import com.moirai.alloc.search.infra.builder.SeniorityLevelBuilder;
-import com.moirai.alloc.search.infra.opensearch.OpenSearchPersonWriter;
-import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
-import com.moirai.alloc.search.query.domain.model.WorkingType;
+import com.moirai.alloc.search.command.infra.builder.ExperienceDomainTextBuilder;
+import com.moirai.alloc.search.command.infra.builder.ProfileSummaryBuilder;
+import com.moirai.alloc.search.command.infra.builder.SeniorityLevelBuilder;
+import com.moirai.alloc.search.command.infra.opensearch.OpenSearchPersonWriter;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,9 @@
-package com.moirai.alloc.search.infra.indexing;
+package com.moirai.alloc.search.command.infra.indexing;
 
 import com.moirai.alloc.search.command.service.IndexPeopleToSearch;
-import com.moirai.alloc.search.domain.event.EmployeeAssignmentChangedEvent;
-import com.moirai.alloc.search.domain.event.EmployeeProfileChangedEvent;
-import com.moirai.alloc.search.domain.event.EmployeeSkillChangedEvent;
+import com.moirai.alloc.search.command.event.EmployeeAssignmentChangedEvent;
+import com.moirai.alloc.search.command.event.EmployeeProfileChangedEvent;
+import com.moirai.alloc.search.command.event.EmployeeSkillChangedEvent;
 import org.springframework.context.event.EventListener;
 
 public class EmployeeIndexEventListener {

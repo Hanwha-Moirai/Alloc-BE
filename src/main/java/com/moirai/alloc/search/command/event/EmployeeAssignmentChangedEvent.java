@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.domain.event;
+package com.moirai.alloc.search.command.event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

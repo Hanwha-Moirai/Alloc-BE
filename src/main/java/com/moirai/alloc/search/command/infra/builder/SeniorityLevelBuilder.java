@@ -1,7 +1,7 @@
-package com.moirai.alloc.search.infra.builder;
+package com.moirai.alloc.search.command.infra.builder;
 
 import com.moirai.alloc.profile.command.domain.entity.Employee;
-import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 
 public class SeniorityLevelBuilder {
     //TODO : 직급체계 정하고, 이 부분 수정 필요
