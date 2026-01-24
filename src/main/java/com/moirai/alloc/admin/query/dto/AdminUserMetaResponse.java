@@ -16,11 +16,22 @@ public class AdminUserMetaResponse {
 
     private List<CodeLabel> statuses;   // 계정 상태 (ACTIVE, SUSPENDED, DELETED)
 
+    private List<IdLabel> titles;          //직급
+
+    private List<IdLabel> departments;     //부서
+
     @Getter
     @Builder
     public static class CodeLabel {
         private String code;   // enum name (FULL_TIME)
         private String label;  // 화면 표시용 (정규직)
+    }
+
+    @Getter
+    @Builder
+    public static class IdLabel {
+        private Long id;
+        private String label;
     }
 }
 

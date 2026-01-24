@@ -55,4 +55,23 @@
         <include refid="Where"/>
     </select>
 
+    <select id="selectTitleOptions"
+            resultType="com.moirai.alloc.admin.query.dto.AdminUserMetaResponse$IdLabel">
+        SELECT
+        ts.title_standard_id AS id,
+        ts.title_name        AS label
+        FROM title_standard ts
+        ORDER BY ts.title_name ASC, ts.title_standard_id ASC
+    </select>
+
+    <select id="selectDepartmentOptions"
+            resultType="com.moirai.alloc.admin.query.dto.AdminUserMetaResponse$IdLabel">
+        SELECT
+        d.dept_id   AS id,
+        d.dept_name AS label
+        FROM department d
+        WHERE d.is_active = TRUE
+        ORDER BY d.dept_name ASC, d.dept_id ASC
+    </select>
+
 </mapper>
