@@ -1,6 +1,7 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
 import com.moirai.alloc.search.query.domain.model.SearchCondition;
+import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.model.SkillLevel;
 import com.moirai.alloc.search.query.domain.model.WorkingType;
 import lombok.RequiredArgsConstructor;
@@ -62,10 +63,10 @@ public class OpenSearchPersonSearcher {
                 QueryBuilders.multiMatchQuery(
                         condition.getFreeText(),
                         "jobTitle^3",
-                        "experience^5",
+                        "experienceDomainText^5",
                         "profileSummary^4",
                         "department",
-                        "techs^3"
+                        "techSkills^3"
                 // ^5의 의미; 가중치; experience에서 걸리면 점수 가장 크게, 요약, 직무, 부서 순
                 // 그 외 필드는 filter 처리할 것.
                 )
@@ -101,10 +102,24 @@ public class OpenSearchPersonSearcher {
     private void applySkillLevel(SearchCondition condition, BoolQueryBuilder bool) {
         if(condition.getSkillLevel() != null) {
             bool.filter(
-                    QueryBuilders.termQuery("skillLevel", condition.getSkillLevel().name())
+                    "techSkills." + condition.getTech(),   // 예: techSkills.Java
+                    condition.getSkillLevel().name()
             );
         }
     }
+
+    private void applySeniorityLevel(SearchCondition condition, BoolQueryBuilder bool) {
+        if (condition.getSeniorityLevel() != null) {
+            bool.filter(
+                    QueryBuilders.termQuery(
+                            "seniorityLevel",
+                            condition.getSeniorityLevel().name()
+                    )
+            );
+        }
+    }
+
+
     // limit 처리
     private int resolveLimit(SearchCondition condition) {
         //사용자가 결과 개수를 지정했으면 그 값을 쓰고 지정하지 않으면 기본 10개 값 반환하기
@@ -137,11 +152,25 @@ public class OpenSearchPersonSearcher {
                 .personId(Long.valueOf(source.get("personId").toString()))
                 .name((String) source.get("name"))
                 .jobTitle((String) source.get("jobTitle"))
-                .techs((List<String>) source.get("techs"))
-                .skillLevel(SkillLevel.valueOf((String) source.get("skillLevel")))
-                .activeProjectCount((Integer) source.get("activeProjectCount"))
                 .department((String) source.get("department"))
-                .workingType(WorkingType.valueOf((String) source.get("workingType")))
+                .workingType(
+                        WorkingType.valueOf((String) source.get("workingType"))
+                )
+                .seniorityLevel(
+                        SeniorityLevel.valueOf((String) source.get("seniorityLevel"))
+                )
+                .activeProjectCount(
+                        ((Number) source.get("activeProjectCount")).intValue()
+                )
+                .experienceDomainText(
+                        (String) source.get("experienceDomainText")
+                )
+                .profileSummary(
+                        (String) source.get("profileSummary")
+                )
+                .techSkills(
+                        (Map<String, SkillLevel>) source.get("techSkills")
+                )
                 .build();
     }
 

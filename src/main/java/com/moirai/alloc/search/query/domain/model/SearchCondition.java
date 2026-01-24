@@ -11,27 +11,27 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchCondition {
-    // 이런 <직무,기술,숙련도 etc>찾아줘
-    // 검색용 조건; 검색에 쓰기 좋은 형태로 한 번 더 정리(dto)
-    // 사람 검색에 필요한 조건 스펙을 먼저 고정한다.
-    // 검색 조건 전달(무엇을 찾을지..검색 기준 필터)
-    // 직무, 기술, 기술 숙련도, 투입 중 프로젝트 수, 부서, 재직유형
+    // 검색용 조건; 검색에 쓰기 좋은 형태로 정리(dto)
+    // 사람 검색에 필요한 조건 스펙을 먼저 고정
 
+    //자연어; fallback, multi_match 용도
     private String freeText; // 기본 검색 (항상 사용 가능)
 
-    // 숫자, ENUM (거의 확실)
+    // 숫자 비교 조건
     private Integer activeProjectCount;
-    private ComparisonType comparisonType; // 이게 뭔용도임?
+    private ComparisonType comparisonType;
+
+    // enum 기반 필터
     private WorkingType workingType;
+    private SeniorityLevel seniorityLevel; // 추상화된 직급 작성(시니어, 주니어 등)
+
+    // 기술 조건; map 대응
+    private String techs;
     private SkillLevel skillLevel;
 
-    private String title; // 정확한 직급 작성
-    private SeniorityLevel seniorityLevel; // 추상화된 직급 작성
-
-    // 정확하게 적은 경우에 채워지는 필드
-    private String job;
-    private List<String> techs;
-    private String department;
+    // 정확한 매칭 필터
+    private String title; // 정확한 직급 작성(부장, 차장 등_
+    private String department; //부서명
 
     private Integer limit;
 
