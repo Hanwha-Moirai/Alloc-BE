@@ -6,7 +6,9 @@ import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
 import com.moirai.alloc.search.infra.builder.ExperienceDomainTextBuilder;
 import com.moirai.alloc.search.infra.builder.ProfileSummaryBuilder;
+import com.moirai.alloc.search.infra.builder.SeniorityLevelBuilder;
 import com.moirai.alloc.search.infra.opensearch.OpenSearchPersonWriter;
+import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.model.SkillLevel;
 import com.moirai.alloc.search.query.domain.model.WorkingType;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
@@ -41,8 +43,7 @@ public class EmployeeIndexer {
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
 
         // 숙련도
-        List<TechSkillRow> techSkillRows =
-                employeeSkillRepository.findTechSkillsForIndexing(employeeId);
+        List<TechSkillRow> techSkillRows = employeeSkillRepository.findTechSkillsForIndexing(employeeId);
 
         Map<String, SkillLevel> techSkills =
                 techSkillRows.stream()
@@ -52,15 +53,14 @@ public class EmployeeIndexer {
                         ));
 
         // 현재 투입 중인 프로젝트 수
-        int activeProjectCount =
-                squadAssignmentRepository.countActiveProjects(employeeId);
+        int activeProjectCount = squadAssignmentRepository.countActiveProjects(employeeId);
 
         // 프로젝트 제목 (자연어 경험)
-        List<String> projectTitles =
-                squadAssignmentRepository.findExperiencedProjectTitles(employeeId);
+        List<String> projectTitles = squadAssignmentRepository.findExperiencedProjectTitles(employeeId);
 
-        String experienceDomainText =
-                ExperienceDomainTextBuilder.from(projectTitles);
+        String experienceDomainText = ExperienceDomainTextBuilder.from(projectTitles);
+
+        SeniorityLevel seniorityLevel = SeniorityLevelBuilder.from(employee);
 
         // PersonDocument 조립
         PersonDocument document = PersonDocument.builder()
@@ -69,6 +69,7 @@ public class EmployeeIndexer {
                 .jobTitle(employee.getTitleStandard().getTitleName())
                 .department(employee.getDepartment().getDeptName())
                 .workingType(WorkingType.valueOf(employee.getEmployeeType().name()))
+                .seniorityLevel(seniorityLevel)
                 .techSkills(techSkills)
                 .activeProjectCount(activeProjectCount)
                 .experienceDomainText(experienceDomainText)
