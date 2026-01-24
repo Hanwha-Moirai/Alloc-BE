@@ -25,8 +25,8 @@ public class PersonDocument {
     private String name;
 
     private String jobTitle;
-    private Map<String, SkillLevel> techSkills;
-    private Map<String, Integer> techSkillLevels;    // 범위 검색용
+    private Map<String, SkillLevel> techSkills;  // 의미 검색용
+    private Map<String, Integer> techSkillNumericLevels;    // 범위 검색용
 
     private Integer activeProjectCount;
 

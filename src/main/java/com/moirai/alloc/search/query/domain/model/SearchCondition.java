@@ -31,7 +31,7 @@ public class SearchCondition {
     private SeniorityLevel seniorityLevel; // 추상화된 직급 작성(시니어, 주니어 등)
 
     // 정확한 매칭 필터
-    private String title; // 정확한 직급 작성(부장, 차장 등_
+    private String jobTitle; // 정확한 직급 작성(부장, 차장 등_
     private String department; //부서명
 
     private Integer limit;

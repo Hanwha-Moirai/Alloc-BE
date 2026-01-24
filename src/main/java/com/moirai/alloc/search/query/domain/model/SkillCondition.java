@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SkillCondition {
-    private String tech;
+    private String techName;
     private SkillLevel skillLevel;
     private ComparisonType comparisonType;
 }
