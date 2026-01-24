@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GptSearchIntentParser implements SearchIntentParser {
+public class GptIntentRefiner implements SearchIntentParser {
     // GPT API 호출(통신)
     // 결과 JSON 파싱
     private final ObjectMapper objectMapper;
@@ -63,5 +63,4 @@ public class GptSearchIntentParser implements SearchIntentParser {
             throw new IllegalStateException("Failed to parse GPT response", e);
         }
     }
-
 }

@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class SearchPeopleByNaturalLanguage {
+public class ConversationPeopleSearchService {
     // 사람을 자연어로 검색한다.
     //1. 자연어 -> 구조화
     //2. 검색 조건 생성
