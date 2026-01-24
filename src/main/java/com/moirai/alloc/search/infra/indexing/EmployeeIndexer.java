@@ -78,7 +78,7 @@ public class EmployeeIndexer {
                 .workingType(WorkingType.valueOf(employee.getEmployeeType().name()))
                 .seniorityLevel(seniorityLevel)
                 .techSkills(techSkills)                 // 정확 매칭
-                .techSkillLevels(techSkillLevels)       // 범위 검색
+                .techSkillNumericLevels(techSkillLevels)       // 범위 검색
                 .activeProjectCount(activeProjectCount)
                 .experienceDomainText(experienceDomainText)
                 .profileSummary(
