@@ -25,6 +25,9 @@ public class SearchCondition {
     private WorkingType workingType;
     private SkillLevel skillLevel;
 
+    private String title; // 정확한 직급 작성
+    private SeniorityLevel seniorityLevel; // 추상화된 직급 작성
+
     // 정확하게 적은 경우에 채워지는 필드
     private String job;
     private List<String> techs;

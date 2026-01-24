@@ -11,6 +11,10 @@ public class EmployeeIndexEventListener {
 
     private final IndexPeopleToSearch indexPeopleToSearch;
 
+    public EmployeeIndexEventListener(IndexPeopleToSearch indexPeopleToSearch) {
+        this.indexPeopleToSearch = indexPeopleToSearch;
+    }
+
     @EventListener
     public void on(EmployeeProfileChangedEvent event){
         indexPeopleToSearch.indexEmployee(event.getEmployeeId());

@@ -1,5 +1,6 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
+import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.model.SkillLevel;
 import com.moirai.alloc.search.query.domain.model.WorkingType;
 import lombok.AllArgsConstructor;
@@ -31,9 +32,11 @@ public class PersonDocument {
     private String department;
     private WorkingType workingType;
 
-    private String experienceDomainText;  // 금융 IT, ERP, 차세대 등
+    private SeniorityLevel seniorityLevel;
 
-    private String profileSummary; // 기존 필드 이어 붙여서, 검색 잘 되도록 요약, (가공은 백엔드 assembler가)
+    private String experienceDomainText;  // 금융 IT, ERP, 차세대 등 (높은 가중치)
+
+    private String profileSummary; // 직원 한 문자 설명, experienceDomainText의 놓친 것 커버 (낮은 가중치)
 
 
 }

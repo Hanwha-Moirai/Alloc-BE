@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExperienceDomainTextBuilder {
+    // 프로젝트 '무엇'을 했는지 검색; 도메인 키워드 검색
     private ExperienceDomainTextBuilder() {}
 
     public static String from(List<String> projectTitles) {
