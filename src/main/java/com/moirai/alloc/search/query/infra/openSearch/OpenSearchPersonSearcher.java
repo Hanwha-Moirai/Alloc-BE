@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 public class OpenSearchPersonSearcher {
 //    SearchCondition을 받아
 //    검색 의도를 쿼리 형태로 ‘번역’하는 컴포넌트
-
     private final RestHighLevelClient client;
+
 
     public List<PersonDocument> search(SearchCondition condition) {
         // 1. SearchCondition 확인
@@ -45,6 +45,7 @@ public class OpenSearchPersonSearcher {
         SearchSourceBuilder source = new SearchSourceBuilder()
                 .query(boolQuery)
                 .size(resolveLimit(condition));
+
         // open search 호출
         return executeSearch(source);
     }
@@ -57,11 +58,11 @@ public class OpenSearchPersonSearcher {
         bool.must(
                 QueryBuilders.multiMatchQuery(
                         condition.getFreeText(),
-                        "jobTitle^3",
                         "experienceDomainText^5",
                         "profileSummary^4",
+                        "jobTitle^3",
                         "department",
-                        "techSkills^3"
+                        "name"
                 // ^5의 의미; 가중치; experience에서 걸리면 점수 가장 크게, 요약, 직무, 부서 순
                 // 그 외 필드는 filter 처리할 것.
                 )
@@ -125,7 +126,8 @@ public class OpenSearchPersonSearcher {
             for (SkillCondition sc : condition.getSkillConditions()) {
                 should.should(buildSkillQuery(sc));
             }
-            bool.must(should);
+            should.minimumShouldMatch(1);
+            bool.filter(should);
             return;
         }
 
@@ -138,16 +140,18 @@ public class OpenSearchPersonSearcher {
      */
     private QueryBuilder buildSkillQuery(SkillCondition sc) {
 
+        String tech = sc.getTechName();
+
         // LV2 이상, LV3 이상 같은 범위 검색
         if (sc.getComparisonType() == ComparisonType.GREATER_THAN_OR_EQUAL) {
             return QueryBuilders.rangeQuery(
-                    "techSkillLevels." + sc.getTech()
+                    "techSkillLevels." + tech
             ).gte(sc.getSkillLevel().number());
         }
 
         // 정확 매칭 (LV2, LV3)
         return QueryBuilders.termQuery(
-                "techSkills." + sc.getTech(),
+                "techSkills." + tech,
                 sc.getSkillLevel().name()
         );
     }
@@ -233,7 +237,4 @@ public class OpenSearchPersonSearcher {
                         e -> SkillLevel.valueOf(e.getValue())
                 ));
     }
-
-
-
 }
