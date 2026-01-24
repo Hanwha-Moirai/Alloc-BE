@@ -1,8 +1,6 @@
 package com.moirai.alloc.search.query.presentation.api;
 
-import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import com.moirai.alloc.search.query.presentation.dto.PersonView;
-import com.moirai.alloc.search.query.presentation.mapper.PersonViewMapper;
 import com.moirai.alloc.search.query.service.SearchPeopleByNaturalLanguage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +14,9 @@ import java.util.List;
 @RequestMapping("/api/people")
 public class PeopleSearchController {
     private final SearchPeopleByNaturalLanguage searchPeopleByNaturalLanguage;
-    private final PersonViewMapper mapper;
 
     @PostMapping("/search")
     public List<PersonView> search(@RequestBody String query) {
-        List<PersonDocument> documents = searchPeopleByNaturalLanguage.search(query);
-
-        return mapper.toViews(documents);
+        return searchPeopleByNaturalLanguage.search(query);
     }
 }
