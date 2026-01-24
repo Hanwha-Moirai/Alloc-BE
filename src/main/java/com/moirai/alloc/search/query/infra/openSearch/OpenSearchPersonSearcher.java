@@ -1,15 +1,13 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.search.query.domain.model.SearchCondition;
-import com.moirai.alloc.search.query.domain.model.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.model.SkillLevel;
-import com.moirai.alloc.search.query.domain.model.WorkingType;
+import com.moirai.alloc.search.query.domain.model.*;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.RestHighLevelClient;
 import org.opensearch.index.query.BoolQueryBuilder;
+import org.opensearch.index.query.QueryBuilder;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.index.query.RangeQueryBuilder;
 import org.opensearch.search.SearchHit;
@@ -37,16 +35,11 @@ public class OpenSearchPersonSearcher {
         // 4. PersonDocument 리스트 반환
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
-        //freeText; must + multi_match
         applyFreeText(condition, boolQuery);
-
-        // 숫자 조건; range
         applyProjectCount(condition, boolQuery);
-
-        //enum 조건 + filter
         applyWorkingType(condition, boolQuery);
         applySeniorityLevel(condition, boolQuery);
-        applySkillLevel(condition, boolQuery);
+        applySkillConditions(condition, boolQuery);
 
         // search request 생성
         SearchSourceBuilder source = new SearchSourceBuilder()
@@ -101,18 +94,6 @@ public class OpenSearchPersonSearcher {
             );
         }
     }
-    private void applySkillLevel(SearchCondition condition, BoolQueryBuilder bool) {
-        if (condition.getTech() == null || condition.getSkillLevel() == null) {
-            return;
-        }
-
-        bool.filter(
-                QueryBuilders.termQuery(
-                        "techSkills." + condition.getTech(),
-                        condition.getSkillLevel().name()
-                )
-        );
-    }
 
     private void applySeniorityLevel(SearchCondition condition, BoolQueryBuilder bool) {
         if (condition.getSeniorityLevel() != null) {
@@ -124,6 +105,53 @@ public class OpenSearchPersonSearcher {
             );
         }
     }
+    private void applySkillConditions(
+            SearchCondition condition,
+            BoolQueryBuilder bool
+    ) {
+        if (condition.getSkillConditions() == null ||
+                condition.getSkillConditions().isEmpty()) {
+            return;
+        }
+
+        LogicalOperator op =
+                condition.getLogicalOperator() != null
+                        ? condition.getLogicalOperator()
+                        : LogicalOperator.AND;
+
+        if (op == LogicalOperator.OR) {
+            BoolQueryBuilder should = QueryBuilders.boolQuery();
+
+            for (SkillCondition sc : condition.getSkillConditions()) {
+                should.should(buildSkillQuery(sc));
+            }
+            bool.must(should);
+            return;
+        }
+
+        // 기본 AND
+        for (SkillCondition sc : condition.getSkillConditions()) {
+            bool.filter(buildSkillQuery(sc));}
+    }
+    /**
+     * 단일 기술 조건을 OpenSearch Query로 변환
+     */
+    private QueryBuilder buildSkillQuery(SkillCondition sc) {
+
+        // LV2 이상, LV3 이상 같은 범위 검색
+        if (sc.getComparisonType() == ComparisonType.GREATER_THAN_OR_EQUAL) {
+            return QueryBuilders.rangeQuery(
+                    "techSkillLevels." + sc.getTech()
+            ).gte(sc.getSkillLevel().number());
+        }
+
+        // 정확 매칭 (LV2, LV3)
+        return QueryBuilders.termQuery(
+                "techSkills." + sc.getTech(),
+                sc.getSkillLevel().name()
+        );
+    }
+
 
 
     // limit 처리
@@ -175,7 +203,7 @@ public class OpenSearchPersonSearcher {
                         (String) source.get("profileSummary")
                 )
                 .techSkills(
-                        (Map<String, SkillLevel>) source.get("techSkills")
+                        parseTechSkills(source)
                 )
                 .build();
     }

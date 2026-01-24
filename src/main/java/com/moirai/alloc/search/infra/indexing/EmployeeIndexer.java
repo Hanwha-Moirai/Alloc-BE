@@ -44,12 +44,19 @@ public class EmployeeIndexer {
 
         // 숙련도
         List<TechSkillRow> techSkillRows = employeeSkillRepository.findTechSkillsForIndexing(employeeId);
-
+        // 기술 상태 의미적 표현 (정확 일치 검색)
         Map<String, SkillLevel> techSkills =
                 techSkillRows.stream()
                         .collect(Collectors.toMap(
                                 TechSkillRow::techName,
                                 row -> SkillLevel.valueOf(row.proficiency().name())
+                        ));
+        // 기술 상태 범위 표현 (범위용)
+        Map<String, Integer> techSkillLevels =
+                techSkills.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> e.getValue().number()
                         ));
 
         // 현재 투입 중인 프로젝트 수
@@ -70,7 +77,8 @@ public class EmployeeIndexer {
                 .department(employee.getDepartment().getDeptName())
                 .workingType(WorkingType.valueOf(employee.getEmployeeType().name()))
                 .seniorityLevel(seniorityLevel)
-                .techSkills(techSkills)
+                .techSkills(techSkills)                 // 정확 매칭
+                .techSkillLevels(techSkillLevels)       // 범위 검색
                 .activeProjectCount(activeProjectCount)
                 .experienceDomainText(experienceDomainText)
                 .profileSummary(
