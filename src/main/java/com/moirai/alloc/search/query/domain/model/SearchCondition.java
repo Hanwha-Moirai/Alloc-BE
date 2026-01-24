@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -16,6 +18,10 @@ public class SearchCondition {
     //자연어; fallback, multi_match 용도
     private String freeText; // 기본 검색 (항상 사용 가능)
 
+    //기술 조건 (단일/ 복합 통일)
+    private List<SkillCondition> skillConditions;
+    private LogicalOperator logicalOperator;
+
     // 숫자 비교 조건
     private Integer activeProjectCount;
     private ComparisonType comparisonType;
@@ -23,10 +29,6 @@ public class SearchCondition {
     // enum 기반 필터
     private WorkingType workingType;
     private SeniorityLevel seniorityLevel; // 추상화된 직급 작성(시니어, 주니어 등)
-
-    // 기술 조건; map 대응
-    private String tech;
-    private SkillLevel skillLevel;
 
     // 정확한 매칭 필터
     private String title; // 정확한 직급 작성(부장, 차장 등_

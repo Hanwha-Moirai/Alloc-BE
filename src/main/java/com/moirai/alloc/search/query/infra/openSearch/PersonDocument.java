@@ -26,6 +26,7 @@ public class PersonDocument {
 
     private String jobTitle;
     private Map<String, SkillLevel> techSkills;
+    private Map<String, Integer> techSkillLevels;    // 범위 검색용
 
     private Integer activeProjectCount;
 
