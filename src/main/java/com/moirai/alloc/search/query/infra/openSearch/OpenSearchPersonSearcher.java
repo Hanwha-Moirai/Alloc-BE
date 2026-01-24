@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -44,6 +45,7 @@ public class OpenSearchPersonSearcher {
 
         //enum 조건 + filter
         applyWorkingType(condition, boolQuery);
+        applySeniorityLevel(condition, boolQuery);
         applySkillLevel(condition, boolQuery);
 
         // search request 생성
@@ -100,12 +102,16 @@ public class OpenSearchPersonSearcher {
         }
     }
     private void applySkillLevel(SearchCondition condition, BoolQueryBuilder bool) {
-        if(condition.getSkillLevel() != null) {
-            bool.filter(
-                    "techSkills." + condition.getTech(),   // 예: techSkills.Java
-                    condition.getSkillLevel().name()
-            );
+        if (condition.getTech() == null || condition.getSkillLevel() == null) {
+            return;
         }
+
+        bool.filter(
+                QueryBuilders.termQuery(
+                        "techSkills." + condition.getTech(),
+                        condition.getSkillLevel().name()
+                )
+        );
     }
 
     private void applySeniorityLevel(SearchCondition condition, BoolQueryBuilder bool) {
@@ -173,6 +179,33 @@ public class OpenSearchPersonSearcher {
                 )
                 .build();
     }
+
+    /**
+     * OpenSearch 응답으로부터 techSkills를 안전하게 변환한다.
+     *
+     * OpenSearch에서는 Map<String, String> 형태로 반환되지만,
+     * PersonDocument에서는 Map<String, SkillLevel>을 사용하므로
+     * 문자열 숙련도를 enum으로 변환하는 보조 로직이 필요하다.
+     *
+     * - JSON 역직렬화 안정성 확보
+     * - Enum 타입 안전성 보장
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, SkillLevel> parseTechSkills(Map<String, Object> source) {
+        Map<String, String> raw =
+                (Map<String, String>) source.get("techSkills");
+
+        if (raw == null) {
+            return Map.of();
+        }
+
+        return raw.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> SkillLevel.valueOf(e.getValue())
+                ));
+    }
+
 
 
 }

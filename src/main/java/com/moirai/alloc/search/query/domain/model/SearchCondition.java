@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 @Getter
 @Builder
 @NoArgsConstructor
@@ -26,7 +25,7 @@ public class SearchCondition {
     private SeniorityLevel seniorityLevel; // 추상화된 직급 작성(시니어, 주니어 등)
 
     // 기술 조건; map 대응
-    private String techs;
+    private String tech;
     private SkillLevel skillLevel;
 
     // 정확한 매칭 필터
