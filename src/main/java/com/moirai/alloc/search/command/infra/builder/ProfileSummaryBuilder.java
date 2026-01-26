@@ -14,17 +14,18 @@ public class ProfileSummaryBuilder {
 
     public static String build(
             Employee employee,
-            Map<String, SkillLevel> techSkills,
-            String experienceDomainText
+            Map<String, SkillLevel> techSkills
     ) {
-        String techSummary = String.join(", ", techSkills.keySet());
+        String techSummary =
+                techSkills == null || techSkills.isEmpty()
+                        ? ""
+                        : String.join(", ", techSkills.keySet());
 
         return String.format(
-                "%s %s, 기술: %s, 경험: %s %s",
+                "%s %s %s",
                 employee.getTitleStandard().getTitleName(),
                 employee.getUser().getUserName(),
-                techSummary,
-                experienceDomainText
+                techSummary
         );
     }
 }

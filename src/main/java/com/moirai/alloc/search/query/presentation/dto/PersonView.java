@@ -1,8 +1,6 @@
 package com.moirai.alloc.search.query.presentation.dto;
 
-import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,16 +14,13 @@ public class PersonView {
     private String name;
     private String jobTitle;
 
-    // 검색 결과용 요약
+    // 기술 요약
     private List<String> techNames;
     private SkillLevel representativeSkillLevel;
 
+    //상태 정보
     private Integer activeProjectCount;
-
     private String department;
-    private WorkingType workingType;
-    private SeniorityLevel seniorityLevel;
 
-    private String experienceDomainText;
     private String profileSummary;
 }

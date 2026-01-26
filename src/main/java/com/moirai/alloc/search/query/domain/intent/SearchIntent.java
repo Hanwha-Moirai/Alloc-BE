@@ -1,15 +1,12 @@
 package com.moirai.alloc.search.query.domain.intent;
 
 import com.moirai.alloc.search.query.domain.condition.*;
-import com.moirai.alloc.search.query.domain.vocabulary.ExperienceDomain;
-import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.util.List;
-import java.util.Set;
+
 
 
 @Getter
@@ -25,19 +22,12 @@ public class SearchIntent {
 
     // 기술 조건
     private List<SkillCondition> skillConditions; // 레벨
-    private LogicalOperator skillLogicalOperator;
-
-    //근무/조직
-    private WorkingType workingType;
 
     //직급 범위
     private SeniorityRange seniorityRange;
     private JobGradeRange jobGradeRange;
 
-    private JobRole jobRole;
     private String department;
-
-    private Set<ExperienceDomain> experienceDomains;
     //응답 갯수 제한
     private Integer limit;
 }

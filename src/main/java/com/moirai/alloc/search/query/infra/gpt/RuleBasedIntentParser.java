@@ -1,11 +1,9 @@
 package com.moirai.alloc.search.query.infra.gpt;
 
 import com.moirai.alloc.search.query.domain.condition.ComparisonType;
-import com.moirai.alloc.search.query.domain.dictionary.KeywordDictionary;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import org.springframework.stereotype.Component;
 
 import java.util.*;

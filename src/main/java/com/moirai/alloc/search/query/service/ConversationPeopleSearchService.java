@@ -1,9 +1,6 @@
 package com.moirai.alloc.search.query.service;
 
-import com.moirai.alloc.search.query.domain.condition.ComparisonType;
-import com.moirai.alloc.search.query.domain.condition.LogicalOperator;
 import com.moirai.alloc.search.query.domain.condition.SearchCondition;
-import com.moirai.alloc.search.query.domain.condition.SkillCondition;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 import com.moirai.alloc.search.query.infra.gpt.SearchIntentParser;
 import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
@@ -44,61 +41,20 @@ public class ConversationPeopleSearchService {
         return personViewMapper.toViews(docs);
     }
     private SearchCondition toCondition(SearchIntent intent) {
-
-        // 기술 조건 변환
-        List<SkillCondition> skillConditions =
-                intent.getTechName() == null || intent.getTechName().isEmpty()
-                        ? List.of()
-                        : intent.getTechName().stream()
-                        .map(tech ->
-                                SkillCondition.builder()
-                                        .techName(tech)
-                                        .skillLevel(intent.getSkillLevel())
-                                        .comparisonType(
-                                                intent.getComparisonType() != null
-                                                        ? intent.getComparisonType()
-                                                        : ComparisonType.GREATER_THAN_OR_EQUAL
-                                        )
-                                        .build()
-                        )
-                        .toList();
-
-        return SearchCondition.builder()
-                // 자유 텍스트
-                .freeText(intent.getFreeText())
-
-                // 기술 조건
-                .skillConditions(skillConditions)
-                .logicalOperator(
-                        skillConditions.size() > 1
-                                ? LogicalOperator.AND
-                                : LogicalOperator.OR
-                )
-
-                // 숫자 조건
-                .activeProjectCount(intent.getActiveProjectCount())
-                .comparisonType(
-                        intent.getComparisonType() != null
-                                ? intent.getComparisonType()
-                                : ComparisonType.LESS_THAN_OR_EQUAL
-                )
-
-                // enum 필터
-                .workingType(intent.getWorkingType())
-                .seniorityLevel(intent.getSeniorityLevel())
-
-                // 정확 매칭
-                .jobTitle(intent.getJobTitle())
-                .department(intent.getDepartment())
-
-                // 결과 제한
-                .limit(
-                        intent.getLimit() != null
-                                ? intent.getLimit()
-                                : 20
-                )
-                .build();
+        return SearchCondition.of(
+                intent.getFreeText(),
+                intent.getSkillConditions() != null
+                        ? intent.getSkillConditions()
+                        : List.of(),
+                intent.getActiveProjectCount(),
+                intent.getComparisonType(),
+                intent.getSeniorityRange(),
+                intent.getJobGradeRange(),
+                intent.getDepartment(),
+                intent.getLimit()
+        );
     }
+
 
 
 }

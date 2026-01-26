@@ -24,18 +24,19 @@ public class PersonViewMapper {
                 .personId(doc.getPersonId())
                 .name(doc.getName())
                 .jobTitle(doc.getJobTitle())
+                //기술요약
                 .techNames(
                         doc.getTechSkills() == null
                                 ? List.of()
                                 : new ArrayList<>(doc.getTechSkills().keySet())
                 )
                 .representativeSkillLevel(representativeSkill)
+                //상태정보
                 .activeProjectCount(doc.getActiveProjectCount())
                 .department(doc.getDepartment())
-                .workingType(doc.getWorkingType())
+                .profileSummary(doc.getProfileSummary())
                 .build();
     }
-
     public List<PersonView> toViews(List<PersonDocument> docs) {
         return docs.stream()
                 .map(this::toView)

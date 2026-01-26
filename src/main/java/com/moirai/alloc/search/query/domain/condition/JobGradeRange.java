@@ -10,12 +10,4 @@ public class JobGradeRange {
     private JobGrade minGrade;
     private JobGrade maxGrade;
 
-    public boolean contains(JobGrade grade) {
-        if (grade == null || minGrade == null || maxGrade == null) {
-            return false;
-        }
-        return grade.getLevel() >= minGrade.getLevel()
-                && grade.getLevel() <= maxGrade.getLevel();
-
-    }
 }

@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
-import java.util.Set;
 
 @Getter
 @Builder
@@ -24,21 +23,14 @@ public class PersonDocument {
     private String name;
 
     private String jobTitle;
+    private String department;
+
     private Map<String, SkillLevel> techSkills;  // 의미 검색용
     private Map<String, Integer> techSkillNumericLevels;    // 범위 검색용
 
     private Integer activeProjectCount;
-
-    private String department;
-    private WorkingType workingType;
-
-    private SeniorityLevel seniorityLevel;
-
     private Integer seniorityLevelLevel;
     private Integer jobGradeLevel;
-    private JobRole jobRole;
-
-    private String experienceDomainText;  // 금융 IT, ERP, 차세대 등 (높은 가중치)
 
     private String profileSummary; // 직원 한 문자 설명, experienceDomainText의 놓친 것 커버 (낮은 가중치)
 

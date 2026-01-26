@@ -1,11 +1,7 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
 import com.moirai.alloc.search.query.domain.condition.*;
-import com.moirai.alloc.search.query.domain.dictionary.KeywordDictionary;
-import com.moirai.alloc.search.query.domain.vocabulary.ExperienceDomain;
-import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
 import org.opensearch.action.search.SearchResponse;
@@ -23,7 +19,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,12 +38,9 @@ public class OpenSearchPersonSearcher {
 
         applyFreeText(condition, boolQuery);
         applyProjectCount(condition, boolQuery);
-        applyWorkingType(condition, boolQuery);
 
         applySeniorityRange(condition, boolQuery);
         applyJobGradeRange(condition, boolQuery);
-        applyJobRole(condition, boolQuery);
-        applyExperienceDomains(condition, boolQuery);
         applySkillConditions(condition, boolQuery);
 
         // search request 생성
@@ -100,14 +92,6 @@ public class OpenSearchPersonSearcher {
         bool.filter(range);
     }
 
-    private void applyWorkingType(SearchCondition condition, BoolQueryBuilder bool) {
-        if(condition.getWorkingType() != null) {
-            bool.filter( // 쿼리가 필터인 경우에, 이 enum 값과 정확히 같음 것만 통과시켜라(filter + termQuery
-                    QueryBuilders.termQuery("workingType", condition.getWorkingType().name())
-            );
-        }
-    }
-
     private void applySeniorityRange(SearchCondition condition, BoolQueryBuilder bool) {
         SeniorityRange range = condition.getSeniorityRange();
         if (range == null) return;
@@ -128,50 +112,6 @@ public class OpenSearchPersonSearcher {
                         .lte(range.getMaxGrade().getLevel())
         );
     }
-    private void applyJobRole(SearchCondition condition, BoolQueryBuilder bool) {
-        if (condition.getJobRole() == null) return;
-
-        bool.filter(
-                QueryBuilders.termQuery(
-                        "jobRole",
-                        condition.getJobRole().name()
-                )
-        );
-    }
-    private void applyExperienceDomains(
-            SearchCondition condition,
-            BoolQueryBuilder bool
-    ) {
-        Set<ExperienceDomain> domains = condition.getExperienceDomains();
-        if (domains == null || domains.isEmpty()) {
-            return;
-        }
-
-        LogicalOperator op =
-                condition.getExperienceOperator() != null
-                        ? condition.getExperienceOperator()
-                        : LogicalOperator.OR;
-
-        BoolQueryBuilder domainQuery = QueryBuilders.boolQuery();
-
-        for (ExperienceDomain d : domains) {
-            QueryBuilder q =
-                    QueryBuilders.termQuery("experienceDomains", d.name());
-
-            if (op == LogicalOperator.OR) {
-                domainQuery.should(q);
-            } else {
-                domainQuery.must(q);
-            }
-        }
-
-        if (op == LogicalOperator.OR) {
-            domainQuery.minimumShouldMatch(1);
-        }
-
-        bool.filter(domainQuery);
-    }
-
 
     private void applySkillConditions(
             SearchCondition condition,
@@ -182,23 +122,11 @@ public class OpenSearchPersonSearcher {
             return;
         }
 
-        LogicalOperator op =
-                condition.getSkillOperator() != null
-                        ? condition.getSkillOperator()
-                        : LogicalOperator.AND;
-
         BoolQueryBuilder skillQuery = QueryBuilders.boolQuery();
 
+        // 전부 AND
         for (SkillCondition sc : condition.getSkillConditions()) {
-            if (op == LogicalOperator.OR) {
-                skillQuery.should(buildSkillQuery(sc));
-            } else {
-                skillQuery.must(buildSkillQuery(sc));
-            }
-        }
-
-        if (op == LogicalOperator.OR) {
-            skillQuery.minimumShouldMatch(1);
+            skillQuery.must(buildSkillQuery(sc));
         }
 
         bool.filter(skillQuery);
@@ -258,17 +186,18 @@ public class OpenSearchPersonSearcher {
                 .name((String) source.get("name"))
                 .jobTitle((String) source.get("jobTitle"))
                 .department((String) source.get("department"))
-                .workingType(
-                        WorkingType.valueOf((String) source.get("workingType"))
-                )
-                .seniorityLevel(
-                        SeniorityLevel.valueOf((String) source.get("seniorityLevel"))
-                )
                 .activeProjectCount(
                         ((Number) source.get("activeProjectCount")).intValue()
                 )
-                .experienceDomainText(
-                        (String) source.get("experienceDomainText")
+                .seniorityLevelLevel(
+                        source.get("seniorityLevelLevel") != null
+                                ? ((Number) source.get("seniorityLevelLevel")).intValue()
+                                : null
+                )
+                .jobGradeLevel(
+                        source.get("jobGradeLevel") != null
+                                ? ((Number) source.get("jobGradeLevel")).intValue()
+                                : null
                 )
                 .profileSummary(
                         (String) source.get("profileSummary")

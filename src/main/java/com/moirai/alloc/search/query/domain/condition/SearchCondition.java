@@ -1,13 +1,11 @@
 package com.moirai.alloc.search.query.domain.condition;
 
-import com.moirai.alloc.search.query.domain.vocabulary.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Builder
@@ -22,27 +20,41 @@ public class SearchCondition {
 
     //기술 조건 (단일/ 복합 통일)
     private List<SkillCondition> skillConditions;
-    private LogicalOperator skillOperator;
 
     // 숫자 비교 조건
     private Integer activeProjectCount;
     private ComparisonType projectCountComparisonType;
-
-    // enum 기반 필터
-    private WorkingType workingType;
-
     private SeniorityRange seniorityRange;
     private JobGradeRange jobGradeRange;
-
-    // 정확한 매칭 필터
-    private JobRole jobRole;
-    private String department; //부서명
-
-    private Set<ExperienceDomain> experienceDomains;
-    private LogicalOperator experienceOperator;
-
-    private ProjectType projectType;
-
+    private String department;
     private Integer limit;
 
+    public static SearchCondition of(
+            String freeText,
+            List<SkillCondition> skillConditions,
+            Integer activeProjectCount,
+            ComparisonType comparisonType,
+            SeniorityRange seniorityRange,
+            JobGradeRange jobGradeRange,
+            String department,
+            Integer limit
+    ) {
+        return SearchCondition.builder()
+                .freeText(freeText)
+                .skillConditions(skillConditions)
+                .activeProjectCount(activeProjectCount)
+                .projectCountComparisonType(
+                        comparisonType != null
+                                ? comparisonType
+                                : ComparisonType.LESS_THAN_OR_EQUAL
+                )
+                .seniorityRange(seniorityRange)
+                .jobGradeRange(jobGradeRange)
+                .department(department)
+                .limit(limit != null ? limit : 20)
+                .build();
+    }
+
+
 }
+

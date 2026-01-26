@@ -4,13 +4,12 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
-import com.moirai.alloc.search.command.infra.builder.ExperienceDomainTextBuilder;
 import com.moirai.alloc.search.command.infra.builder.ProfileSummaryBuilder;
 import com.moirai.alloc.search.command.infra.builder.SeniorityLevelBuilder;
 import com.moirai.alloc.search.command.infra.opensearch.OpenSearchPersonWriter;
+import com.moirai.alloc.search.query.domain.vocabulary.JobGrade;
 import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -62,12 +61,9 @@ public class EmployeeIndexer {
         // 현재 투입 중인 프로젝트 수
         int activeProjectCount = squadAssignmentRepository.countActiveProjects(employeeId);
 
-        // 프로젝트 제목 (자연어 경험)
-        List<String> projectTitles = squadAssignmentRepository.findExperiencedProjectTitles(employeeId);
-
-        String experienceDomainText = ExperienceDomainTextBuilder.from(projectTitles);
-
         SeniorityLevel seniorityLevel = SeniorityLevelBuilder.from(employee);
+
+        JobGrade jobGrade = JobGrade.fromTitleName(employee.getTitleStandard().getTitleName());
 
         // PersonDocument 조립
         PersonDocument document = PersonDocument.builder()
@@ -75,30 +71,24 @@ public class EmployeeIndexer {
                 .name(employee.getUser().getUserName())
                 .jobTitle(employee.getTitleStandard().getTitleName())
                 .department(employee.getDepartment().getDeptName())
-                .workingType(WorkingType.valueOf(employee.getEmployeeType().name()))
-                .seniorityLevel(seniorityLevel)
-                .techSkills(techSkills)                 // 정확 매칭
-                .techSkillNumericLevels(techSkillLevels)       // 범위 검색
+                // enum / range 검색용 필드들 채우기
+                .seniorityLevelLevel(seniorityLevel.level())
+                .jobGradeLevel(jobGrade.getLevel())
+                .techSkills(techSkills)
+                .techSkillNumericLevels(techSkillLevels)
                 .activeProjectCount(activeProjectCount)
-                .experienceDomainText(experienceDomainText)
                 .profileSummary(
-                        ProfileSummaryBuilder.build(employee, techSkills, experienceDomainText)
+                        ProfileSummaryBuilder.build(employee, techSkills)
                 )
                 .build();
-
 
         // OpenSearch 저장
         writer.save(document);
     }
 
-    //전체 직원 인덱싱- 초기 인덱스 생성- 운영 중 재빌드
-
     @Transactional(readOnly = true)
     public void reindexAll() {
-
-        List<Long> employeeIds =
-                employeeRepository.findAllIdsForIndexing();
-
+        List<Long> employeeIds = employeeRepository.findAllIdsForIndexing();
         for (Long employeeId : employeeIds) {
             reindex(employeeId);
         }

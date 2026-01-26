@@ -14,8 +14,4 @@ public class SeniorityRange {
     private SeniorityLevel minLevel;
     private SeniorityLevel maxLevel;
 
-    public boolean contains(SeniorityLevel level) {
-        return level.level() >= minLevel.level()
-                && level.level() <= maxLevel.level();
-    }
 }
