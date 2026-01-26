@@ -1,14 +1,13 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
+import com.moirai.alloc.search.query.domain.vocabulary.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -35,9 +34,12 @@ public class PersonDocument {
 
     private SeniorityLevel seniorityLevel;
 
+    private Integer seniorityLevelLevel;
+    private Integer jobGradeLevel;
+    private JobRole jobRole;
+
     private String experienceDomainText;  // 금융 IT, ERP, 차세대 등 (높은 가중치)
 
     private String profileSummary; // 직원 한 문자 설명, experienceDomainText의 놓친 것 커버 (낮은 가중치)
-
 
 }

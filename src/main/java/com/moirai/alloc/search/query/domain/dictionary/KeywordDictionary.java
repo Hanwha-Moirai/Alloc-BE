@@ -41,37 +41,37 @@ public final class KeywordDictionary {
             entry(Tech.TYPESCRIPT, List.of("typescript", "ts")),
 
             entry(Tech.SPRING, List.of("spring", "스프링")),
-            entry(Tech.SPRING_BOOT, List.of("spring boot", "springboot")),
+            entry(Tech.SPRING_BOOT, List.of("spring boot", "springboot", "스프링 부트", "스프링붓트", "스프링부트")),
 
-            entry(Tech.NODEJS, List.of("node", "nodejs")),
-            entry(Tech.NESTJS, List.of("nestjs")),
-            entry(Tech.DJANGO, List.of("django")),
-            entry(Tech.FASTAPI, List.of("fastapi")),
+            entry(Tech.NODEJS, List.of("node", "nodejs", "노드", "노드 제이에스")),
+            entry(Tech.NESTJS, List.of("nestjs", "네스트", "네스트 제이에스")),
+            entry(Tech.DJANGO, List.of("django", "장고")),
+            entry(Tech.FASTAPI, List.of("fastapi", "패스트에이피아이", "패스트API")),
 
-            entry(Tech.REACT, List.of("react")),
-            entry(Tech.VUE, List.of("vue")),
+            entry(Tech.REACT, List.of("react", "리액트")),
+            entry(Tech.VUE, List.of("vue", "뷰")),
             entry(Tech.ANGULAR, List.of("angular")),
 
-            entry(Tech.MYSQL, List.of("mysql")),
-            entry(Tech.MARIADB, List.of("mariadb")),
-            entry(Tech.POSTGRESQL, List.of("postgres", "postgresql")),
-            entry(Tech.MONGODB, List.of("mongodb")),
-            entry(Tech.REDIS, List.of("redis")),
+            entry(Tech.MYSQL, List.of("mysql", "마이 에스큐엘")),
+            entry(Tech.MARIADB, List.of("mariadb", "마리아디비")),
+            entry(Tech.POSTGRESQL, List.of("postgres", "postgresql", "포스트그래")),
+            entry(Tech.MONGODB, List.of("mongodb", "몽고디비")),
+            entry(Tech.REDIS, List.of("redis", "래디스")),
 
-            entry(Tech.AWS, List.of("aws")),
+            entry(Tech.AWS, List.of("aws", "아마존")),
             entry(Tech.AZURE, List.of("azure")),
             entry(Tech.GCP, List.of("gcp")),
-            entry(Tech.DOCKER, List.of("docker")),
-            entry(Tech.KUBERNETES, List.of("kubernetes", "k8s")),
+            entry(Tech.DOCKER, List.of("docker", "도커")),
+            entry(Tech.KUBERNETES, List.of("kubernetes", "k8s", "쿠버네티스")),
 
-            entry(Tech.ELASTICSEARCH, List.of("elasticsearch")),
-            entry(Tech.OPENSEARCH, List.of("opensearch")),
+            entry(Tech.ELASTICSEARCH, List.of("elasticsearch", "엘라스틱서치")),
+            entry(Tech.OPENSEARCH, List.of("opensearch", "오픈서치")),
 
-            entry(Tech.KAFKA, List.of("kafka")),
+            entry(Tech.KAFKA, List.of("kafka", "카프카")),
             entry(Tech.SPARK, List.of("spark")),
 
-            entry(Tech.JENKINS, List.of("jenkins")),
-            entry(Tech.GITHUB_ACTIONS, List.of("github actions", "gha"))
+            entry(Tech.JENKINS, List.of("jenkins", "젠킨스")),
+            entry(Tech.GITHUB_ACTIONS, List.of("github actions", "gha", "깃허브 액션"))
     );
 
     public static final Map<ExperienceDomain, List<String>> EXPERIENCE_DOMAIN_KEYWORDS = Map.ofEntries(
@@ -90,11 +90,8 @@ public final class KeywordDictionary {
     );
 
     public static final Map<SeniorityLevel, List<String>> SENIORITY_KEYWORDS = Map.ofEntries(
-            entry(SeniorityLevel.INTERN, List.of("인턴", "intern")),
-            entry(SeniorityLevel.JUNIOR, List.of("주니어", "신입", "사원")),
-            entry(SeniorityLevel.MIDDLE, List.of("미들", "중급", "대리", "과장")),
-            entry(SeniorityLevel.SENIOR, List.of("시니어", "차장", "부장")),
-            entry(SeniorityLevel.LEAD, List.of("리드", "lead", "수석")),
-            entry(SeniorityLevel.PRINCIPAL, List.of("프린시펄", "principal"))
+            entry(SeniorityLevel.JUNIOR, List.of("인턴","주니어", "신입", "사원")),
+            entry(SeniorityLevel.MIDDLE, List.of("미들", "주임","중급", "대리", "과장")),
+            entry(SeniorityLevel.SENIOR, List.of("시니어", "과장", "차장", "부장", "임원"))
     );
 }

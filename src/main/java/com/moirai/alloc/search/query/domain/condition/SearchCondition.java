@@ -22,11 +22,11 @@ public class SearchCondition {
 
     //기술 조건 (단일/ 복합 통일)
     private List<SkillCondition> skillConditions;
-    private LogicalOperator logicalOperator;
+    private LogicalOperator skillOperator;
 
     // 숫자 비교 조건
     private Integer activeProjectCount;
-    private ComparisonType comparisonType;
+    private ComparisonType projectCountComparisonType;
 
     // enum 기반 필터
     private WorkingType workingType;
