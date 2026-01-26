@@ -1,4 +1,35 @@
 DELETE FROM job_standard WHERE job_id >= 99001;
-INSERT INTO job_standard (job_id, job_name,created_at, updated_at) VALUES (99001, 'Backend Developer',NOW(), NOW());
-INSERT INTO job_standard (job_id, job_name,created_at, updated_at) VALUES (99002, 'Frontend Developer',NOW(), NOW());
-INSERT INTO job_standard (job_id, job_name,created_at, updated_at) VALUES (99003, 'DevOpsEngineer', NOW(), NOW());;
+
+-- 31 rows (10개씩 페이징하면 4페이지: 10/10/10/1)
+INSERT INTO job_standard (job_id, job_name, created_at, updated_at) VALUES
+(99001, 'Job 001', NOW(), NOW()),
+(99002, 'Job 002', NOW(), NOW()),
+(99003, 'Job 003', NOW(), NOW()),
+(99004, 'Job 004', NOW(), NOW()),
+(99005, 'Job 005', NOW(), NOW()),
+(99006, 'Job 006', NOW(), NOW()),
+(99007, 'Job 007', NOW(), NOW()),
+(99008, 'Job 008', NOW(), NOW()),
+(99009, 'Job 009', NOW(), NOW()),
+(99010, 'Job 010', NOW(), NOW()),
+(99011, 'Job 011', NOW(), NOW()),
+(99012, 'Job 012', NOW(), NOW()),
+(99013, 'Job 013', NOW(), NOW()),
+(99014, 'Job 014', NOW(), NOW()),
+(99015, 'Job 015', NOW(), NOW()),
+(99016, 'Job 016', NOW(), NOW()),
+(99017, 'Job 017', NOW(), NOW()),
+(99018, 'Job 018', NOW(), NOW()),
+(99019, 'Job 019', NOW(), NOW()),
+(99020, 'Job 020', NOW(), NOW()),
+(99021, 'Job 021', NOW(), NOW()),
+(99022, 'Job 022', NOW(), NOW()),
+(99023, 'Job 023', NOW(), NOW()),
+(99024, 'Job 024', NOW(), NOW()),
+(99025, 'Job 025', NOW(), NOW()),
+(99026, 'Job 026', NOW(), NOW()),
+(99027, 'Job 027', NOW(), NOW()),
+(99028, 'Job 028', NOW(), NOW()),
+(99029, 'Job 029', NOW(), NOW()),
+(99030, 'Job 030', NOW(), NOW()),
+(99031, 'Job 999 Backend', NOW(), NOW());

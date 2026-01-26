@@ -19,13 +19,13 @@ public class AdminTitleStandardQueryService {
 
     public PageResponse<AdminTitleStandardListItem> getTitleStandard(int page, int size, String q) {
 
-        int pageNo = Math.max(page, 1);
-        int pageSize = Math.max(size, 1);
-        int offset = (pageNo - 1) * pageSize;
+        int pageIndex = Math.max(page, 0);
+        int pageSize  = Math.max(size, 1);
+        int offset    = pageIndex * pageSize;
 
         List<AdminTitleStandardListItem> content = mapper.selectTitleStandard(pageSize, offset, q);
         long total = mapper.countTitleStandard(q);
 
-        return PageResponse.from(content, pageNo, pageSize, (int) total);
+        return PageResponse.from(content, pageIndex, pageSize, (int) total);
     }
 }

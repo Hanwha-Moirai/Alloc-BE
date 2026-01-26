@@ -24,14 +24,14 @@ public class AdminUserQueryService {
     //사용자 조회
     public PageResponse<AdminUserListItem> getUsers(int page, int size, String q, String role, String status) {
 
-        int pageNo = Math.max(page, 1);
-        int pageSize = Math.max(size, 1);
-        int offset = (pageNo - 1) * pageSize;
+        int pageIndex = Math.max(page, 0);
+        int pageSize  = Math.max(size, 1);
+        int offset    = pageIndex * pageSize;
 
         List<AdminUserListItem> content = mapper.selectUsers(pageSize, offset, q, role, status);
         long total = mapper.countUsers(q, role, status);
 
-        return PageResponse.from(content, pageNo, pageSize, (int) total);
+        return PageResponse.from(content, pageIndex, pageSize, (int) total);
     }
 
     public AdminUserMetaResponse getUserMeta() {
