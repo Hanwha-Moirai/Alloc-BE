@@ -125,6 +125,78 @@ class AdminUserQueryControllerTest {
     }
 
     @Nested
+    @DisplayName("GET /api/admin/users/{userId}")
+    class GetUserDetail {
+
+        @Test
+        @DisplayName("관리자는 사용자 상세 정보를 조회할 수 있다 (employee 포함)")
+        void getUserDetail_asAdmin_success() throws Exception {
+            mockMvc.perform(get("/api/admin/users/{userId}", 77001L)
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+
+                    // user 영역
+                    .andExpect(jsonPath("$.data.userId").value(77001L))
+                    .andExpect(jsonPath("$.data.loginId").value("kmj"))
+                    .andExpect(jsonPath("$.data.userName").value("김명진"))
+                    .andExpect(jsonPath("$.data.email").value("kmj@alloc.co.kr"))
+                    .andExpect(jsonPath("$.data.phone").value("010-1234-5678"))
+                    .andExpect(jsonPath("$.data.auth").value("USER"))
+                    .andExpect(jsonPath("$.data.status").value("ACTIVE"))
+                    .andExpect(jsonPath("$.data.profileImg").doesNotExist())
+
+                    // employee 영역
+                    .andExpect(jsonPath("$.data.jobId").value(1))
+                    .andExpect(jsonPath("$.data.titleId").value(1))
+                    .andExpect(jsonPath("$.data.deptId").value(1))
+                    .andExpect(jsonPath("$.data.employeeType").value("FULL_TIME"))
+                    .andExpect(jsonPath("$.data.hiringDate").value("2025-01-01"))
+
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("employee가 없는 사용자도 상세 조회된다")
+        void getUserDetail_onlyUser_success() throws Exception {
+            mockMvc.perform(get("/api/admin/users/{userId}", 88001L)
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+
+                    .andExpect(jsonPath("$.data.userId").value(88001L))
+                    .andExpect(jsonPath("$.data.loginId").value("onlyuser"))
+
+                    // employee 필드들은 null
+                    .andExpect(jsonPath("$.data.jobId").isEmpty())
+                    .andExpect(jsonPath("$.data.titleId").isEmpty())
+                    .andExpect(jsonPath("$.data.deptId").isEmpty())
+                    .andExpect(jsonPath("$.data.employeeType").isEmpty())
+                    .andExpect(jsonPath("$.data.hiringDate").isEmpty())
+
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("일반 사용자는 403을 받는다")
+        void getUserDetail_asUser_forbidden() throws Exception {
+            mockMvc.perform(get("/api/admin/users/{userId}", 77001L)
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth())))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 userId는 400(또는 404)을 반환한다")
+        void getUserDetail_notFound() throws Exception {
+            mockMvc.perform(get("/api/admin/users/{userId}", 999999L)
+                            .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth())))
+                    .andExpect(status().isBadRequest()); // IllegalArgumentException 기준
+        }
+    }
+
+    @Nested
     @DisplayName("GET /api/admin/users/meta")
     class GetUserMeta {
 

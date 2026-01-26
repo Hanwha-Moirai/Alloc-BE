@@ -1,5 +1,6 @@
 package com.moirai.alloc.admin.query.service;
 
+import com.moirai.alloc.admin.query.dto.AdminUserDetailResponse;
 import com.moirai.alloc.admin.query.dto.AdminUserListItem;
 import com.moirai.alloc.admin.query.dto.AdminUserMetaResponse;
 import com.moirai.alloc.common.dto.PageResponse;
@@ -14,6 +15,8 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -96,6 +99,50 @@ class AdminUserQueryServiceTest {
         assertThat(res.getCurrentPage()).isEqualTo(1);
         assertThat(res.getSize()).isEqualTo(1);
         assertThat(res.getContent()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("사용자 상세 조회 (employee 포함)")
+    void getUserDetail_success() {
+        AdminUserDetailResponse res = service.getUserDetail(77001L);
+
+        assertThat(res.getUserId()).isEqualTo(77001L);
+        assertThat(res.getLoginId()).isEqualTo("kmj");
+        assertThat(res.getUserName()).isEqualTo("김명진");
+        assertThat(res.getEmail()).isEqualTo("kmj@alloc.co.kr");
+        assertThat(res.getPhone()).isEqualTo("010-1234-5678");
+        assertThat(res.getAuth()).isEqualTo("USER");
+        assertThat(res.getStatus()).isEqualTo("ACTIVE");
+
+        // employee
+        assertThat(res.getJobId()).isEqualTo(1L);
+        assertThat(res.getTitleId()).isEqualTo(1L);
+        assertThat(res.getDeptId()).isEqualTo(1L);
+        assertThat(res.getEmployeeType()).isEqualTo("FULL_TIME");
+        assertThat(res.getHiringDate()).isEqualTo(LocalDate.of(2025, 1, 1));
+    }
+
+    @Test
+    @DisplayName("employee가 없는 사용자 상세 조회")
+    void getUserDetail_onlyUser() {
+        AdminUserDetailResponse res = service.getUserDetail(88001L);
+
+        assertThat(res.getUserId()).isEqualTo(88001L);
+        assertThat(res.getLoginId()).isEqualTo("onlyuser");
+
+        assertThat(res.getJobId()).isNull();
+        assertThat(res.getTitleId()).isNull();
+        assertThat(res.getDeptId()).isNull();
+        assertThat(res.getEmployeeType()).isNull();
+        assertThat(res.getHiringDate()).isNull();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자 조회 시 예외 발생")
+    void getUserDetail_notFound() {
+        assertThatThrownBy(() -> service.getUserDetail(999999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("사용자를 찾을 수 없습니다");
     }
 
     @Test
