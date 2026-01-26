@@ -70,7 +70,7 @@ jobs:
           cache-to: type=registry,ref=${{ env.img-uri }}:cache,mode=max
           cache-from: type=registry,ref=${{ env.img-uri }}:cache
           context: app-core
-          file: app-core/Dockerfile
+          file: Dockerfile
 
       - name: 이미지 태그를 출력한다
         env:
