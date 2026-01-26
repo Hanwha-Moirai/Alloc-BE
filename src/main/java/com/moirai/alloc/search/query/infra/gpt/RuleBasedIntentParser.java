@@ -1,141 +1,159 @@
 package com.moirai.alloc.search.query.infra.gpt;
 
 import com.moirai.alloc.search.query.domain.condition.ComparisonType;
+import com.moirai.alloc.search.query.domain.condition.JobGradeRange;
+import com.moirai.alloc.search.query.domain.condition.SeniorityRange;
+import com.moirai.alloc.search.query.domain.condition.SkillCondition;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
-
+import com.moirai.alloc.search.query.domain.vocabulary.JobGrade;
+import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class RuleBasedIntentParser {
-
+public class RuleBasedIntentParser implements SearchIntentParser {
+    // 초안 제시
+    @Override
     public SearchIntent parse(String nl) {
-        String normalized = nl.toLowerCase();
 
-        SearchIntent.SearchIntentBuilder builder = SearchIntent.builder();
+        SearchIntent.SearchIntentBuilder b = SearchIntent.builder();
+        b.freeText(nl); // 항상 누적
 
-        parseSeniority(normalized, builder);
-        parseWorkingType(normalized, builder);
-        parseJobRole(normalized, builder);
-        parseTechAndSkill(normalized, builder);
-        parseExperienceDomain(normalized, builder);
-        parseProjectCount(normalized, builder);
-        parseLimit(normalized, builder);
-
-        // fallback
-        builder.freeText(nl);
-
-        return builder.build();
-    }
-    private boolean containsAny(String text, List<String> keywords) {
-        return keywords.stream().anyMatch(text::contains);
-    }
-    private void parseSeniority(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        for (var entry : KeywordDictionary.SENIORITY_KEYWORDS.entrySet()) {
-            if (containsAny(nl, entry.getValue())) {
-                builder.seniorityLevel(entry.getKey());
-                return; // 가장 먼저 매칭된 것 1개만
-            }
-        }
-    }
-    private void parseWorkingType(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        if (nl.contains("intern") || nl.contains("인턴")) {
-            builder.workingType(WorkingType.INTERN);
-        } else if (nl.contains("vendor") || nl.contains("외주")) {
-            builder.workingType(WorkingType.VENDOR);
-        } else if (nl.contains("계약직")) {
-            builder.workingType(WorkingType.CONTRACT);
-        }
-    }
-    private void parseJobRole(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        for (var entry : KeywordDictionary.JOB_ROLE_KEYWORDS.entrySet()) {
-            if (containsAny(nl, entry.getValue())) {
-                builder.jobTitle(entry.getKey().name());
-                return;
-            }
-        }
-    }
-    private void parseTechAndSkill(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        List<String> techs = new ArrayList<>();
-
-        for (var entry : KeywordDictionary.TECH_KEYWORDS.entrySet()) {
-            if (containsAny(nl, entry.getValue())) {
-                techs.add(entry.getKey().name());
+        // =========================
+        // 프로젝트 개수
+        // =========================
+        if (nl.contains("이하")) {
+            Integer count = extractNumber(nl);
+            if (count != null) {
+                b.activeProjectCount(count);
+                b.comparisonType(ComparisonType.LESS_THAN_OR_EQUAL);
             }
         }
 
-        if (!techs.isEmpty()) {
-            builder.techName(techs);
-        }
-
-        if (nl.contains("lv3") || nl.contains("레벨3") || nl.contains("고급")) {
-            builder.skillLevel(SkillLevel.LV3);
-        } else if (nl.contains("lv2") || nl.contains("레벨2") || nl.contains("중간")) {
-            builder.skillLevel(SkillLevel.LV2);
-        } else if (nl.contains("lv1") || nl.contains("레벨1") || nl.contains("초급")) {
-            builder.skillLevel(SkillLevel.LV1);
-        }
-    }
-    private void parseExperienceDomain(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        for (var entry : KeywordDictionary.EXPERIENCE_DOMAIN_KEYWORDS.entrySet()) {
-            if (containsAny(nl, entry.getValue())) {
-                builder.freeText(entry.getKey().name());
+        if (nl.contains("이상")) {
+            Integer count = extractNumber(nl);
+            if (count != null) {
+                b.activeProjectCount(count);
+                b.comparisonType(ComparisonType.GREATER_THAN_OR_EQUAL);
             }
         }
+
+        // =========================
+        // 시니어 / 주니어
+        // =========================
+        // 시니어
+        if (nl.contains("시니어")) {
+            b.seniorityRange(
+                    new SeniorityRange(SeniorityLevel.SENIOR, SeniorityLevel.SENIOR)
+            );
+        }
+
+// 미들
+        if (nl.contains("미들") || nl.contains("중급")) {
+            b.seniorityRange(
+                    new SeniorityRange(SeniorityLevel.MIDDLE, SeniorityLevel.MIDDLE)
+            );
+        }
+
+// 주니어
+        if (nl.contains("주니어")) {
+            b.seniorityRange(
+                    new SeniorityRange(SeniorityLevel.JUNIOR, SeniorityLevel.JUNIOR)
+            );
+        }
+
+        // =========================
+        // 직급 (인턴 ~ 주임 등)
+        // =========================
+        if (nl.contains("인턴") || nl.contains("주임")) {
+            b.jobGradeRange(
+                    new JobGradeRange(JobGrade.INTERN, JobGrade.ASSOCIATE)
+            );
+        }
+
+        if (nl.contains("대리") || nl.contains("과장")) {
+            b.jobGradeRange(
+                    new JobGradeRange(JobGrade.ASSOCIATE, JobGrade.PROJECT_MANAGER)
+            );
+        }
+
+        if (nl.contains("차장") || nl.contains("부장")) {
+            b.jobGradeRange(
+                    new JobGradeRange(JobGrade.SENIOR_MANAGER, JobGrade.EXECUTIVE)
+            );
+        }
+
+        // =========================
+        // 기술 조건
+        // =========================
+        List<SkillCondition> skills = new ArrayList<>();
+
+        if (nl.contains("자바")) {
+            addSkill(skills, nl, "JAVA");
+        }
+        if (nl.contains("파이썬")) {
+            addSkill(skills, nl, "PYTHON");
+        }
+        if(nl.contains("쿠버네티스")) {
+            addSkill(skills, nl, "KUBERNETES");
+        }
+
+        if (!skills.isEmpty()) {
+            b.skillConditions(skills);
+        }
+
+        return b.build();
     }
-    private static final Pattern PROJECT_COUNT_PATTERN =
-            Pattern.compile("(\\d+)\\s*개\\s*(이상|이하|초과|미만|하는)");
 
-    private void parseProjectCount(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        Matcher m = PROJECT_COUNT_PATTERN.matcher(nl);
-        if (!m.find()) return;
+    // =========================
+    // helpers
+    // =========================
 
-        int count = Integer.parseInt(m.group(1));
-        String op = m.group(2);
+    private void addSkill(List<SkillCondition> list, String nl, String tech) {
 
-        builder.activeProjectCount(count);
+        if (nl.contains("이상")) {
+            list.add(new SkillCondition(
+                    tech,
+                    extractSkillLevel(nl),
+                    ComparisonType.GREATER_THAN_OR_EQUAL
+            ));
+            return;
+        }
 
-        switch (op) {
-            case "이상" -> builder.comparisonType(ComparisonType.GREATER_THAN_OR_EQUAL);
-            case "이하" -> builder.comparisonType(ComparisonType.LESS_THAN_OR_EQUAL);
-            case "초과" -> builder.comparisonType(ComparisonType.GREATER_THAN);
-            case "미만" -> builder.comparisonType(ComparisonType.LESS_THAN);
-            case "하는" -> builder.comparisonType(ComparisonType.EQUAL);
+        if (nl.contains("이하")) {
+            list.add(new SkillCondition(
+                    tech,
+                    extractSkillLevel(nl),
+                    ComparisonType.LESS_THAN_OR_EQUAL
+            ));
+            return;
+        }
+
+        // 기본: 정확 레벨
+        SkillLevel level = extractSkillLevel(nl);
+        if (level != null) {
+            list.add(new SkillCondition(
+                    tech,
+                    level,
+                    ComparisonType.EQUAL
+            ));
         }
     }
-    private static final Pattern LIMIT_PATTERN =
-            Pattern.compile("(\\d+)\\s*명");
 
-    private void parseLimit(
-            String nl,
-            SearchIntent.SearchIntentBuilder builder
-    ) {
-        Matcher m = LIMIT_PATTERN.matcher(nl);
-        if (m.find()) {
-            builder.limit(Integer.parseInt(m.group(1)));
-        }
+    private Integer extractNumber(String nl) {
+        Matcher m = Pattern.compile("(\\d+)").matcher(nl);
+        return m.find() ? Integer.parseInt(m.group(1)) : null;
     }
 
+    private SkillLevel extractSkillLevel(String nl) {
+        if (nl.contains("LV3") || nl.contains("3")) return SkillLevel.LV3;
+        if (nl.contains("LV2") || nl.contains("2")) return SkillLevel.LV2;
+        if (nl.contains("LV1") || nl.contains("1")) return SkillLevel.LV1;
+        return null;
+    }
 }

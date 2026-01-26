@@ -138,20 +138,32 @@ public class OpenSearchPersonSearcher {
 
         String tech = sc.getTechName();
 
-        // LV2 이상, LV3 이상 같은 범위 검색
-        if (sc.getComparisonType() == ComparisonType.GREATER_THAN_OR_EQUAL) {
-            return QueryBuilders.rangeQuery(
-                    "techSkillLevels." + tech
-            ).gte(sc.getSkillLevel().number());
-        }
+        int level = sc.getSkillLevel().number();
 
-        // 정확 매칭 (LV2, LV3)
-        return QueryBuilders.termQuery(
-                "techSkills." + tech,
-                sc.getSkillLevel().name()
-        );
+        return switch (sc.getComparisonType()) {
+            case GREATER_THAN_OR_EQUAL ->
+                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+                            .gte(level);
+
+            case GREATER_THAN ->
+                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+                            .gt(level);
+
+            case LESS_THAN_OR_EQUAL ->
+                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+                            .lte(level);
+
+            case LESS_THAN ->
+                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+                            .lt(level);
+
+            case EQUAL ->
+                    QueryBuilders.termQuery(
+                            "techSkills." + tech,
+                            sc.getSkillLevel().name()
+                    );
+        };
     }
-
 
     // limit 처리
     private int resolveLimit(SearchCondition condition) {

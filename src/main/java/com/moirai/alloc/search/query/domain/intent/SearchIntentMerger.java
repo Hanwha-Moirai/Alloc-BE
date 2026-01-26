@@ -8,6 +8,7 @@ import java.util.*;
 
 @Component
 public class SearchIntentMerger {
+    // 무엇을 기억하고, 무엇을 바꿀지 결정
     public SearchIntent merge(
             SearchIntent previous,
             SearchIntent incoming,

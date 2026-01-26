@@ -26,6 +26,7 @@ public class ConversationPeopleSearchService {
     private final SearchIntentParser searchIntentParser;
     private final OpenSearchPersonSearcher searcher;
     private final PersonViewMapper personViewMapper;
+    private List<PersonDocument> lastResult;
 
     public List<PersonView> search(String nl) {
         //자연어-> 구조화된 intent(gpt)
@@ -34,11 +35,17 @@ public class ConversationPeopleSearchService {
         // intent -> 검색 조건으로
         SearchCondition condition = toCondition(intent);
 
-        //opensearch 조회
-        List<PersonDocument> docs = searcher.search(condition);
+        // 검색 실행
+        List<PersonDocument> result = searcher.search(condition);
 
-        //view 반환
-        return personViewMapper.toViews(docs);
+        // 결과가 없으면 이전 결과 유지
+        if (result.isEmpty() && lastResult != null) {
+            return personViewMapper.toViews(lastResult);
+        }
+
+        this.lastResult = result;
+
+        return personViewMapper.toViews(result);
     }
     private SearchCondition toCondition(SearchIntent intent) {
         return SearchCondition.of(
@@ -54,7 +61,5 @@ public class ConversationPeopleSearchService {
                 intent.getLimit()
         );
     }
-
-
 
 }
