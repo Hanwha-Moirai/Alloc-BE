@@ -6,6 +6,7 @@ import com.moirai.alloc.common.port.ProjectPeriod;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
 import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
+import com.moirai.alloc.gantt.command.application.service.GanttUpdateTaskService;
 import com.moirai.alloc.gantt.command.domain.entity.Milestone;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
 import com.moirai.alloc.gantt.command.domain.repository.MilestoneRepository;
@@ -37,6 +38,9 @@ class MilestoneCompletionTriggerTest {
 
     @Autowired
     private GanttCommandService ganttCommandService;
+
+    @Autowired
+    private GanttUpdateTaskService ganttUpdateTaskService;
 
     @Autowired
     private TaskRepository taskRepository;
@@ -80,7 +84,7 @@ class MilestoneCompletionTriggerTest {
         Task task = taskRepository.findById(taskId).orElseThrow();
         when(taskQueryMapper.findTaskById(PROJECT_ID, taskId)).thenReturn(buildProjection(task));
 
-        ganttCommandService.updateTask(PROJECT_ID, taskId, buildStatusRequest(Task.TaskStatus.DONE));
+        ganttUpdateTaskService.updateTask(PROJECT_ID, taskId, buildStatusRequest(Task.TaskStatus.DONE));
 
         Milestone updated = milestoneRepository.findById(milestone.getMilestoneId()).orElseThrow();
         assertThat(updated.getIsCompleted()).isTrue();
@@ -114,11 +118,11 @@ class MilestoneCompletionTriggerTest {
         Milestone beforeUpdate = milestoneRepository.findById(milestone.getMilestoneId()).orElseThrow();
         assertThat(beforeUpdate.getIsCompleted()).isFalse();
 
-        ganttCommandService.updateTask(PROJECT_ID, firstTaskId, buildStatusRequest(Task.TaskStatus.DONE));
+        ganttUpdateTaskService.updateTask(PROJECT_ID, firstTaskId, buildStatusRequest(Task.TaskStatus.DONE));
         Milestone afterFirstUpdate = milestoneRepository.findById(milestone.getMilestoneId()).orElseThrow();
         assertThat(afterFirstUpdate.getIsCompleted()).isFalse();
 
-        ganttCommandService.updateTask(PROJECT_ID, secondTaskId, buildStatusRequest(Task.TaskStatus.DONE));
+        ganttUpdateTaskService.updateTask(PROJECT_ID, secondTaskId, buildStatusRequest(Task.TaskStatus.DONE));
 
         Milestone updated = milestoneRepository.findById(milestone.getMilestoneId()).orElseThrow();
         assertThat(updated.getIsCompleted()).isTrue();
@@ -132,7 +136,7 @@ class MilestoneCompletionTriggerTest {
         Long taskId = ganttCommandService.createTask(PROJECT_ID, buildCreateRequest(milestone.getMilestoneId()));
         Task task = taskRepository.findById(taskId).orElseThrow();
         when(taskQueryMapper.findTaskById(PROJECT_ID, taskId)).thenReturn(buildProjection(task));
-        ganttCommandService.updateTask(PROJECT_ID, taskId, buildStatusRequest(Task.TaskStatus.DONE));
+        ganttUpdateTaskService.updateTask(PROJECT_ID, taskId, buildStatusRequest(Task.TaskStatus.DONE));
 
         Milestone beforeDelete = milestoneRepository.findById(milestone.getMilestoneId()).orElseThrow();
         assertThat(beforeDelete.getIsCompleted()).isTrue();
