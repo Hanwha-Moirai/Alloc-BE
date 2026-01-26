@@ -1,6 +1,7 @@
 package com.moirai.alloc.admin.query.service;
 
 import com.moirai.alloc.admin.query.dto.AdminTechStackListItem;
+import com.moirai.alloc.admin.query.dto.AdminUserDetailResponse;
 import com.moirai.alloc.admin.query.dto.AdminUserListItem;
 import com.moirai.alloc.admin.query.dto.AdminUserMetaResponse;
 import com.moirai.alloc.common.dto.PageResponse;
@@ -42,6 +43,16 @@ public class AdminUserQueryService {
                 .titles(mapper.selectTitleOptions())
                 .departments(mapper.selectDepartmentOptions())
                 .build();
+    }
+
+    public AdminUserDetailResponse getUserDetail(Long userId) {
+        AdminUserDetailResponse res = mapper.selectUserDetail(userId);
+
+        if (res == null) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다. id=" + userId);
+        }
+
+        return res;
     }
 
     // 근무형태 전용 (한글 매핑)
