@@ -19,7 +19,7 @@ public class SeniorityPolicy {
         JobGrade maxGrade = gradeRange.getMaxGrade();
 
         // 부장 이상만 포함 → 시니어로 간주
-        if (minGrade.level() >= JobGrade.DIRECTOR.level()) {
+        if (minGrade.getLevel() >= JobGrade.DIRECTOR.getLevel()) {
             return new SeniorityRange(
                     SeniorityLevel.SENIOR,
                     SeniorityLevel.SENIOR
@@ -27,7 +27,7 @@ public class SeniorityPolicy {
         }
 
         // 주임 이하 → 주니어 ~ 미들로 간주
-        if (maxGrade.level() <= JobGrade.ASSOCIATE.level()) {
+        if (maxGrade.getLevel() <= JobGrade.ASSOCIATE.getLevel()) {
             return new SeniorityRange(
                     SeniorityLevel.JUNIOR,
                     SeniorityLevel.MIDDLE
