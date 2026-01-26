@@ -50,3 +50,19 @@ notification:
       initial-delay-ms: 5000
       event-name: PING
       data: ok
+
+#ALB 헬스체크용
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

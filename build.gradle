@@ -115,6 +115,9 @@ dependencies {
     // msa 관련
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // ECS 관련
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
     mockitoAgent 'org.mockito:mockito-core'
 }
 
