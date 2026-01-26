@@ -1,13 +1,13 @@
 package com.moirai.alloc.search.query.domain.condition;
 
-import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
+import com.moirai.alloc.search.query.domain.vocabulary.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Builder
@@ -30,11 +30,18 @@ public class SearchCondition {
 
     // enum 기반 필터
     private WorkingType workingType;
-    private SeniorityLevel seniorityLevel; // 추상화된 직급 작성(시니어, 주니어 등)
+
+    private SeniorityRange seniorityRange;
+    private JobGradeRange jobGradeRange;
 
     // 정확한 매칭 필터
-    private String jobTitle; // 정확한 직급 작성(부장, 차장 등_
+    private JobRole jobRole;
     private String department; //부서명
+
+    private Set<ExperienceDomain> experienceDomains;
+    private LogicalOperator experienceOperator;
+
+    private ProjectType projectType;
 
     private Integer limit;
 

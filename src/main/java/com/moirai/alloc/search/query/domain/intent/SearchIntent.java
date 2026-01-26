@@ -1,14 +1,16 @@
 package com.moirai.alloc.search.query.domain.intent;
 
-import com.moirai.alloc.search.query.domain.condition.ComparisonType;
-import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
-import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
+import com.moirai.alloc.search.query.domain.condition.*;
+import com.moirai.alloc.search.query.domain.vocabulary.ExperienceDomain;
+import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
 import com.moirai.alloc.search.query.domain.vocabulary.WorkingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.util.List;
+import java.util.Set;
+
 
 @Getter
 @Builder
@@ -21,18 +23,21 @@ public class SearchIntent {
     private Integer activeProjectCount;
     private ComparisonType comparisonType;
 
-    // 기술 관련 의미
-    private SkillLevel skillLevel; // 레벨
-    private List<String> techName; // 자바, 파이썬 등
+    // 기술 조건
+    private List<SkillCondition> skillConditions; // 레벨
+    private LogicalOperator skillLogicalOperator;
 
     //근무/조직
     private WorkingType workingType;
-    private SeniorityLevel seniorityLevel;
 
-    //직무, 조직
-    private String jobTitle;
+    //직급 범위
+    private SeniorityRange seniorityRange;
+    private JobGradeRange jobGradeRange;
+
+    private JobRole jobRole;
     private String department;
 
+    private Set<ExperienceDomain> experienceDomains;
     //응답 갯수 제한
     private Integer limit;
 }

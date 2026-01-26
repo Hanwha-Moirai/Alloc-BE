@@ -14,4 +14,5 @@ public class SkillCondition {
     private String techName;
     private SkillLevel skillLevel;
     private ComparisonType comparisonType;
+    private ConditionOperator operator; // include, exclude
 }
