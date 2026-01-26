@@ -43,7 +43,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Execute Gradle build
-        run: ./gradlew app-core:build -x test --stacktrace
+        run: ./gradlew build -x test --stacktrace
 
       - name: AWS credentials 를 구성한다
         uses: aws-actions/configure-aws-credentials@v4
@@ -67,7 +67,8 @@ jobs:
         with:
           tags: ${{ env.img-uri }}:${{ env.img-tag }}
           push: true
-            mediatypes=true,ref=${{ env.img-uri }}:cache
+          cache-to: type=registry,ref=${{ env.img-uri }}:cache,mode=max
+          cache-from: type=registry,ref=${{ env.img-uri }}:cache
           context: app-core
           file: app-core/Dockerfile
 
