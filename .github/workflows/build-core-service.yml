@@ -43,7 +43,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Execute Gradle build
-        run: ./gradlew app-order:build -x test --stacktrace
+        run: ./gradlew app-core:build -x test --stacktrace
 
       - name: AWS credentials 를 구성한다
         uses: aws-actions/configure-aws-credentials@v4
@@ -61,15 +61,15 @@ jobs:
 
       - name: 컨테이너 이미지를 빌드하고 푸시한다
         env:
-          img-uri: ${{ steps.login-ecr.outputs.registry }}/app-order-service
+          img-uri: ${{ steps.login-ecr.outputs.registry }}/app-core-service
           img-tag: ${{ steps.tag.outputs.this }}
         uses: docker/build-push-action@v4
         with:
           tags: ${{ env.img-uri }}:${{ env.img-tag }}
           push: true
             mediatypes=true,ref=${{ env.img-uri }}:cache
-          context: app-order
-          file: app-order/Dockerfile
+          context: app-core
+          file: app-core/Dockerfile
 
       - name: 이미지 태그를 출력한다
         env:
