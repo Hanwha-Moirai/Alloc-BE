@@ -81,7 +81,7 @@ class GanttUpdateTaskControllerTest {
     void updateTask_returnsOk() throws Exception {
         String body = """
                 {
-                  "taskName": "Updated Task"
+                  "taskStatus": "INPROGRESS"
                 }
                 """;
 

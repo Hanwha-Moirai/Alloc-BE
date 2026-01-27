@@ -69,9 +69,9 @@ public class GanttUpdateTaskService {
     }
 
     private void handlePmUpdate(Long projectId, Task task, UpdateTaskRequest request, Long previousMilestoneId) {
-        if (request.taskStatus() != null && !Objects.equals(request.taskStatus(), task.getTaskStatus())) {
-            throw GanttException.forbidden("PM은 태스크 상태를 변경할 수 없습니다.");
-        }
+        Task.TaskStatus targetStatus = request.taskStatus() == null
+                ? task.getTaskStatus()
+                : request.taskStatus();
 
         Long previousAssigneeId = task.getUserId();
         Long assigneeId = request.assigneeId() == null ? task.getUserId() : request.assigneeId();
@@ -101,10 +101,14 @@ public class GanttUpdateTaskService {
                 taskCategory,
                 taskName,
                 taskDescription,
-                task.getTaskStatus(),
+                targetStatus,
                 startDate,
                 endDate
         );
+
+        if (request.taskStatus() != null) {
+            task.changeStatus(targetStatus);
+        }
 
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "UPDATE"));
         if (!Objects.equals(previousMilestoneId, targetMilestone.getMilestoneId())) {
@@ -141,17 +145,20 @@ public class GanttUpdateTaskService {
         syncMilestoneCompletion(previousMilestoneId);
     }
 
+    // 프로젝트 존재 여부 검사
     private void validateProject(Long projectId) {
         projectInfoPort.findProjectPeriod(projectId)
                 .orElseThrow(() -> GanttException.notFound("프로젝트가 존재하지 않습니다."));
     }
 
+    // 프로젝트 멤버인지를 검사
     private void validateProjectMember(Long projectId, Long userId) {
         if (!projectMembershipPort.isMember(projectId, userId)) {
             throw GanttException.notFound("프로젝트 멤버가 아닙니다.");
         }
     }
 
+    // 유효한 프로젝트인지를 검사
     private void validateWithinProjectPeriod(Long projectId, LocalDate startDate, LocalDate endDate) {
         ProjectPeriod period = projectInfoPort.findProjectPeriod(projectId)
                 .orElseThrow(() -> GanttException.notFound("프로젝트가 존재하지 않습니다."));
@@ -169,12 +176,14 @@ public class GanttUpdateTaskService {
         }
     }
 
+    // 마일스톤 기간 검증
     private void validateWithinMilestonePeriod(Milestone milestone, LocalDate startDate, LocalDate endDate) {
         if (startDate.isBefore(milestone.getStartDate()) || endDate.isAfter(milestone.getEndDate())) {
             throw GanttException.badRequest("마일스톤 기간을 벗어난 일정입니다.");
         }
     }
 
+    // 프로젝트 내 태스크 탐색
     private Task findTaskWithinProject(Long projectId, Long taskId) {
         TaskProjection projection = taskQueryMapper.findTaskById(projectId, taskId);
         if (projection == null) {

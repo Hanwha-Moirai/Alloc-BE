@@ -226,24 +226,23 @@ class GanttUpdateTaskServiceTest {
     }
 
     @Test
-    @DisplayName("PM은 태스크 상태 변경이 허용되지 않는다.")
-    void updateTask_whenPmChangesStatus_throwsForbidden() {
+    @DisplayName("PM도 태스크 상태 변경이 가능하다.")
+    void updateTask_whenPmChangesStatus_updatesStatus() {
         authenticatedUserProvider.setRole("PM");
 
-        GanttException exception = assertThrows(
-                GanttException.class,
-                () -> ganttUpdateTaskService.updateTask(PROJECT_ID, 99001L, new UpdateTaskRequest(
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        Task.TaskStatus.INPROGRESS,
-                        null,
-                        null
-                ))
-        );
-        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
+        ganttUpdateTaskService.updateTask(PROJECT_ID, 99001L, new UpdateTaskRequest(
+                null,
+                null,
+                null,
+                null,
+                null,
+                Task.TaskStatus.INPROGRESS,
+                null,
+                null
+        ));
+
+        Task task = taskRepository.findById(99001L).orElseThrow();
+        assertThat(task.getTaskStatus()).isEqualTo(Task.TaskStatus.INPROGRESS);
     }
 
     @TestConfiguration
