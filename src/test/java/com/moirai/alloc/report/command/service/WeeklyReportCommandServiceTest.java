@@ -101,6 +101,12 @@ class WeeklyReportCommandServiceTest {
         List<WeeklyTask> tasks = weeklyTaskCommandRepository.findAll();
         assertThat(tasks).hasSize(3);
         assertThat(tasks.stream().anyMatch(task -> task.getTaskType() == WeeklyTask.TaskType.NEXT_WEEK)).isTrue();
+        assertThat(tasks.stream()
+                .filter(task -> task.getTaskType() == WeeklyTask.TaskType.COMPLETED)
+                .allMatch(task -> Boolean.TRUE.equals(task.getIsCompleted()))).isTrue();
+        assertThat(tasks.stream()
+                .filter(task -> task.getTaskType() != WeeklyTask.TaskType.COMPLETED)
+                .allMatch(task -> Boolean.FALSE.equals(task.getIsCompleted()))).isTrue();
 
         List<IssueBlocker> blockers = issueBlockerCommandRepository.findAll();
         assertThat(blockers).hasSize(1);

@@ -101,18 +101,34 @@ public class WeeklyReportCommandService {
         issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
         weeklyTaskCommandRepository.deleteByReportReportId(report.getReportId());
 
+        // request의 완수 task 목록이 비어 있는 것이 아니라면
         if (request.completedTasks() != null) {
             request.completedTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
-                WeeklyTask weeklyTask = WeeklyTask.create(report, task, WeeklyTask.TaskType.COMPLETED, null, null);
+                WeeklyTask weeklyTask = WeeklyTask.create(
+                        report,
+                        task,
+                        WeeklyTask.TaskType.COMPLETED,
+                        null,
+                        null,
+                        task.getIsCompleted()
+                );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
         }
 
+        // request의 미완수 task 목록이 비어 있다면
         if (request.incompleteTasks() != null) {
             request.incompleteTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
-                WeeklyTask weeklyTask = WeeklyTask.create(report, task, WeeklyTask.TaskType.INCOMPLETE, null, null);
+                WeeklyTask weeklyTask = WeeklyTask.create(
+                        report,
+                        task,
+                        WeeklyTask.TaskType.INCOMPLETE,
+                        null,
+                        null,
+                        task.getIsCompleted()
+                );
                 WeeklyTask savedTask = weeklyTaskCommandRepository.save(weeklyTask);
                 createIssueBlocker(savedTask, taskRequest);
             });
@@ -126,7 +142,8 @@ public class WeeklyReportCommandService {
                         task,
                         WeeklyTask.TaskType.NEXT_WEEK,
                         taskRequest.plannedStartDate(),
-                        taskRequest.plannedEndDate()
+                        taskRequest.plannedEndDate(),
+                        task.getIsCompleted()
                 );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
