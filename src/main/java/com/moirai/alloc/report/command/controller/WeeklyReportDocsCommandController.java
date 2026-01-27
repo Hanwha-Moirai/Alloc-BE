@@ -7,7 +7,7 @@ import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportDeleteResponse;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.service.WeeklyReportCommandService;
-import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportCreateResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
