@@ -165,16 +165,28 @@ public class WeeklyReportCommandService {
     }
 
     private void createIssueBlocker(WeeklyTask weeklyTask, IncompleteTaskRequest request) {
-        if (request.delayReason() == null) {
-            return;
-        }
+        Integer delayedDates = calculateDelayedDates(weeklyTask.getReport(), weeklyTask.getTask());
         IssueBlocker blocker = IssueBlocker.create(
                 weeklyTask,
                 request.delayReason(),
                 null,
-                null
+                delayedDates
         );
         issueBlockerCommandRepository.save(blocker);
+    }
+
+    private Integer calculateDelayedDates(WeeklyReport report, Task task) {
+        if (report.getWeekEndDate() == null || task.getEndDate() == null) {
+            return null;
+        }
+        long diff = java.time.temporal.ChronoUnit.DAYS.between(task.getEndDate(), report.getWeekEndDate());
+        if (diff <= 0) {
+            return 0;
+        }
+        if (diff > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) diff;
     }
 
     private void validateMembership(Long projectId, Long userId) {

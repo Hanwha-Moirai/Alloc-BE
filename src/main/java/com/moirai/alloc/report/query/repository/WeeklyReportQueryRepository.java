@@ -292,12 +292,12 @@ public class WeeklyReportQueryRepository {
 
     private List<IncompleteTaskResponse> findIncompleteTasks(Long reportId) {
         return jdbcTemplate.query(
-                "select t.task_id, t.task_name, u.user_name, t.task_category, t.end_date, ib.cause_of_delay " +
-                        "from weekly_tasks wt " +
-                        "join task t on t.task_id = wt.task_id " +
-                        "join users u on u.user_id = t.user_id " +
-                        "left join issue_blockers ib on ib.weekly_tasks_id = wt.weekly_tasks_id " +
-                        "where wt.report_id = ? and wt.task_type = 'INCOMPLETE'",
+                "select t.task_id, t.task_name, u.user_name, t.task_category, ib.delayed_dates, ib.cause_of_delay " +
+                "from weekly_tasks wt " +
+                "join task t on t.task_id = wt.task_id " +
+                "join users u on u.user_id = t.user_id " +
+                "left join issue_blockers ib on ib.weekly_tasks_id = wt.weekly_tasks_id " +
+                "where wt.report_id = ? and wt.task_type = 'INCOMPLETE'",
                 (rs, rowNum) -> new IncompleteTaskResponse(
                         rs.getLong("task_id"),
                         rs.getString("task_name"),
@@ -305,7 +305,7 @@ public class WeeklyReportQueryRepository {
                         com.moirai.alloc.gantt.command.domain.entity.Task.TaskCategory.valueOf(
                                 rs.getString("task_category")
                         ),
-                        rs.getDate("end_date").toLocalDate(),
+                        rs.getObject("delayed_dates", Integer.class),
                         rs.getString("cause_of_delay")
                 ),
                 reportId

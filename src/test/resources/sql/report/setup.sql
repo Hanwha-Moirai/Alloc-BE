@@ -51,5 +51,5 @@ ON DUPLICATE KEY UPDATE task_type = VALUES(task_type);
 
 INSERT INTO issue_blockers (issue_blockers_id, weekly_tasks_id, cause_of_delay, dependency_summary, delayed_dates)
 VALUES
-    (77001, 77002, 'Blocked', NULL, NULL)
+    (77001, 77002, 'Blocked', NULL, 6)
 ON DUPLICATE KEY UPDATE cause_of_delay = VALUES(cause_of_delay);

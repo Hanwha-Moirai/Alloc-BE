@@ -111,6 +111,7 @@ class WeeklyReportCommandServiceTest {
         List<IssueBlocker> blockers = issueBlockerCommandRepository.findAll();
         assertThat(blockers).hasSize(1);
         assertThat(blockers.get(0).getCauseOfDelay()).isEqualTo("지연");
+        assertThat(blockers.get(0).getDelayedDates()).isEqualTo(6);
     }
 
     @Test
