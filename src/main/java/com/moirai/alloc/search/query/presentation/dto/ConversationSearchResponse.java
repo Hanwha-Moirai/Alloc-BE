@@ -1,13 +1,12 @@
 package com.moirai.alloc.search.query.presentation.dto;
 
-import com.moirai.alloc.search.query.service.policy.ClarificationType;
 import java.util.List;
 
 public class ConversationSearchResponse {
 
     private ResponseType type;   // RESULT or QUESTION
     private List<PersonView> people;
-    private ClarificationType clarificationType;
+    private String question;     //  질문 문장
 
     public enum ResponseType {
         RESULT,
@@ -23,10 +22,10 @@ public class ConversationSearchResponse {
         return r;
     }
 
-    public static ConversationSearchResponse question(ClarificationType type) {
+    public static ConversationSearchResponse question(String question) {
         ConversationSearchResponse r = new ConversationSearchResponse();
         r.type = ResponseType.QUESTION;
-        r.clarificationType = type;
+        r.question = question;
         return r;
     }
 
@@ -40,7 +39,7 @@ public class ConversationSearchResponse {
         return people;
     }
 
-    public ClarificationType getClarificationType() {
-        return clarificationType;
+    public String getQuestion() {
+        return question;
     }
 }

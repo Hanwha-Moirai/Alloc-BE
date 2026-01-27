@@ -1,22 +1,22 @@
 package com.moirai.alloc.search.query.presentation.api;
 
-import com.moirai.alloc.search.query.presentation.dto.PersonView;
-import com.moirai.alloc.search.query.service.ConversationPeopleSearchService;
+import com.moirai.alloc.search.query.presentation.dto.ConversationSearchResponse;
+import com.moirai.alloc.search.query.service.ConversationSearchOrchestrator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/people")
 public class PeopleSearchController {
-    private final ConversationPeopleSearchService searchPeopleByNaturalLanguage;
+    private final ConversationSearchOrchestrator searchPeopleByNaturalLanguage;
 
     @PostMapping("/search")
-    public List<PersonView> search(@RequestBody String query) {
-        return searchPeopleByNaturalLanguage.search(query);
+    public ConversationSearchResponse search(
+            @RequestParam String conversationId,
+            @RequestBody String query
+    ) {
+        return searchPeopleByNaturalLanguage.search(conversationId, query);
     }
+
 }

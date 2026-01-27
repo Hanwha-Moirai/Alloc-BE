@@ -1,6 +1,7 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
 import com.moirai.alloc.search.query.domain.condition.*;
+import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.moirai.alloc.search.query.domain.condition.ComparisonType.*;
+
 @Component
 @RequiredArgsConstructor
 public class OpenSearchPersonSearcher {
@@ -29,39 +32,39 @@ public class OpenSearchPersonSearcher {
     private final RestHighLevelClient client;
 
 
-    public List<PersonDocument> search(SearchCondition condition) {
+    public List<PersonDocument> search(SearchIntent intent) {
         // 1. SearchCondition 확인
         // 2. 조건별로 쿼리 조립
         // 3. OpenSearch 호출 (아직 구현 X)
         // 4. PersonDocument 리스트 반환
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
-        applyFreeText(condition, boolQuery);
-        applyProjectCount(condition, boolQuery);
+        applyFreeText(intent, boolQuery);
+        applyProjectCount(intent, boolQuery);
 
-        applySeniorityRange(condition, boolQuery);
-        applyJobGradeRange(condition, boolQuery);
-        applySkillConditions(condition, boolQuery);
+        applySeniorityRange(intent, boolQuery);
+        applyJobGradeRange(intent, boolQuery);
+        applySkillConditions(intent, boolQuery);
 
         // search request 생성
         SearchSourceBuilder source = new SearchSourceBuilder()
                 .query(boolQuery)
-                .size(resolveLimit(condition));
+                .size(resolveLimit(intent));
 
         // open search 호출
         return executeSearch(source);
     }
 
-    private void applyFreeText(SearchCondition condition, BoolQueryBuilder bool) {
+    private void applyFreeText(SearchIntent intent, BoolQueryBuilder bool) {
         // 자유 자연어 검색, 동의어 없어도 동작
-        if(condition.getFreeText() == null || condition.getFreeText().isBlank()){
+        if(intent.getFreeText() == null || intent.getFreeText().isBlank()){
             return; //해당되지 않으면 넘어가기
         }
         bool.must(
                 // freeText는 score 계산 대상 → must
                 // 나머지 조건은 점수에 영향 X → filter
                 QueryBuilders.multiMatchQuery(
-                        condition.getFreeText(),
+                        intent.getFreeText(),
                         "experienceDomainText^5",
                         "profileSummary^4",
                         "jobTitle^3",
@@ -73,17 +76,15 @@ public class OpenSearchPersonSearcher {
         );
     }
 
-    private void applyProjectCount(SearchCondition condition, BoolQueryBuilder bool){
-        if(condition.getActiveProjectCount() == null || condition.getProjectCountComparisonType() == null) {
+    private void applyProjectCount(SearchIntent intent, BoolQueryBuilder bool){
+        if(intent.getActiveProjectCount() == null || intent.getProjectCountcomparisonType() == null) {
             return;
         }
         RangeQueryBuilder range = QueryBuilders.rangeQuery("activeProjectCount");
-        int count = condition.getActiveProjectCount();
-        switch (condition.getProjectCountComparisonType()) {
-            case EQUAL -> {
-                range.gte(count);
-                range.lte(count);
-            }
+        int count = intent.getActiveProjectCount();
+
+        switch (intent.getProjectCountcomparisonType()) {
+            case EQUAL -> range.gte(count).lte(count);
             case LESS_THAN -> range.lt(count);
             case LESS_THAN_OR_EQUAL -> range.lte(count);
             case GREATER_THAN -> range.gt(count);
@@ -92,8 +93,8 @@ public class OpenSearchPersonSearcher {
         bool.filter(range);
     }
 
-    private void applySeniorityRange(SearchCondition condition, BoolQueryBuilder bool) {
-        SeniorityRange range = condition.getSeniorityRange();
+    private void applySeniorityRange(SearchIntent intent, BoolQueryBuilder bool) {
+        SeniorityRange range = intent.getSeniorityRange();
         if (range == null) return;
 
         bool.filter(
@@ -102,8 +103,8 @@ public class OpenSearchPersonSearcher {
                         .lte(range.getMaxLevel().level())
         );
     }
-    private void applyJobGradeRange(SearchCondition condition, BoolQueryBuilder bool) {
-        JobGradeRange range = condition.getJobGradeRange();
+    private void applyJobGradeRange(SearchIntent intent, BoolQueryBuilder bool) {
+        JobGradeRange range = intent.getJobGradeRange();
         if (range == null) return;
 
         bool.filter(
@@ -114,18 +115,18 @@ public class OpenSearchPersonSearcher {
     }
 
     private void applySkillConditions(
-            SearchCondition condition,
+            SearchIntent intent,
             BoolQueryBuilder bool
     ) {
-        if (condition.getSkillConditions() == null ||
-                condition.getSkillConditions().isEmpty()) {
+        if (intent.getSkillConditions() == null ||
+                intent.getSkillConditions().isEmpty()) {
             return;
         }
 
         BoolQueryBuilder skillQuery = QueryBuilders.boolQuery();
 
         // 전부 AND
-        for (SkillCondition sc : condition.getSkillConditions()) {
+        for (SkillCondition sc : intent.getSkillConditions()) {
             skillQuery.must(buildSkillQuery(sc));
         }
 
@@ -166,9 +167,9 @@ public class OpenSearchPersonSearcher {
     }
 
     // limit 처리
-    private int resolveLimit(SearchCondition condition) {
+    private int resolveLimit(SearchIntent intent) {
         //사용자가 결과 개수를 지정했으면 그 값을 쓰고 지정하지 않으면 기본 10개 값 반환하기
-        return condition.getLimit() != null ? condition.getLimit() : 10;
+        return intent.getLimit() != null ? intent.getLimit() : 10;
     }
     private List<PersonDocument> executeSearch(SearchSourceBuilder source) {
         try {

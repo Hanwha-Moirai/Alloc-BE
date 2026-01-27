@@ -1,5 +1,6 @@
 package com.moirai.alloc.search.query.domain.vocabulary;
-
+// SEARCHER에서 사용되지 않고, Freetext + profilesummary로만 검색 중..
+// TODO;    나중에 experiencedomaintext 필드 추가 = filter, must로 연결
 public enum ExperienceDomain {
 
     // 산업
