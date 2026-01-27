@@ -252,6 +252,24 @@ public class WeeklyReportQueryRepository {
         return Optional.of(details.get(0));
     }
 
+    public List<LocalDate> findWeekStartDates(Long projectId,
+                                              Long userId,
+                                              LocalDate startDate,
+                                              LocalDate endDate) {
+        return jdbcTemplate.query(
+                "select distinct week_start_date " +
+                        "from weekly_report " +
+                        "where is_deleted = false and project_id = ? and user_id = ? " +
+                        "and week_start_date >= ? and week_start_date <= ? " +
+                        "order by week_start_date",
+                (rs, rowNum) -> rs.getDate("week_start_date").toLocalDate(),
+                projectId,
+                userId,
+                startDate,
+                endDate
+        );
+    }
+
     private List<CompletedTaskResponse> findCompletedTasks(Long reportId) {
         return jdbcTemplate.query(
                 "select t.task_id, t.task_name, u.user_name, t.task_category, t.updated_at " +

@@ -15,6 +15,10 @@ import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
 import com.moirai.alloc.report.query.repository.ReportMembershipRepository;
 import com.moirai.alloc.report.query.repository.WeeklyReportQueryRepository;
+import com.moirai.alloc.notification.command.domain.entity.AlarmTemplateType;
+import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
+import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.http.HttpStatus;
@@ -32,6 +36,7 @@ public class WeeklyReportCommandService {
     private final IssueBlockerCommandRepository issueBlockerCommandRepository;
     private final ReportMembershipRepository membershipRepository;
     private final WeeklyReportQueryRepository weeklyReportQueryRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -40,12 +45,14 @@ public class WeeklyReportCommandService {
                                       WeeklyTaskCommandRepository weeklyTaskCommandRepository,
                                       IssueBlockerCommandRepository issueBlockerCommandRepository,
                                       ReportMembershipRepository membershipRepository,
-                                      WeeklyReportQueryRepository weeklyReportQueryRepository) {
+                                      WeeklyReportQueryRepository weeklyReportQueryRepository,
+                                      NotificationCommandService notificationCommandService) {
         this.weeklyReportCommandRepository = weeklyReportCommandRepository;
         this.weeklyTaskCommandRepository = weeklyTaskCommandRepository;
         this.issueBlockerCommandRepository = issueBlockerCommandRepository;
         this.membershipRepository = membershipRepository;
         this.weeklyReportQueryRepository = weeklyReportQueryRepository;
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Transactional
@@ -62,6 +69,7 @@ public class WeeklyReportCommandService {
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        //notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
         return new WeeklyReportCreateResponse(
                 detail.reportId(),
                 detail.projectId(),
@@ -168,4 +176,18 @@ public class WeeklyReportCommandService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
         }
     }
+
+    /*
+    private void notifyWeeklyReportCreated(Long reportId, Long projectId, String reporterName, Long userId) {
+        InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
+                AlarmTemplateType.WEEKLY_REPORT,
+                java.util.List.of(userId),
+                java.util.Map.of("weeklyReportName", reporterName),
+                TargetType.WEEKLY_REPORT,
+                reportId,
+                "/projects/" + projectId + "/docs/report/" + reportId
+        );
+        notificationCommandService.createInternalNotifications(request);
+    }
+     */
 }
