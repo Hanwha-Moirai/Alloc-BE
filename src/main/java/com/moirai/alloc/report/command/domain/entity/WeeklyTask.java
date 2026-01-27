@@ -48,17 +48,22 @@ public class WeeklyTask {
     @Column(name = "planned_end_date")
     private java.time.LocalDate plannedEndDate;
 
+    @Column(name = "is_completed")
+    private Boolean isCompleted;
+
     public static WeeklyTask create(WeeklyReport report,
                                     Task task,
                                     TaskType taskType,
                                     java.time.LocalDate plannedStartDate,
-                                    java.time.LocalDate plannedEndDate) {
+                                    java.time.LocalDate plannedEndDate,
+                                    Boolean isCompleted) {
         return WeeklyTask.builder()
                 .report(report)
                 .task(task)
                 .taskType(taskType)
                 .plannedStartDate(plannedStartDate)
                 .plannedEndDate(plannedEndDate)
+                .isCompleted(isCompleted)
                 .build();
     }
 
@@ -67,11 +72,13 @@ public class WeeklyTask {
                        Task task,
                        TaskType taskType,
                        java.time.LocalDate plannedStartDate,
-                       java.time.LocalDate plannedEndDate) {
+                       java.time.LocalDate plannedEndDate,
+                       Boolean isCompleted) {
         this.report = report;
         this.task = task;
         this.taskType = taskType;
         this.plannedStartDate = plannedStartDate;
         this.plannedEndDate = plannedEndDate;
+        this.isCompleted = (isCompleted != null) ? isCompleted : false;
     }
 }

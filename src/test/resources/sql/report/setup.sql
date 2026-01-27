@@ -42,11 +42,11 @@ ON DUPLICATE KEY UPDATE
     summary_text = VALUES(summary_text),
     is_deleted = VALUES(is_deleted);
 
-INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date)
+INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date, is_completed)
 VALUES
-    (77001, 77001, 77001, 'COMPLETED', NULL, NULL),
-    (77002, 77001, 77002, 'INCOMPLETE', NULL, NULL),
-    (77003, 77001, 77003, 'NEXT_WEEK', '2025-01-13', '2025-01-17')
+    (77001, 77001, 77001, 'COMPLETED', NULL, NULL, 1),
+    (77002, 77001, 77002, 'INCOMPLETE', NULL, NULL, 0),
+    (77003, 77001, 77003, 'NEXT_WEEK', '2025-01-13', '2025-01-17', 0)
 ON DUPLICATE KEY UPDATE task_type = VALUES(task_type);
 
 INSERT INTO issue_blockers (issue_blockers_id, weekly_tasks_id, cause_of_delay, dependency_summary, delayed_dates)

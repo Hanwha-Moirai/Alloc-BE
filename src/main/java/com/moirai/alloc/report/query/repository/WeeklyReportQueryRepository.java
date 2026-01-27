@@ -276,7 +276,7 @@ public class WeeklyReportQueryRepository {
                         "from weekly_tasks wt " +
                         "join task t on t.task_id = wt.task_id " +
                         "join users u on u.user_id = t.user_id " +
-                        "where wt.report_id = ? and wt.task_type = 'COMPLETED' and t.is_completed = true",
+                        "where wt.report_id = ? and wt.task_type = 'COMPLETED' and wt.is_completed = true",
                 (rs, rowNum) -> new CompletedTaskResponse(
                         rs.getLong("task_id"),
                         rs.getString("task_name"),
