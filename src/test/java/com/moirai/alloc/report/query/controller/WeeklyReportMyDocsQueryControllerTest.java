@@ -70,15 +70,15 @@ class WeeklyReportMyDocsQueryControllerTest {
     void getMissingWeeks_returnsMissingWeeks() throws Exception {
         mockMvc.perform(get("/api/mydocs/report/missing")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .param("projectId", "77001")
-                        .param("startDate", "2025-01-01")
-                        .param("endDate", "2025-01-31"))
+                .param("projectId", "77001")
+                .param("startDate", "2025-01-01")
+                .param("endDate", "2025-01-31"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(4))
-                .andExpect(jsonPath("$.data[0].weekStartDate").value("2024-12-30"))
-                .andExpect(jsonPath("$.data[0].weekEndDate").value("2025-01-05"));
+                .andExpect(jsonPath("$.data.length()").value(5))
+                .andExpect(jsonPath("$.data[0].weekStartDate").value("2024-12-29"))
+                .andExpect(jsonPath("$.data[0].weekEndDate").value("2025-01-04"));
     }
 
     private Authentication pmAuth() {

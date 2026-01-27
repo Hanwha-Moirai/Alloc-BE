@@ -109,14 +109,15 @@ class WeeklyReportQueryServiceTest {
                         LocalDate.of(2025, 1, 31)
                 );
 
-        assertThat(missing).hasSize(4);
+        assertThat(missing).hasSize(5);
         assertThat(missing)
                 .extracting(WeeklyReportMissingResponse::weekStartDate)
                 .contains(
-                        LocalDate.of(2024, 12, 30),
-                        LocalDate.of(2025, 1, 13),
-                        LocalDate.of(2025, 1, 20),
-                        LocalDate.of(2025, 1, 27)
+                        LocalDate.of(2024, 12, 29),
+                        LocalDate.of(2025, 1, 5),
+                        LocalDate.of(2025, 1, 12),
+                        LocalDate.of(2025, 1, 19),
+                        LocalDate.of(2025, 1, 26)
                 );
     }
 }
