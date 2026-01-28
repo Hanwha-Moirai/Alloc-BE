@@ -5,6 +5,7 @@ import com.moirai.alloc.auth.dto.request.PasswordResetConfirmRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetSendRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetVerifyRequest;
 import com.moirai.alloc.auth.dto.response.AuthResponse;
+import com.moirai.alloc.auth.dto.response.AuthTokens;
 import com.moirai.alloc.auth.dto.response.PasswordResetSendResponse;
 import com.moirai.alloc.auth.dto.response.PasswordResetVerifyResponse;
 import com.moirai.alloc.auth.service.AuthService;
@@ -15,6 +16,7 @@ import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -33,29 +35,53 @@ public class AuthController {
     private final RefreshTokenStore tokenStore;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Value("${auth.cookie.access-name:accessToken}")
+    private String accessCookieName;
+
+    @Value("${auth.cookie.refresh-name:refreshToken}")
+    private String refreshCookieName;
+
+    @Value("${auth.cookie.same-site:Lax}")
+    private String cookieSameSite;
+
+    @Value("${auth.cookie.secure:false}")
+    private boolean cookieSecure;
+
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        AuthTokens tokens = authService.login(request);
+
+        ResponseCookie accessCookie = buildAccessCookie(tokens.accessToken());
+        ResponseCookie refreshCookie = buildRefreshCookie(tokens.refreshToken());
+
+        AuthResponse response = new AuthResponse(tokens.accessToken(), tokens.isNewUser());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(ApiResponse.success(response));
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
-            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+            @CookieValue(name = "${auth.cookie.refresh-name:refreshToken}", required = false) String refreshToken) {
 
         if (refreshToken == null) {
             throw new IllegalArgumentException("Refresh Token이 없습니다.");
         }
 
         AuthResponse response = tokenService.refresh(refreshToken);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        ResponseCookie accessCookie = buildAccessCookie(response.accessToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .body(ApiResponse.success(response));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal UserPrincipal principal,
-            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+            @CookieValue(name = "${auth.cookie.refresh-name:refreshToken}", required = false) String refreshToken) {
 
         // 1) principal로 삭제
         if (principal != null) {
@@ -68,16 +94,25 @@ public class AuthController {
         }
 
         // 쿠키 삭제 (항상 수행)
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+        ResponseCookie deleteRefreshCookie = ResponseCookie.from(refreshCookieName, "")
                 .maxAge(0)
                 .path("/")
-                .sameSite("None")
-                .secure(true)
+                .sameSite(cookieSameSite)
+                .secure(cookieSecure)
+                .httpOnly(true)
+                .build();
+
+        ResponseCookie deleteAccessCookie = ResponseCookie.from(accessCookieName, "")
+                .maxAge(0)
+                .path("/")
+                .sameSite(cookieSameSite)
+                .secure(cookieSecure)
                 .httpOnly(true)
                 .build();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, deleteRefreshCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, deleteAccessCookie.toString())
                 .body(ApiResponse.success(null));
     }
 
@@ -106,5 +141,25 @@ public class AuthController {
     ) {
         authService.confirmPasswordReset(request);
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    private ResponseCookie buildAccessCookie(String accessToken) {
+        return ResponseCookie.from(accessCookieName, accessToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .path("/")
+                .maxAge(jwtTokenProvider.getAccessExpSeconds())
+                .build();
+    }
+
+    private ResponseCookie buildRefreshCookie(String refreshToken) {
+        return ResponseCookie.from(refreshCookieName, refreshToken)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .path("/")
+                .maxAge(jwtTokenProvider.getRefreshExpSeconds())
+                .build();
     }
 }

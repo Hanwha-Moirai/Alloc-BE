@@ -119,4 +119,8 @@ public class JwtTokenProvider {
     public long getRefreshExpSeconds() {
         return refreshExpSeconds;
     }
+
+    public long getAccessExpSeconds() {
+        return accessExpSeconds;
+    }
 }
