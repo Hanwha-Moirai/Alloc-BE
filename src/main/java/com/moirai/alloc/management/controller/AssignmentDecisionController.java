@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.api;
+package com.moirai.alloc.management.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.management.command.service.AcceptAssignment;
@@ -57,4 +57,5 @@ public class AssignmentDecisionController {
     }
 
 }
+
 //todo : (프로젝트 멤버만 접근 / 해당 프로젝트 PM만 가능)

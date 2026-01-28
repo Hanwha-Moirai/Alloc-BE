@@ -1,6 +1,6 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
-import com.moirai.alloc.management.api.ProjectAssignmentController;
+import com.moirai.alloc.management.controller.ProjectAssignmentController;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;

@@ -1,6 +1,6 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
-import com.moirai.alloc.management.api.ProjectController;
+import com.moirai.alloc.management.controller.ProjectController;
 import com.moirai.alloc.management.command.dto.EditProjectDTO;
 import com.moirai.alloc.management.command.service.EditProject;
 import com.moirai.alloc.management.command.service.RegisterProject;

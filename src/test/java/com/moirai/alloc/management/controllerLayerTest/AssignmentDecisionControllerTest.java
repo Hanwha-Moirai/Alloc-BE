@@ -1,6 +1,6 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
-import com.moirai.alloc.management.api.AssignmentDecisionController;
+import com.moirai.alloc.management.controller.AssignmentDecisionController;
 import com.moirai.alloc.management.command.service.AcceptAssignment;
 import com.moirai.alloc.management.command.service.DecideFinalAssignment;
 import com.moirai.alloc.management.command.service.RequestInterview;
