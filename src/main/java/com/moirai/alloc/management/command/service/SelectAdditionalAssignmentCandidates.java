@@ -3,6 +3,7 @@ package com.moirai.alloc.management.command.service;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
+import com.moirai.alloc.management.command.event.ProjectTempAssignmentEvent;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
@@ -11,6 +12,7 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.service.GetAssignmentStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class SelectAdditionalAssignmentCandidates {
     private final GetAssignmentStatus getAssignmentStatus;
     private final CandidateSelectionService candidateSelectionService;
     private final AssignmentShortageCalculator shortageCalculator;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void selectAdditionalCandidates(Long projectId) {
 
@@ -60,13 +63,18 @@ public class SelectAdditionalAssignmentCandidates {
                     continue;
                 }
 
-                assignmentRepository.save(
+                SquadAssignment saved = assignmentRepository.save(
                         SquadAssignment.propose(
                                 projectId,
                                 userId,
                                 candidate.getFitnessScore()
                         )
                 );
+                eventPublisher.publishEvent(new ProjectTempAssignmentEvent(
+                        projectId,
+                        project.getName(),
+                        saved.getUserId()
+                ));
             }
         }
     }
