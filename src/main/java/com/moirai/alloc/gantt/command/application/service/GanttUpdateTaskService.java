@@ -10,10 +10,12 @@ import com.moirai.alloc.gantt.command.domain.entity.TaskUpdateLog;
 import com.moirai.alloc.gantt.command.domain.repository.MilestoneRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskUpdateLogRepository;
+import com.moirai.alloc.gantt.command.event.TaskAssigneeAssignedEvent;
 import com.moirai.alloc.gantt.common.exception.GanttException;
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class GanttUpdateTaskService {
     private final TaskRepository taskRepository;
     private final TaskQueryMapper taskQueryMapper;
     private final TaskUpdateLogRepository taskUpdateLogRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public GanttUpdateTaskService(ProjectInfoPort projectInfoPort,
                                   ProjectMembershipPort projectMembershipPort,
@@ -37,7 +40,8 @@ public class GanttUpdateTaskService {
                                   MilestoneRepository milestoneRepository,
                                   TaskRepository taskRepository,
                                   TaskQueryMapper taskQueryMapper,
-                                  TaskUpdateLogRepository taskUpdateLogRepository) {
+                                  TaskUpdateLogRepository taskUpdateLogRepository,
+                                  ApplicationEventPublisher eventPublisher) {
         this.projectInfoPort = projectInfoPort;
         this.projectMembershipPort = projectMembershipPort;
         this.authenticatedUserProvider = authenticatedUserProvider;
@@ -45,6 +49,7 @@ public class GanttUpdateTaskService {
         this.taskRepository = taskRepository;
         this.taskQueryMapper = taskQueryMapper;
         this.taskUpdateLogRepository = taskUpdateLogRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -115,7 +120,12 @@ public class GanttUpdateTaskService {
             syncMilestoneCompletion(previousMilestoneId, targetMilestone.getMilestoneId());
         }
         if (!Objects.equals(previousAssigneeId, assigneeId)) {
-            //notifyTaskAssignee(projectId, task.getTaskId(), assigneeId, task.getTaskName());
+            eventPublisher.publishEvent(new TaskAssigneeAssignedEvent(
+                    projectId,
+                    task.getTaskId(),
+                    assigneeId,
+                    task.getTaskName()
+            ));
         }
     }
 
@@ -222,4 +232,5 @@ public class GanttUpdateTaskService {
         }
         return requestValue;
     }
+
 }
