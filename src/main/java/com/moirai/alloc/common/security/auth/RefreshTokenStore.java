@@ -22,7 +22,7 @@ public class RefreshTokenStore {
     public void save(String userId, String refreshToken, long ttlSeconds) {
         String key = refreshKey(userId);
         redisTemplate.opsForValue().set(key, refreshToken, ttlSeconds, TimeUnit.SECONDS);
-        log.info("Redis 저장 완료 → {}, token={}", key, refreshToken);
+        log.info("Redis 저장 완료 → {}", key);
     }
 
     // 조회
