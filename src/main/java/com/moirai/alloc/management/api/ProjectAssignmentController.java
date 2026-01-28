@@ -3,6 +3,7 @@ package com.moirai.alloc.management.api;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
+import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
 import com.moirai.alloc.management.query.dto.selectedWorker.AssignedMemberDTO;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentManagementPageView;
@@ -34,12 +35,26 @@ public class ProjectAssignmentController {
 
     @GetMapping("/assign")
     public AssignmentCandidatePageView getAssignmentCandidatePage(
-            @PathVariable Long projectId
+            @PathVariable Long projectId,
+            @RequestParam(required = false) Integer skill,
+            @RequestParam(required = false) Integer experience,
+            @RequestParam(required = false) Integer availability
     ) {
-        return getAssignmentCandidates.getAssignmentCandidates(projectId);
+        CandidateScoreFilter filter =
+                (skill == null && experience == null && availability == null)
+                        ? null
+                        : new CandidateScoreFilter(
+                        skill != null ? skill : 100,
+                        experience != null ? experience : 100,
+                        availability != null ? availability : 100
+                );
+
+        return getAssignmentCandidates
+                .getAssignmentCandidates(projectId, filter);
     }
 
-//    프로젝트 인력 배치 관리 화면
+
+    //    프로젝트 인력 배치 관리 화면
 //    선발된 인원 목록
 //    응답 상태 요약
 //    직군별 부족 인원 현황

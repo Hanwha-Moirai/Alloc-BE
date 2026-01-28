@@ -10,22 +10,17 @@ public class CandidateScore {
     private final int skillScore;
     private final int experienceScore;
     private final int availabilityScore;
-    private final int roleScore;
 
-    private final int totalScore;
     @Builder
     private CandidateScore(Long userId,
                            int skillScore,
                            int experienceScore,
-                           int availabilityScore,
-                           int roleScore) {
+                           int availabilityScore) {
         this.userId = userId;
         this.skillScore = skillScore;
         this.experienceScore = experienceScore;
         this.availabilityScore = availabilityScore;
-        this.roleScore = roleScore;
-        this.totalScore =
-                skillScore + experienceScore + availabilityScore + roleScore;
+
     }
 }
 //도메인 내부 계산 결과 객체 (Value Object)
