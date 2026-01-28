@@ -31,6 +31,7 @@ public class PersonDocument {
     private Integer activeProjectCount;
     private Integer seniorityLevelLevel;
     private Integer jobGradeLevel;
+    private String experienceDomainText;
 
     private String profileSummary; // 직원 한 문자 설명, experienceDomainText의 놓친 것 커버 (낮은 가중치)
 

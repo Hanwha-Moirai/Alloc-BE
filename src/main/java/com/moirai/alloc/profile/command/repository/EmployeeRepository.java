@@ -31,16 +31,21 @@ public interface EmployeeRepository extends JpaRepository<Employee,Long> {
 
     // 인덱싱용 기본
     @Query("""
-    select e
-    from Employee e
-    join fetch e.user u
-    join fetch e.job j
-    join fetch e.department d
-    join fetch e.titleStandard ts
-    where e.userId = :employeeId
+select distinct e
+from Employee e
+join fetch e.user u
+join fetch e.job j
+join fetch e.department d
+join fetch e.titleStandard ts
+left join fetch e.assignments a
+left join fetch a.project p
+where e.userId = :employeeId
 """)
     Optional<Employee> findByIdForIndexing(
             @Param("employeeId") Long employeeId
     );
+
+
+
 
 }

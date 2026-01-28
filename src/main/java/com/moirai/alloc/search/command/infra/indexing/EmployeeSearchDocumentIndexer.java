@@ -73,27 +73,47 @@ public class EmployeeSearchDocumentIndexer {
                 .profileSummary(
                         ProfileSummaryBuilder.build(employee, techSkills)
                 )
+                .experienceDomainText(
+                        buildExperienceText(employee)
+                )
                 .build();
 
         save(document);
     }
+    private String buildExperienceText(Employee employee) {
+        if (employee.getAssignments() == null) {
+            return "";
+        }
+
+        return employee.getAssignments().stream()
+                .filter(a -> a.getProject() != null)
+                .map(a -> {
+                    String name = a.getProject().getName();
+                    String desc = a.getProject().getDescription();
+                    return (name != null ? name : "") + " " +
+                            (desc != null ? desc : "");
+                })
+                .collect(Collectors.joining(" "));
+    }
+
 
     private void save(PersonDocument document) {
         try {
             IndexRequest request = new IndexRequest("people_index")
                     .id(document.getPersonId().toString())
                     .source(
-                            Map.of(
-                                    "personId", document.getPersonId(),
-                                    "name", document.getName(),
-                                    "jobTitle", document.getJobTitle(),
-                                    "department", document.getDepartment(),
-                                    "seniorityLevelLevel", document.getSeniorityLevelLevel(),
-                                    "jobGradeLevel", document.getJobGradeLevel(),
-                                    "techSkills", document.getTechSkills(),
-                                    "techSkillNumericLevels", document.getTechSkillNumericLevels(),
-                                    "activeProjectCount", document.getActiveProjectCount(),
-                                    "profileSummary", document.getProfileSummary()
+                            Map.ofEntries(
+                                    Map.entry("personId", document.getPersonId()),
+                                    Map.entry("name", document.getName()),
+                                    Map.entry("jobTitle", document.getJobTitle()),
+                                    Map.entry("department", document.getDepartment()),
+                                    Map.entry("seniorityLevelLevel", document.getSeniorityLevelLevel()),
+                                    Map.entry("jobGradeLevel", document.getJobGradeLevel()),
+                                    Map.entry("techSkills", document.getTechSkills()),
+                                    Map.entry("techSkillNumericLevels", document.getTechSkillNumericLevels()),
+                                    Map.entry("activeProjectCount", document.getActiveProjectCount()),
+                                    Map.entry("profileSummary", document.getProfileSummary()),
+                                    Map.entry("experienceDomainText", document.getExperienceDomainText())
                             ),
                             XContentType.JSON
                     );

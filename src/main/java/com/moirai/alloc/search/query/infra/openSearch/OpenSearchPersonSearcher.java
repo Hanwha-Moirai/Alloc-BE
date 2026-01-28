@@ -1,7 +1,9 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
+import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
+import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 import lombok.RequiredArgsConstructor;
 import org.opensearch.action.search.SearchRequest;
@@ -40,8 +42,10 @@ public class OpenSearchPersonSearcher {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
         applyFreeText(intent, boolQuery);
-        applyProjectCount(intent, boolQuery);
+        applyJobRole(intent, boolQuery);
+        applyExperienceDomain(intent, boolQuery);
 
+        applyProjectCount(intent, boolQuery);
         applySeniorityRange(intent, boolQuery);
         applyJobGradeRange(intent, boolQuery);
         applySkillConditions(intent, boolQuery);
@@ -54,6 +58,47 @@ public class OpenSearchPersonSearcher {
         // open search 호출
         return executeSearch(source);
     }
+    private List<String> resolveJobRoleKeywords(JobRole role) {
+        return switch (role) {
+            case BACKEND -> List.of("백엔드", "서버", "backend");
+            case INFRA -> List.of("인프라", "devops", "infra");
+            case FRONTEND -> List.of("프론트", "frontend");
+            case DATA -> List.of("데이터", "data");
+            case ML -> List.of("머신러닝", "ml", "ai");
+            case MOBILE -> List.of("모바일", "android", "ios");
+            default -> List.of();
+        };
+    }
+    private void applyJobRole(SearchIntent intent, BoolQueryBuilder bool) {
+        if (intent.getJobRole() == null) return;
+
+        BoolQueryBuilder roleQuery = QueryBuilders.boolQuery();
+
+        for (String keyword : resolveJobRoleKeywords(intent.getJobRole())) {
+            roleQuery.should(
+                    QueryBuilders.matchQuery("jobTitle", keyword).boost(3.0f)
+            );
+            roleQuery.should(
+                    QueryBuilders.matchQuery("profileSummary", keyword).boost(2.0f)
+            );
+        }
+
+        bool.must(roleQuery);
+    }
+
+    private void applyExperienceDomain(SearchIntent intent, BoolQueryBuilder bool) {
+        if (intent.getExperienceDomain() == null) return;
+
+        String keyword = intent.getExperienceDomain().name().toLowerCase();
+
+        bool.must(
+                QueryBuilders.matchQuery(
+                        "experienceDomainText",
+                        keyword
+                ).boost(2.5f)
+        );
+    }
+
 
     private void applyFreeText(SearchIntent intent, BoolQueryBuilder bool) {
         // 자유 자연어 검색, 동의어 없어도 동작
@@ -217,6 +262,9 @@ public class OpenSearchPersonSearcher {
                 )
                 .techSkills(
                         parseTechSkills(source)
+                )
+                .experienceDomainText(
+                        (String) source.get("experienceDomainText")
                 )
                 .build();
     }
