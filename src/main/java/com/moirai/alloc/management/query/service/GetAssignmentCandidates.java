@@ -129,6 +129,7 @@ public class GetAssignmentCandidates {
 // 파라미터 조정 가중치 (UI 슬라이더 반영)
         ScoreWeight adjustedWeight = scoreWeightAdjuster.adjust(baseWeight, filter);
 
+        Map<Long, Integer> weightedScoreMap = new HashMap<>();
 
         List<AssignmentCandidateItemDTO> candidates =
                 recommended.getAssignments().stream()
@@ -144,16 +145,14 @@ public class GetAssignmentCandidates {
                                             ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
                                             : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
 
-                            // 원점수 계산
-                            CandidateScore raw =
+                            CandidateScore rawScore =
                                     candidateScoringService.score(project, e);
 
-                            // 정렬용 가중 점수 계산
                             int weightedScore =
-                                    weightPolicy.apply(raw, adjustedWeight);
+                                    weightPolicy.apply(rawScore, adjustedWeight);
 
+                            weightedScoreMap.put(u.getUserId(), weightedScore);
 
-                            // DTO에는 원점수만 담는다
                             return new AssignmentCandidateItemDTO(
                                     u.getUserId(),
                                     u.getUserName(),
@@ -161,25 +160,18 @@ public class GetAssignmentCandidates {
                                     resolveMainSkill(e),
                                     e.getTitleStandard().getMonthlyCost(),
                                     workStatus,
-                                    raw.getSkillScore(),
-                                    raw.getExperienceScore(),
-                                    raw.getAvailabilityScore(),
+                                    rawScore.getSkillScore(),
+                                    rawScore.getExperienceScore(),
+                                    rawScore.getAvailabilityScore(),
                                     false
                             );
-
                         })
-                        // 정렬은 weightedScore 기준
-                        .sorted(Comparator
-                                .comparingInt(
-                                        dto -> weightPolicy.apply(
-                                                candidateScoringService.score(
-                                                        project,
-                                                        employeeMap.get(dto.getUserId())
-                                                ),
-                                                adjustedWeight
-                                        )
-                                )
-                                .reversed()
+                        .filter(Objects::nonNull)
+                        .sorted(
+                                Comparator.comparingInt(
+                                        (AssignmentCandidateItemDTO dto) ->
+                                                weightedScoreMap.getOrDefault(dto.getUserId(), 0)
+                                ).reversed()
                         )
                         .toList();
 
