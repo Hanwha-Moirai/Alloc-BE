@@ -146,7 +146,7 @@
   - `taskName`: String
   - `assigneeName`: String
   - `taskCategory`: `DEVELOPMENT | TESTING | BUGFIXING | DISTRIBUTION`
-  - `dueDate`: `YYYY-MM-DD`
+  - `delayedDates`: Number
   - `delayReason`: String | null
 - `nextWeekTasks`: List
   - `taskId`: Long
