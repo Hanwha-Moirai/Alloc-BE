@@ -1,24 +1,18 @@
 package com.moirai.alloc.gantt.command.application;
 
-import com.moirai.alloc.gantt.command.application.dto.request.CompleteTaskRequest;
+import com.moirai.alloc.gantt.command.application.dto.request.CreateMilestoneRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
+import com.moirai.alloc.gantt.command.domain.repository.MilestoneRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskRepository;
 import com.moirai.alloc.gantt.command.domain.repository.TaskUpdateLogRepository;
 import com.moirai.alloc.gantt.common.exception.GanttException;
-import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 
@@ -34,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class GanttCommandServiceTest {
 
     private static final Long PROJECT_ID = 99001L;
-    private static final Long USER_ID = 99001L;
     private static final Long ASSIGNEE_ID = 99002L;
     private static final Long MILESTONE_ID = 99001L;
 
@@ -43,6 +36,9 @@ class GanttCommandServiceTest {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private MilestoneRepository milestoneRepository;
 
     @Autowired
     private TaskUpdateLogRepository taskUpdateLogRepository;
@@ -71,13 +67,86 @@ class GanttCommandServiceTest {
     }
 
     @Test
-    @DisplayName("태스크 상태 변경 권한이 없습니다.")
-    void completeTask_whenAlreadyDone_throwsConflict() {
+    @DisplayName("태스크 삭제 시 삭제 플래그가 설정된다.")
+    void deleteTask_marksDeleted() {
+        ganttCommandService.deleteTask(PROJECT_ID, 99001L);
+
+        Task task = taskRepository.findById(99001L).orElseThrow();
+        assertThat(task.getIsDeleted()).isTrue();
+    }
+
+    @Test
+    @DisplayName("이미 삭제된 태스크는 삭제할 수 없다.")
+    void deleteTask_whenAlreadyDeleted_throwsNotFound() {
+        ganttCommandService.deleteTask(PROJECT_ID, 99001L);
+
         GanttException exception = assertThrows(
                 GanttException.class,
-                () -> ganttCommandService.completeTask(PROJECT_ID, 99002L, new CompleteTaskRequest("done"))
+                () -> ganttCommandService.deleteTask(PROJECT_ID, 99001L)
         );
-        assertThat(exception.getCode()).isEqualTo("FORBIDDEN");
+
+        assertThat(exception.getCode()).isEqualTo("NOT_FOUND");
+    }
+
+    @Test
+    @DisplayName("마일스톤 생성에 성공한다.")
+    void createMilestone_succeeds() {
+        Long milestoneId = ganttCommandService.createMilestone(PROJECT_ID, new CreateMilestoneRequest(
+                "NEW_MILESTONE_99001",
+                LocalDate.of(2025, 1, 10),
+                LocalDate.of(2025, 1, 12),
+                0L
+        ));
+
+        assertThat(milestoneId).isNotNull();
+        assertThat(milestoneRepository.findById(milestoneId)).isPresent();
+    }
+
+    @Test
+    @DisplayName("마일스톤 수정이 성공한다.")
+    void updateMilestone_succeeds() {
+        ganttCommandService.updateMilestone(PROJECT_ID, MILESTONE_ID, new com.moirai.alloc.gantt.command.application.dto.request.UpdateMilestoneRequest(
+                "UPDATED_MILESTONE_99001",
+                null,
+                null,
+                80L
+        ));
+
+        var milestone = milestoneRepository.findById(MILESTONE_ID).orElseThrow();
+        assertThat(milestone.getMilestoneName()).isEqualTo("UPDATED_MILESTONE_99001");
+        assertThat(milestone.getAchievementRate()).isEqualTo(80L);
+    }
+
+    @Test
+    @DisplayName("하위 태스크 기간을 포함하지 않는 마일스톤 수정은 거부된다.")
+    void updateMilestone_whenScheduleInvalid_throwsBadRequest() {
+        GanttException exception = assertThrows(
+                GanttException.class,
+                () -> ganttCommandService.updateMilestone(PROJECT_ID, MILESTONE_ID, new com.moirai.alloc.gantt.command.application.dto.request.UpdateMilestoneRequest(
+                        null,
+                        LocalDate.of(2025, 1, 4),
+                        LocalDate.of(2025, 1, 10),
+                        null
+                ))
+        );
+
+        assertThat(exception.getCode()).isEqualTo("BAD_REQUEST");
+    }
+
+    @Test
+    @DisplayName("하위 태스크가 없는 마일스톤은 삭제할 수 있다.")
+    void deleteMilestone_whenNoTasks_succeeds() {
+        Long milestoneId = ganttCommandService.createMilestone(PROJECT_ID, new CreateMilestoneRequest(
+                "EMPTY_MILESTONE_99001",
+                LocalDate.of(2025, 1, 20),
+                LocalDate.of(2025, 1, 25),
+                0L
+        ));
+
+        ganttCommandService.deleteMilestone(PROJECT_ID, milestoneId);
+
+        var milestone = milestoneRepository.findById(milestoneId).orElseThrow();
+        assertThat(milestone.getIsDeleted()).isTrue();
     }
 
     @Test
@@ -91,12 +160,4 @@ class GanttCommandServiceTest {
         assertThat(exception.getCode()).isEqualTo("CONFLICT");
     }
 
-    @TestConfiguration
-    static class TestAuthConfig {
-        @Bean
-        @Primary
-        AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> USER_ID;
-        }
-    }
 }

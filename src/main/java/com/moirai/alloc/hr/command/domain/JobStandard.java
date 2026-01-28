@@ -23,4 +23,8 @@ public class JobStandard extends BaseTimeEntity {
         this.jobName = jobName;
     }
 
+    public void updateJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
 }

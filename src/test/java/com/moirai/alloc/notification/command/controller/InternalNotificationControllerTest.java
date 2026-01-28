@@ -1,8 +1,8 @@
 package com.moirai.alloc.notification.command.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,10 +23,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import jakarta.annotation.Resource;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -85,24 +85,23 @@ class InternalNotificationControllerTest {
                             .content(body))
                     .andExpect(status().isCreated())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    // ApiResponse wrapper의 필드명은 프로젝트마다 다를 수 있어, 최소 계약(핵심 필드 존재)만 문자열로 확인
                     .andExpect(content().string(containsString("createdCount")));
 
-            ArgumentCaptor<InternalNotificationCreateRequest> captor =
-                    ArgumentCaptor.forClass(InternalNotificationCreateRequest.class);
+            ArgumentCaptor<InternalNotificationCommand> captor =
+                    ArgumentCaptor.forClass(InternalNotificationCommand.class);
             verify(commandService, times(1)).createInternalNotifications(captor.capture());
 
-            InternalNotificationCreateRequest req = captor.getValue();
-            assertThat(req.getTemplateType().name()).isEqualTo("TASK_ASSIGN");
-            assertThat(req.getTargetUserIds()).containsExactly(1L, 2L);
-            assertThat(req.getVariables().get("taskName")).isEqualTo("API 구현");
-            assertThat(req.getTargetType().name()).isEqualTo("TASK");
-            assertThat(req.getTargetId()).isEqualTo(10L);
-            assertThat(req.getLinkUrl()).isEqualTo("/tasks/10");
+            InternalNotificationCommand cmd = captor.getValue();
+            assertThat(cmd.templateType().name()).isEqualTo("TASK_ASSIGN");
+            assertThat(cmd.targetUserIds()).containsExactly(1L, 2L);
+            assertThat(cmd.variables().get("taskName")).isEqualTo("API 구현");
+            assertThat(cmd.targetType().name()).isEqualTo("TASK");
+            assertThat(cmd.targetId()).isEqualTo(10L);
+            assertThat(cmd.linkUrl()).isEqualTo("/tasks/10");
         }
 
         @Test
-        @DisplayName("400 BadRequest - Validation 실패(필수값 누락/빈 리스트)")
+        @DisplayName("400 BadRequest - Validation/도메인 불변식 실패(필수값 누락/빈 리스트 등)")
         @WithMockUser(authorities = "INTERNAL")
         void create_validation_400() throws Exception {
             String body = """
@@ -134,13 +133,13 @@ class InternalNotificationControllerTest {
         @WithMockUser(roles = "USER")
         void create_forbidden_403() throws Exception {
             String validBody = """
-        {
-          "templateType": "TASK_ASSIGN",
-          "targetUserIds": [1],
-          "targetType": "TASK",
-          "targetId": 10
-        }
-        """;
+                {
+                  "templateType": "TASK_ASSIGN",
+                  "targetUserIds": [1],
+                  "targetType": "TASK",
+                  "targetId": 10
+                }
+                """;
 
             mockMvc.perform(post("/api/internal/notifications")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -149,6 +148,5 @@ class InternalNotificationControllerTest {
 
             verify(commandService, never()).createInternalNotifications(any());
         }
-
     }
 }

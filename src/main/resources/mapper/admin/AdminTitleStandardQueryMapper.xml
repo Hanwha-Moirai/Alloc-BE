@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moirai.alloc.admin.query.mapper.AdminTitleStandardQueryMapper">
+
+    <sql id="Where">
+        WHERE 1=1
+        <if test="q != null and q != ''">
+            AND ts.title_name LIKE CONCAT('%', #{q}, '%')
+        </if>
+    </sql>
+
+    <select id="selectTitleStandard"
+            resultType="com.moirai.alloc.admin.query.dto.AdminTitleStandardListItem">
+        SELECT
+        ts.title_standard_id AS titleStandardId,
+        ts.title_name        AS titleName,
+        ts.monthly_cost      AS monthlyCost,
+        ts.updated_at        AS updatedAt
+        FROM title_standard ts
+        <include refid="Where"/>
+        ORDER BY ts.title_name ASC, ts.title_standard_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countTitleStandard" resultType="long">
+        SELECT COUNT(*)
+        FROM title_standard ts
+        <include refid="Where"/>
+    </select>
+
+</mapper>

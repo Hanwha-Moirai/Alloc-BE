@@ -1,11 +1,13 @@
 package com.moirai.alloc.notification.command.service;
 
 import com.moirai.alloc.notification.command.domain.entity.*;
-import com.moirai.alloc.notification.command.dto.request.InternalNotificationCreateRequest;
-import com.moirai.alloc.notification.command.dto.response.InternalNotificationCreateResponse;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCreateResponse;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmSendLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import org.junit.jupiter.api.*;
@@ -31,17 +33,11 @@ class NotificationCommandServiceTest {
     @Mock AlarmLogRepository alarmLogRepository;
     @Mock AlarmTemplateRepository alarmTemplateRepository;
     @Mock AlarmSendLogRepository alarmSendLogRepository;
-    @Mock
-    ApplicationEventPublisher eventPublisher;
+    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks NotificationCommandService service;
 
     private static final LocalDateTime FIXED_NOW = LocalDateTime.of(2026, 1, 16, 9, 0, 0);
-
-    @BeforeEach
-    void setUp() {
-        // 공통 셋업 없음
-    }
 
     // -------------------------------------------------------------------------
     // createInternalNotifications()
@@ -64,7 +60,7 @@ class NotificationCommandServiceTest {
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(AlarmTemplateType.TASK_ASSIGN))
                     .thenReturn(Optional.of(template));
 
-            InternalNotificationCreateRequest req = newRequest(
+            InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
                     List.of(101L, 102L),
                     Map.of("taskName", "API 구현"),
@@ -96,7 +92,7 @@ class NotificationCommandServiceTest {
                     });
 
             // when
-            InternalNotificationCreateResponse res = service.createInternalNotifications(req);
+            InternalNotificationCreateResponse res = service.createInternalNotifications(cmd);
 
             // then - response
             assertEquals(2, res.getCreatedCount());
@@ -125,7 +121,6 @@ class NotificationCommandServiceTest {
             List<AlarmSendLog> passedSendLogs = toList(sendLogCaptor.getValue());
             assertEquals(2, passedSendLogs.size());
 
-            // userId별로 1개씩 생성되는지 + status SUCCESS인지
             Map<Long, AlarmSendLog> byUser = new HashMap<>();
             for (AlarmSendLog s : passedSendLogs) byUser.put(s.getUserId(), s);
 
@@ -160,7 +155,7 @@ class NotificationCommandServiceTest {
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(any()))
                     .thenReturn(Optional.empty());
 
-            InternalNotificationCreateRequest req = newRequest(
+            InternalNotificationCommand cmd = newCommand(
                     AlarmTemplateType.TASK_ASSIGN,
                     List.of(1L),
                     Map.of("taskName", "X"),
@@ -171,7 +166,7 @@ class NotificationCommandServiceTest {
 
             // when
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                    () -> service.createInternalNotifications(req));
+                    () -> service.createInternalNotifications(cmd));
 
             // then
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -284,7 +279,7 @@ class NotificationCommandServiceTest {
     // -------------------------------------------------------------------------
     // helpers
     // -------------------------------------------------------------------------
-    private static InternalNotificationCreateRequest newRequest(
+    private static InternalNotificationCommand newCommand(
             AlarmTemplateType templateType,
             List<Long> targetUserIds,
             Map<String, String> variables,
@@ -292,14 +287,14 @@ class NotificationCommandServiceTest {
             Long targetId,
             String linkUrl
     ) {
-        InternalNotificationCreateRequest req = new InternalNotificationCreateRequest();
-        ReflectionTestUtils.setField(req, "templateType", templateType);
-        ReflectionTestUtils.setField(req, "targetUserIds", targetUserIds);
-        ReflectionTestUtils.setField(req, "variables", variables);
-        ReflectionTestUtils.setField(req, "targetType", targetType);
-        ReflectionTestUtils.setField(req, "targetId", targetId);
-        ReflectionTestUtils.setField(req, "linkUrl", linkUrl);
-        return req;
+        return InternalNotificationCommand.builder()
+                .templateType(templateType)
+                .targetUserIds(targetUserIds)
+                .variables(variables)
+                .targetType(targetType)
+                .targetId(targetId)
+                .linkUrl(linkUrl)
+                .build();
     }
 
     private static <T> List<T> toList(Iterable<T> it) {

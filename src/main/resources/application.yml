@@ -13,12 +13,23 @@ spring:
       host: localhost
       port: 6379
 
-  jpa:
-    hibernate:
-      ddl-auto: update
+  mail:
+    host: smtp.gmail.com
+    port: 587
+
     properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connection timeout: 5000
+          timeout: 5000
+          write timeout: 5000
+
+mail:
+  appName: ALLOC
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -32,3 +43,19 @@ notification:
       initial-delay-ms: 5000
       event-name: PING
       data: ok
+
+#ALB 헬스체크용
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

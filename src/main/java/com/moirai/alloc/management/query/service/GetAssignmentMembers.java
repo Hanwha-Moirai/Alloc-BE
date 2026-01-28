@@ -2,10 +2,14 @@ package com.moirai.alloc.management.query.service;
 
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
+import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
+import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
+import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.dto.candidateList.AssignmentCandidateItemDTO;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
+import com.moirai.alloc.project.command.domain.Project;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,9 @@ public class GetAssignmentMembers {
     private final SquadAssignmentRepository assignmentRepository;
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
+    private final CandidateScoringService candidateScoringService;
+    private final ProjectRepository projectRepository;
+
     private String resolveMainSkill(Employee employee) {
         return employee.getSkills().stream()
                 .max(Comparator.comparingInt(
@@ -36,6 +43,9 @@ public class GetAssignmentMembers {
     }
 
     public List<AssignmentCandidateItemDTO> getMembers(Long projectId) {
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
@@ -62,6 +72,8 @@ public class GetAssignmentMembers {
                                     ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
                                     : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
 
+                    CandidateScore rawScore = candidateScoringService.score(project, e);
+
                     return new AssignmentCandidateItemDTO(
                             u.getUserId(),
                             u.getUserName(),
@@ -69,10 +81,13 @@ public class GetAssignmentMembers {
                             resolveMainSkill(e),
                             e.getTitleStandard().getMonthlyCost(),
                             workStatus,
-                            a.getFitnessScore(),
+                            rawScore.getSkillScore(),
+                            rawScore.getExperienceScore(),
+                            rawScore.getAvailabilityScore(),
                             true // 요청된 인원은 항상 selected
                     );
                 })
                 .toList();
     }
+
 }

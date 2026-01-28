@@ -8,4 +8,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     boolean existsByMilestone_MilestoneId(Long milestoneId);
 
     boolean existsByMilestone_MilestoneIdAndIsDeletedFalse(Long milestoneId);
+
+    long countByMilestone_MilestoneIdAndIsDeletedFalse(Long milestoneId);
+
+    long countByMilestone_MilestoneIdAndIsDeletedFalseAndTaskStatus(Long milestoneId, Task.TaskStatus taskStatus);
 }

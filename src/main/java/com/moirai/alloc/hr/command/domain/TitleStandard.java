@@ -27,4 +27,12 @@ public class TitleStandard extends BaseTimeEntity {
         this.monthlyCost = monthlyCost;
     }
 
+    public void titleUpdate(String titleName, Integer monthlyCost) {
+        if (titleName == null || titleName.trim().isEmpty()) {
+            throw new IllegalArgumentException("직급 이름이 필요합니다.");
+        }
+        this.titleName = titleName.trim();
+        this.monthlyCost = monthlyCost;
+    }
+
 }

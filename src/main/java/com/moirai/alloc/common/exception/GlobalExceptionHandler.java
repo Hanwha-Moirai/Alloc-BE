@@ -2,6 +2,7 @@ package com.moirai.alloc.common.exception;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
  * - Validation / Security / NotFound / Conflict / Unknown을 명확히 분리
  * - ResponseStatusException은 status를 그대로 내려보냄(테스트 404->500 방지)
  */
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -121,8 +123,12 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnhandled(Exception ex, HttpServletRequest request) {
-        // 운영에서는 요청 식별 정보 포함해 로깅 권장(여기서는 코드만 제시)
-        // log.error("Unhandled exception. path={}", request.getRequestURI(), ex);
+        log.error("Unhandled exception. path={}, method={}, message={}",
+                request.getRequestURI(),
+                request.getMethod(),
+                ex.getMessage(),
+                ex
+        );
         return failure(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR.name(), "Unexpected error");
     }
 

@@ -23,8 +23,11 @@
         LEFT JOIN users u ON u.user_id = t.user_id
         WHERE m.project_id = #{projectId}
           AND t.is_deleted = false
-        <if test="assigneeId != null">
-            AND t.user_id = #{assigneeId}
+        <if test="assigneeNames != null and assigneeNames.size() > 0">
+            AND u.user_name IN
+            <foreach collection="assigneeNames" item="name" open="(" separator="," close=")">
+                #{name}
+            </foreach>
         </if>
         <if test="status != null">
             AND t.task_status = #{status}
@@ -34,6 +37,12 @@
         </if>
         <if test="endDate != null">
             AND t.end_date &lt;= #{endDate}
+        </if>
+        <if test="taskCategories != null and taskCategories.size() > 0">
+            AND t.task_category IN
+            <foreach collection="taskCategories" item="category" open="(" separator="," close=")">
+                #{category}
+            </foreach>
         </if>
         ORDER BY t.start_date ASC, t.task_id ASC
     </select>

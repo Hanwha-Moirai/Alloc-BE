@@ -1,7 +1,7 @@
 // src/test/java/com/moirai/alloc/notification/query/sse/NotificationSseEventHandlerTest.java
 package com.moirai.alloc.notification.query.sse;
 
-import com.moirai.alloc.notification.command.domain.entity.TargetType;
+import com.moirai.alloc.notification.common.contract.TargetType;
 import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;

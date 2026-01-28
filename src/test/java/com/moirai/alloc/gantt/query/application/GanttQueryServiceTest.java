@@ -1,6 +1,7 @@
 package com.moirai.alloc.gantt.query.application;
 
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
+import com.moirai.alloc.gantt.command.domain.entity.Task.TaskCategory;
 import com.moirai.alloc.gantt.query.dto.request.TaskSearchRequest;
 import com.moirai.alloc.gantt.query.dto.response.MilestoneResponse;
 import com.moirai.alloc.gantt.query.dto.response.TaskResponse;
@@ -40,7 +41,7 @@ class GanttQueryServiceTest {
     void findTasks_returnsProjectTasks() {
         List<TaskResponse> responses = ganttQueryService.findTasks(
                 PROJECT_ID,
-                new TaskSearchRequest(null, null, null)
+                new TaskSearchRequest(null, null, null, null, null)
         );
 
         assertThat(responses).isNotEmpty();
@@ -52,11 +53,45 @@ class GanttQueryServiceTest {
     void findTasks_returnsUserName() {
         List<TaskResponse> responses = ganttQueryService.findTasks(
                 PROJECT_ID,
-                new TaskSearchRequest(null, null, null)
+                new TaskSearchRequest(null, null, null, null, null)
         );
 
         assertThat(responses).hasSize(2);
         assertThat(responses.stream().allMatch(task -> "User Two".equals(task.userName()))).isTrue();
+    }
+
+    @Test
+    @DisplayName("태스크 유형 필터가 적용된다.")
+    void findTasks_filtersByCategory() {
+        List<TaskResponse> responses = ganttQueryService.findTasks(
+                PROJECT_ID,
+                new TaskSearchRequest(null, null, null, List.of(TaskCategory.TESTING), null)
+        );
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).taskId()).isEqualTo(99002L);
+    }
+
+    @Test
+    @DisplayName("담당자 이름 필터가 적용된다.")
+    void findTasks_filtersByAssigneeName() {
+        List<TaskResponse> responses = ganttQueryService.findTasks(
+                PROJECT_ID,
+                new TaskSearchRequest(null, null, null, null, List.of("User Two"))
+        );
+
+        assertThat(responses).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("담당자 이름이 없으면 전체 태스크가 조회된다.")
+    void findTasks_whenAssigneeMissing_returnsAll() {
+        List<TaskResponse> responses = ganttQueryService.findTasks(
+                PROJECT_ID,
+                new TaskSearchRequest(null, null, null, null, null)
+        );
+
+        assertThat(responses).hasSize(2);
     }
 
     @Test
@@ -102,7 +137,17 @@ class GanttQueryServiceTest {
         @Bean
         @Primary
         AuthenticatedUserProvider authenticatedUserProvider() {
-            return () -> USER_ID;
+            return new AuthenticatedUserProvider() {
+                @Override
+                public Long getCurrentUserId() {
+                    return USER_ID;
+                }
+
+                @Override
+                public String getCurrentUserRole() {
+                    return "USER";
+                }
+            };
         }
     }
 }
