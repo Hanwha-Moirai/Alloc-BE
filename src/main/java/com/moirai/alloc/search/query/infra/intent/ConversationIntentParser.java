@@ -1,4 +1,4 @@
-package com.moirai.alloc.search.query.infra.gpt.intent;
+package com.moirai.alloc.search.query.infra.intent;
 
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;

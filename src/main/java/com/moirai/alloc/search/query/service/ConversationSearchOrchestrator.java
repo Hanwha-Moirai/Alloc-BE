@@ -1,8 +1,8 @@
 package com.moirai.alloc.search.query.service;
 
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
-import com.moirai.alloc.search.query.infra.gpt.intent.ConversationContext;
-import com.moirai.alloc.search.query.infra.gpt.intent.ConversationIntentParser;
+import com.moirai.alloc.search.query.infra.intent.ConversationContext;
+import com.moirai.alloc.search.query.infra.intent.ConversationIntentParser;
 import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import com.moirai.alloc.search.query.presentation.dto.ConversationSearchResponse;
@@ -29,8 +29,12 @@ public class ConversationSearchOrchestrator {
 
         SearchIntent intent = intentParser.parse(conversationId, nl);
 
-        // 질문 가능 횟수 체크
-        if (context.getQuestionCount(conversationId) < MAX_QUESTION) {
+        // 질문 제한 여부 판단
+        boolean questionLimitReached =
+                context.getQuestionCount(conversationId) >= MAX_QUESTION;
+
+        // 질문 가능하면 다음 질문 시도
+        if (!questionLimitReached) {
             String q = nextQuestion(intent);
 
             if (q != null) {

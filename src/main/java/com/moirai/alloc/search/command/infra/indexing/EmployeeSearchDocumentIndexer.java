@@ -74,28 +74,18 @@ public class EmployeeSearchDocumentIndexer {
                         ProfileSummaryBuilder.build(employee, techSkills)
                 )
                 .experienceDomainText(
-                        buildExperienceText(employee)
+                        buildExperienceText(employee.getUserId())
                 )
                 .build();
 
         save(document);
     }
-    private String buildExperienceText(Employee employee) {
-        if (employee.getAssignments() == null) {
-            return "";
-        }
+    private String buildExperienceText(Long employeeId) {
+        List<String> titles =
+                squadAssignmentRepository.findExperiencedProjectTitles(employeeId);
 
-        return employee.getAssignments().stream()
-                .filter(a -> a.getProject() != null)
-                .map(a -> {
-                    String name = a.getProject().getName();
-                    String desc = a.getProject().getDescription();
-                    return (name != null ? name : "") + " " +
-                            (desc != null ? desc : "");
-                })
-                .collect(Collectors.joining(" "));
+        return String.join(" ", titles);
     }
-
 
     private void save(PersonDocument document) {
         try {
