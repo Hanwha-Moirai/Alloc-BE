@@ -44,6 +44,15 @@ notification:
       event-name: PING
       data: ok
 
+auth:
+  cookie:
+    access-token-name: accessToken
+    refresh-token-name: refreshToken
+    csrf-token-name: csrfToken
+    same-site: Lax
+    secure: false
+    path: /
+
 #ALB 헬스체크용
 management:
   endpoints:
