@@ -18,7 +18,7 @@ public class CandidateScoringService {
     private final AvailabilityFitCalculator availabilityFit;
     private final RoleFitCalculator roleFit;
 
-    public CandidateScore score(Project project, Employee employee) {
+    public Project score(Project project, Employee employee) {
 
         return CandidateScore.builder()
                 .userId(employee.getUserId())

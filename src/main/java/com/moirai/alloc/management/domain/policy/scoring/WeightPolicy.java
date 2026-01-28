@@ -35,6 +35,13 @@ public class WeightPolicy {
 
         return (int) Math.round(weightedTotal);
     }
+    public ScoreWeight getBaseWeight(Project project) {
+        return WEIGHTS.getOrDefault(
+                project.getProjectType(),
+                WEIGHTS.get(Project.ProjectType.NEW)
+        );
+    }
+
 }
 //CandidateScore + ProjectType → 가중치 적용된 최종 점수
 // 프로젝트 타입별 해석 로직

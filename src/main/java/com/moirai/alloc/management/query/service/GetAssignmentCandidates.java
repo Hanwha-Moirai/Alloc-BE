@@ -6,12 +6,18 @@ import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
+import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
+import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
+import com.moirai.alloc.management.domain.policy.scoring.ScoreWeight;
+import com.moirai.alloc.management.domain.policy.scoring.WeightPolicy;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
 import com.moirai.alloc.management.query.dto.candidateList.AssignmentCandidateItemDTO;
+import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
 import com.moirai.alloc.management.query.dto.candidateList.JobAssignmentSummaryDTO;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
+import com.moirai.alloc.management.query.policy.ScoreWeightAdjuster;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.project.command.domain.Project;
@@ -42,8 +48,11 @@ public class GetAssignmentCandidates {
     private final EmployeeRepository employeeRepository;
     private final JobStandardRepository jobStandardRepository;
     private final CandidateSelectionService candidateSelectionService;
+    private final CandidateScoringService candidateScoringService;
+    private final WeightPolicy weightPolicy;
+    private final ScoreWeightAdjuster scoreWeightAdjuster;
 
-    public AssignmentCandidatePageView getAssignmentCandidates(Long projectId) {
+    public AssignmentCandidatePageView getAssignmentCandidates(Long projectId, CandidateScoreFilter filter) {
 
         // 프로젝트 조회
         Project project = projectRepository.findById(projectId)
@@ -118,6 +127,14 @@ public class GetAssignmentCandidates {
         Set<Long> workingUserIds =
                 assignmentRepository.findUserIdsByFinalDecision(FinalDecision.ASSIGNED);
 
+        //가중치 파라미터 적용
+        // 기본 가중치 (프로젝트 타입 기준)
+        ScoreWeight baseWeight = weightPolicy.getBaseWeight(project);
+
+// 파라미터 조정 가중치 (UI 슬라이더 반영)
+        CandidateScore adjustedWeight = scoreWeightAdjuster.adjust(baseWeight, filter);
+
+
        //선택된 인원 DTO (selected = true)
         List<AssignmentCandidateItemDTO> selectedCandidates =
                 assignments.stream()
@@ -163,6 +180,11 @@ public class GetAssignmentCandidates {
                                             ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
                                             : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
 
+
+                            // 파라미터 반영된 점수 재계산 (추천 후보만)
+                            int adjustedScore =
+                                    weightPolicy.apply(candidateScoringService.score(project, e), adjustedWeight);
+
                             return new AssignmentCandidateItemDTO(
                                     u.getUserId(),
                                     u.getUserName(),
@@ -170,7 +192,7 @@ public class GetAssignmentCandidates {
                                     resolveMainSkill(e),
                                     e.getTitleStandard().getMonthlyCost(),
                                     workStatus,
-                                    c.getFitnessScore(),
+                                    adjustedScore,
                                     false // 아직 미선택
                             );
                         })
