@@ -14,7 +14,11 @@ public class AssignmentCandidateItemDTO {
 
     private Integer monthlyWage;
     private WorkStatus workStatus;
-    private Integer fitnessScore;
+
+    private int skillScore;
+    private int experienceScore;
+    private int availabilityScore;
+
     private boolean selected;
 
     public enum WorkStatus {
