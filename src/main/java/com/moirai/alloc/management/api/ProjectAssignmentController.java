@@ -38,17 +38,15 @@ public class ProjectAssignmentController {
             @PathVariable Long projectId,
             @RequestParam(required = false) Integer skill,
             @RequestParam(required = false) Integer experience,
-            @RequestParam(required = false) Integer availability,
-            @RequestParam(required = false) Integer role
+            @RequestParam(required = false) Integer availability
     ) {
         CandidateScoreFilter filter =
-                (skill == null && experience == null && availability == null && role == null)
+                (skill == null && experience == null && availability == null)
                         ? null
                         : new CandidateScoreFilter(
                         skill != null ? skill : 100,
                         experience != null ? experience : 100,
-                        availability != null ? availability : 100,
-                        role != null ? role : 100
+                        availability != null ? availability : 100
                 );
 
         return getAssignmentCandidates
