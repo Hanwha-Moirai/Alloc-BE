@@ -10,5 +10,4 @@ public class CandidateScoreFilter {
     private final int skill;
     private final int experience;
     private final int availability;
-    private final int role;
 }

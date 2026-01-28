@@ -19,8 +19,7 @@ public class ScoreWeightAdjuster {
         return new ScoreWeight(
                 base.getSkill() * (filter.getSkill() / 100.0),
                 base.getExperience() * (filter.getExperience() / 100.0),
-                base.getAvailability() * (filter.getAvailability() / 100.0),
-                base.getRole() * (filter.getRole() / 100.0)
+                base.getAvailability() * (filter.getAvailability() / 100.0)
         );
     }
 }

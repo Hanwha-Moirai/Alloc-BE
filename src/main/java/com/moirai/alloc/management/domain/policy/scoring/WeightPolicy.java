@@ -10,13 +10,13 @@ public class WeightPolicy {
     private static final Map<Project.ProjectType, ScoreWeight> WEIGHTS =
             Map.of(
                     Project.ProjectType.NEW,
-                    new ScoreWeight(0.45, 0.30, 0.15, 0.10),
+                    new ScoreWeight(0.45, 0.30, 0.15),
 
                     Project.ProjectType.OPERATION,
-                    new ScoreWeight(0.30, 0.40, 0.20, 0.10),
+                    new ScoreWeight(0.30, 0.40, 0.20),
 
                     Project.ProjectType.MAINTENANCE,
-                    new ScoreWeight(0.25, 0.30, 0.30, 0.15)
+                    new ScoreWeight(0.25, 0.30, 0.30)
             );
 
     public int apply(Project project, CandidateScore score) {
@@ -30,8 +30,7 @@ public class WeightPolicy {
         double weightedTotal =
                 score.getSkillScore() * weight.getSkill()
                         + score.getExperienceScore() * weight.getExperience()
-                        + score.getAvailabilityScore() * weight.getAvailability()
-                        + score.getRoleScore() * weight.getRole();
+                        + score.getAvailabilityScore() * weight.getAvailability();
 
         return (int) Math.round(weightedTotal);
     }
@@ -41,6 +40,16 @@ public class WeightPolicy {
                 WEIGHTS.get(Project.ProjectType.NEW)
         );
     }
+    public int apply(CandidateScore score, ScoreWeight weight) {
+
+        double weightedTotal =
+                score.getSkillScore() * weight.getSkill()
+                        + score.getExperienceScore() * weight.getExperience()
+                        + score.getAvailabilityScore() * weight.getAvailability();
+
+        return (int) Math.round(weightedTotal);
+    }
+
 
 }
 //CandidateScore + ProjectType → 가중치 적용된 최종 점수

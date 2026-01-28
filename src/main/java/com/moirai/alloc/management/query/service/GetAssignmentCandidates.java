@@ -75,10 +75,6 @@ public class GetAssignmentCandidates {
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
 
-        Set<Long> selectedUserIds =
-                assignments.stream()
-                        .map(SquadAssignment::getUserId)
-                        .collect(Collectors.toSet());
 
         // employee 조회 범위 결정; 선발된 인원 + 추천 후보
         Set<Long> recommendedUserIds =
@@ -88,7 +84,6 @@ public class GetAssignmentCandidates {
                         .collect(Collectors.toSet());
 
         Set<Long> allUserIds = new HashSet<>();
-        allUserIds.addAll(selectedUserIds);
         allUserIds.addAll(recommendedUserIds);
 
         Map<Long, Employee> employeeMap =
@@ -132,43 +127,12 @@ public class GetAssignmentCandidates {
         ScoreWeight baseWeight = weightPolicy.getBaseWeight(project);
 
 // 파라미터 조정 가중치 (UI 슬라이더 반영)
-        CandidateScore adjustedWeight = scoreWeightAdjuster.adjust(baseWeight, filter);
+        ScoreWeight adjustedWeight = scoreWeightAdjuster.adjust(baseWeight, filter);
 
 
-       //선택된 인원 DTO (selected = true)
-        List<AssignmentCandidateItemDTO> selectedCandidates =
-                assignments.stream()
-                        .map(a -> {
-                            Employee e = employeeMap.get(a.getUserId());
-                            if (e == null) return null;
-
-                            User u = e.getUser();
-
-                            AssignmentCandidateItemDTO.WorkStatus workStatus =
-                                    workingUserIds.contains(u.getUserId())
-                                            ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
-                                            : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
-
-                            return new AssignmentCandidateItemDTO(
-                                    u.getUserId(),
-                                    u.getUserName(),
-                                    e.getJob().getJobName(),
-                                    resolveMainSkill(e),
-                                    e.getTitleStandard().getMonthlyCost(),
-                                    workStatus,
-                                    a.getFitnessScore(),
-                                    true //  선택됨
-                            );
-                        })
-                        .filter(Objects::nonNull)
-                        .toList();
-
-
-        // 추천 후보 DTO 생성 (selected = false)  - 이미 선택된 인원은 중복 제거
-        List<AssignmentCandidateItemDTO> recommendedCandidates =
+        List<AssignmentCandidateItemDTO> candidates =
                 recommended.getAssignments().stream()
                         .flatMap(a -> a.getCandidates().stream())
-                        .filter(c -> !selectedUserIds.contains(c.getUserId())) // 중복 제거
                         .map(c -> {
                             Employee e = employeeMap.get(c.getUserId());
                             if (e == null) return null;
@@ -180,11 +144,16 @@ public class GetAssignmentCandidates {
                                             ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
                                             : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
 
+                            // 원점수 계산
+                            CandidateScore raw =
+                                    candidateScoringService.score(project, e);
 
-                            // 파라미터 반영된 점수 재계산 (추천 후보만)
-                            int adjustedScore =
-                                    weightPolicy.apply(candidateScoringService.score(project, e), adjustedWeight);
+                            // 정렬용 가중 점수 계산
+                            int weightedScore =
+                                    weightPolicy.apply(raw, adjustedWeight);
 
+
+                            // DTO에는 원점수만 담는다
                             return new AssignmentCandidateItemDTO(
                                     u.getUserId(),
                                     u.getUserName(),
@@ -192,19 +161,27 @@ public class GetAssignmentCandidates {
                                     resolveMainSkill(e),
                                     e.getTitleStandard().getMonthlyCost(),
                                     workStatus,
-                                    adjustedScore,
-                                    false // 아직 미선택
+                                    raw.getSkillScore(),
+                                    raw.getExperienceScore(),
+                                    raw.getAvailabilityScore(),
+                                    false
                             );
-                        })
-                        .filter(Objects::nonNull)
-                        .toList();
 
-        //최종 후보 리스트 병합
-        List<AssignmentCandidateItemDTO> candidates =
-                Stream.concat(
-                        selectedCandidates.stream(),
-                        recommendedCandidates.stream()
-                ).toList();
+                        })
+                        // 정렬은 weightedScore 기준
+                        .sorted(Comparator
+                                .comparingInt(
+                                        dto -> weightPolicy.apply(
+                                                candidateScoringService.score(
+                                                        project,
+                                                        employeeMap.get(dto.getUserId())
+                                                ),
+                                                adjustedWeight
+                                        )
+                                )
+                                .reversed()
+                        )
+                        .toList();
 
         return new AssignmentCandidatePageView(jobSummaries, candidates);
     }

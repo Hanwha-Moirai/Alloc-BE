@@ -59,11 +59,11 @@ public class CandidateSelectionService {
                                 CandidateScore raw =
                                         candidateScoringService.score(project, emp);
                                 //가중치 적용
-                                int score =
+                                int weightedScore =
                                         weightPolicy.apply(project, raw);
                                 return new ScoredCandidateDTO(
                                         emp.getUserId(),
-                                        score
+                                        weightedScore
                                 );
                             })
                             // 정렬(내림차순)
