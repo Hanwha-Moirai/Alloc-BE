@@ -100,7 +100,6 @@ public class SquadAssignment {
         }
 
         this.assignmentStatus = AssignmentStatus.ACCEPTED;
-        this.finalDecision = FinalDecision.ASSIGNED;
         this.decidedAt = LocalDateTime.now();
     }
     // 직원 인터뷰 요청
