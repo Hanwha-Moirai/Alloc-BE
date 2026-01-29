@@ -17,4 +17,5 @@ public class AssignCandidateDTO {
     }
 
 }
+
 //어떤 프로젝트 단위별로, 추천된 결과 묶음

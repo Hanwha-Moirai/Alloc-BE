@@ -12,7 +12,7 @@ import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
-import com.moirai.alloc.management.query.service.GetAssignmentStatus;
+import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import com.moirai.alloc.notification.command.event.ManagementNotificationEventHandler;
 import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
@@ -59,7 +59,7 @@ class NotificationTest {
     private SelectAssignmentCandidates selectAssignmentCandidates;
 
     @Mock
-    private GetAssignmentStatus getAssignmentStatus;
+    private GetAssignedStatus getAssignmentStatus;
 
     @Mock
     private CandidateSelectionService candidateSelectionService;

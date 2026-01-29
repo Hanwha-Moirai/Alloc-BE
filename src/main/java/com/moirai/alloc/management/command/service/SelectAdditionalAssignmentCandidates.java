@@ -9,7 +9,7 @@ import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
-import com.moirai.alloc.management.query.service.GetAssignmentStatus;
+import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,7 +29,7 @@ public class SelectAdditionalAssignmentCandidates {
 
     private final ProjectRepository projectRepository;
     private final SquadAssignmentRepository assignmentRepository;
-    private final GetAssignmentStatus getAssignmentStatus;
+    private final GetAssignedStatus getAssignmentStatus;
     private final CandidateSelectionService candidateSelectionService;
     private final AssignmentShortageCalculator shortageCalculator;
     private final ApplicationEventPublisher eventPublisher;

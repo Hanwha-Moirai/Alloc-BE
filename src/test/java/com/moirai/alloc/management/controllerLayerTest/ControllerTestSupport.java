@@ -1,6 +1,12 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
+import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
+import com.moirai.alloc.management.query.service.GetAssignedMembers;
+import com.moirai.alloc.management.query.service.GetAssignedStatus;
+import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,7 +18,12 @@ import java.util.List;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 @Import(TestSecurityConfig.class)
 public abstract class ControllerTestSupport {
-//  Stage 2 관점
+    @MockBean protected GetAssignedMembers getAssignedMembers;
+    @MockBean protected GetAssignmentCandidates getAssignmentCandidates;
+    @MockBean protected GetAssignedStatus getAssignedStatus;
+    @MockBean protected SelectAssignmentCandidates selectAssignmentCandidates;
+    @MockBean protected SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
+    //  Stage 2 관점
 //  - Controller + Security Context + Role 기반 접근 제어를
 //   통합 관점에서 검증하기 위한 테스트 인프라
     protected RequestPostProcessor authenticatedUser(String role) {

@@ -23,8 +23,8 @@ public class AssignmentDecisionController {
     private final DecideFinalAssignment decideFinalAssignment;
 
     //직원 응답; (사용자만 가능)
-    @PostMapping("/response")
     @PreAuthorize("hasRole('USER')")
+    @PostMapping("/response")
     public void respondAssignment(
             @PathVariable Long assignmentId,
             @RequestParam AssignmentStatus status,
@@ -42,8 +42,8 @@ public class AssignmentDecisionController {
     }
 
     //최종 결정; PM만 가능
-    @PostMapping("/decision")
     @PreAuthorize("hasRole('PM')")
+    @PostMapping("/decision")
     public void decideAssignment(
             @PathVariable Long assignmentId,
             @RequestParam FinalDecision decision,
@@ -57,5 +57,3 @@ public class AssignmentDecisionController {
     }
 
 }
-
-//todo : (프로젝트 멤버만 접근 / 해당 프로젝트 PM만 가능)
