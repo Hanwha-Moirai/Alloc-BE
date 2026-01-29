@@ -1,6 +1,6 @@
 package com.moirai.alloc.auth.service;
 
-import com.moirai.alloc.auth.dto.response.AuthResponse;
+import com.moirai.alloc.auth.dto.response.AuthTokens;
 import com.moirai.alloc.common.security.auth.RefreshTokenStore;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import com.moirai.alloc.user.command.domain.User;
@@ -72,10 +72,13 @@ class TokenServiceTest {
         @Test
         @DisplayName("유효한 Refresh Token으로 Access Token 재발급 성공")
         void refresh_success() {
-            AuthResponse response = tokenService.refresh(validRefreshToken);
+            AuthTokens response = tokenService.refresh(validRefreshToken);
 
             assertThat(response.accessToken()).isNotNull();
             assertThat(response.accessToken()).isNotEmpty();
+            assertThat(response.refreshToken()).isNotNull();
+            assertThat(response.refreshToken()).isNotEmpty();
+            assertThat(response.refreshToken()).isNotEqualTo(validRefreshToken);
         }
 
         @Test

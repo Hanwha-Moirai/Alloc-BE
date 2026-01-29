@@ -4,7 +4,8 @@ import com.moirai.alloc.auth.dto.request.LoginRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetConfirmRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetSendRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetVerifyRequest;
-import com.moirai.alloc.auth.dto.response.AuthResponse;
+import com.moirai.alloc.auth.cookie.AuthCookieService;
+import com.moirai.alloc.auth.dto.response.AuthTokens;
 import com.moirai.alloc.auth.dto.response.PasswordResetSendResponse;
 import com.moirai.alloc.auth.dto.response.PasswordResetVerifyResponse;
 import com.moirai.alloc.auth.service.AuthService;
@@ -16,7 +17,6 @@ import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,24 +32,37 @@ public class AuthController {
     private final TokenService tokenService;
     private final RefreshTokenStore tokenStore;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthCookieService authCookieService;
 
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(ApiResponse.success(response));
+    public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request) {
+        AuthTokens tokens = authService.login(request);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createAccessTokenCookie(tokens.accessToken()).toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createRefreshTokenCookie(tokens.refreshToken()).toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createCsrfTokenCookie(authCookieService.newCsrfToken()).toString());
+
+        return ResponseEntity.ok().headers(headers).body(ApiResponse.success(null));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+    public ResponseEntity<ApiResponse<Void>> refresh(
             @CookieValue(name = "refreshToken", required = false) String refreshToken) {
 
         if (refreshToken == null) {
             throw new IllegalArgumentException("Refresh Token이 없습니다.");
         }
 
-        AuthResponse response = tokenService.refresh(refreshToken);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        AuthTokens tokens = tokenService.refresh(refreshToken);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createAccessTokenCookie(tokens.accessToken()).toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createRefreshTokenCookie(tokens.refreshToken()).toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.createCsrfTokenCookie(authCookieService.newCsrfToken()).toString());
+
+        return ResponseEntity.ok().headers(headers).body(ApiResponse.success(null));
     }
 
     @PostMapping("/logout")
@@ -68,17 +81,12 @@ public class AuthController {
         }
 
         // 쿠키 삭제 (항상 수행)
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .maxAge(0)
-                .path("/")
-                .sameSite("None")
-                .secure(true)
-                .httpOnly(true)
-                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.deleteAccessTokenCookie().toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.deleteRefreshTokenCookie().toString());
+        headers.add(HttpHeaders.SET_COOKIE, authCookieService.deleteCsrfTokenCookie().toString());
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body(ApiResponse.success(null));
+        return ResponseEntity.ok().headers(headers).body(ApiResponse.success(null));
     }
 
     // 1) 비밀번호 재설정 - 인증코드 발송
