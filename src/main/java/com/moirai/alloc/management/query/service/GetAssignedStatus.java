@@ -18,7 +18,7 @@ import java.util.Map;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class GetAssignmentStatus {
+public class GetAssignedStatus {
 // 프로젝트 인력 배치 현황 요약
 // 1) 직군별 부족 인원 계산 (finalDecision == ASSIGNED 기준)
 // 2) 직원 응답 상태 요약 (REQUESTED / ACCEPTED / INTERVIEW_REQUESTED)

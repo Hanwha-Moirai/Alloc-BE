@@ -1,6 +1,6 @@
 package com.moirai.alloc.management.controllerLayerTest;
 
-import com.moirai.alloc.management.api.ProjectAssignmentController;
+import com.moirai.alloc.management.controller.ProjectAssignmentController;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
@@ -25,17 +25,7 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean private GetAssignmentCandidates getAssignmentCandidates;
-    @MockBean private GetAssignmentMembers getAssignmentMembers;
-    @MockBean private GetAssignmentStatus getAssignmentStatus;
-    @MockBean private SelectAssignmentCandidates selectAssignmentCandidates;
-    @MockBean private SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
-    @MockBean private GetAssignedMembers getAssignedMembers;
 
-    /**
-     * [GET /api/projects/{projectId}/assign]
-     * - 파라미터 없이 후보 조회
-     */
     @Test
     void getAssignmentCandidatePage_returnsOk_withoutFilter() throws Exception {
         when(getAssignmentCandidates.getAssignmentCandidates(
