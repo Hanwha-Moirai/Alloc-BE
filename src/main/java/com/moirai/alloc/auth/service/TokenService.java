@@ -1,6 +1,6 @@
 package com.moirai.alloc.auth.service;
 
-import com.moirai.alloc.auth.dto.response.AuthResponse;
+import com.moirai.alloc.auth.dto.response.AuthTokens;
 import com.moirai.alloc.common.security.auth.RefreshTokenStore;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import com.moirai.alloc.user.command.domain.User;
@@ -20,7 +20,7 @@ public class TokenService {
     private final UserRepository userRepository;
     private final RefreshTokenStore tokenStore;
 
-    public AuthResponse refresh(String refreshToken) {
+    public AuthTokens refresh(String refreshToken) {
 
         // 1. Refresh Token 유효성 검사
         if (!StringUtils.hasText(refreshToken) || !jwtTokenProvider.validate(refreshToken)) {
@@ -51,7 +51,11 @@ public class TokenService {
                 )
         );
 
-        // 6. 응답 생성 (refreshToken은 쿠키로 관리 → 응답에서 제외)
-        return new AuthResponse(newAccessToken, false);
+        // 6. Refresh Token 회전
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(Long.valueOf(userId));
+        tokenStore.save(userId, newRefreshToken, jwtTokenProvider.getRefreshExpSeconds());
+
+        // 7. 응답 생성 (토큰은 쿠키로 전달)
+        return new AuthTokens(newAccessToken, newRefreshToken);
     }
 }

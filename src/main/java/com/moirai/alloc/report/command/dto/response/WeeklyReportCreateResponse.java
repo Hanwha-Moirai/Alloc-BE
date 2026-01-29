@@ -1,6 +1,9 @@
-package com.moirai.alloc.report.query.dto;
+package com.moirai.alloc.report.command.dto.response;
 
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
+import com.moirai.alloc.report.query.dto.CompletedTaskResponse;
+import com.moirai.alloc.report.query.dto.IncompleteTaskResponse;
+import com.moirai.alloc.report.query.dto.NextWeekTaskResponse;
 
 import java.time.LocalDate;
 import java.util.List;

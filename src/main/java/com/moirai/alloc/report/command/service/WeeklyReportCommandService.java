@@ -2,6 +2,8 @@ package com.moirai.alloc.report.command.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
+import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
+import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
@@ -11,7 +13,7 @@ import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
-import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportCreateResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
 import com.moirai.alloc.report.query.repository.ReportMembershipRepository;
 import com.moirai.alloc.report.query.repository.WeeklyReportQueryRepository;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class WeeklyReportCommandService {
@@ -34,6 +37,7 @@ public class WeeklyReportCommandService {
     private final ReportMembershipRepository membershipRepository;
     private final WeeklyReportQueryRepository weeklyReportQueryRepository;
     private final NotificationCommandService notificationCommandService;
+    private final TaskQueryMapper taskQueryMapper;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -43,13 +47,15 @@ public class WeeklyReportCommandService {
                                       IssueBlockerCommandRepository issueBlockerCommandRepository,
                                       ReportMembershipRepository membershipRepository,
                                       WeeklyReportQueryRepository weeklyReportQueryRepository,
-                                      NotificationCommandService notificationCommandService) {
+                                      NotificationCommandService notificationCommandService,
+                                      TaskQueryMapper taskQueryMapper) {
         this.weeklyReportCommandRepository = weeklyReportCommandRepository;
         this.weeklyTaskCommandRepository = weeklyTaskCommandRepository;
         this.issueBlockerCommandRepository = issueBlockerCommandRepository;
         this.membershipRepository = membershipRepository;
         this.weeklyReportQueryRepository = weeklyReportQueryRepository;
         this.notificationCommandService = notificationCommandService;
+        this.taskQueryMapper = taskQueryMapper;
     }
 
     @Transactional
@@ -64,6 +70,7 @@ public class WeeklyReportCommandService {
                 reportDate
         );
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
+        saveWeeklyTasksSnapshot(saved);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
         //notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
@@ -173,6 +180,47 @@ public class WeeklyReportCommandService {
                 delayedDates
         );
         issueBlockerCommandRepository.save(blocker);
+    }
+
+    private void createIssueBlocker(WeeklyTask weeklyTask) {
+        Integer delayedDates = calculateDelayedDates(weeklyTask.getReport(), weeklyTask.getTask());
+        IssueBlocker blocker = IssueBlocker.create(
+                weeklyTask,
+                null,
+                null,
+                delayedDates
+        );
+        issueBlockerCommandRepository.save(blocker);
+    }
+
+    private void saveWeeklyTasksSnapshot(WeeklyReport report) {
+        List<TaskProjection> tasks = taskQueryMapper.findTasks(
+                report.getProjectId(),
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        for (TaskProjection projection : tasks) {
+            Task task = entityManager.getReference(Task.class, projection.taskId());
+            boolean isCompleted = Boolean.TRUE.equals(projection.isCompleted());
+            WeeklyTask.TaskType taskType = isCompleted
+                    ? WeeklyTask.TaskType.COMPLETED
+                    : WeeklyTask.TaskType.INCOMPLETE;
+            WeeklyTask weeklyTask = WeeklyTask.create(
+                    report,
+                    task,
+                    taskType,
+                    null,
+                    null,
+                    isCompleted
+            );
+            WeeklyTask savedTask = weeklyTaskCommandRepository.save(weeklyTask);
+            if (taskType == WeeklyTask.TaskType.INCOMPLETE) {
+                createIssueBlocker(savedTask);
+            }
+        }
     }
 
     private Integer calculateDelayedDates(WeeklyReport report, Task task) {

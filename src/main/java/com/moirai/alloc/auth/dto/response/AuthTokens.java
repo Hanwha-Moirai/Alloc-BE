@@ -1,7 +1,7 @@
 package com.moirai.alloc.auth.dto.response;
 
-public record AuthResponse(
+public record AuthTokens(
         String accessToken,
-        boolean isNewUser
+        String refreshToken
 ) {
 }

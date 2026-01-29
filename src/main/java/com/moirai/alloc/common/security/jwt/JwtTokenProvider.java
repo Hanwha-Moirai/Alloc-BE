@@ -51,7 +51,10 @@ public class JwtTokenProvider {
     public String createRefreshToken(Long userId) {
         return createToken(
                 String.valueOf(userId),
-                Map.of("typ", "refresh"),
+                Map.of(
+                        "typ", "refresh",
+                        "jti", java.util.UUID.randomUUID().toString()
+                ),
                 refreshExpSeconds
         );
     }
@@ -118,5 +121,9 @@ public class JwtTokenProvider {
 
     public long getRefreshExpSeconds() {
         return refreshExpSeconds;
+    }
+
+    public long getAccessExpSeconds() {
+        return accessExpSeconds;
     }
 }
