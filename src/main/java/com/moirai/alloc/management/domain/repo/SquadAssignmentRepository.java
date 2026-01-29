@@ -1,5 +1,6 @@
 package com.moirai.alloc.management.domain.repo;
 
+import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.project.command.domain.Project;
@@ -106,6 +107,11 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
           and sa.finalDecision = 'ASSIGNED'
     """)
     List<SquadAssignment> findAssignedByProjectId(@Param("projectId") Long projectId);
+
+    List<SquadAssignment> findByUserIdAndAssignmentStatus(
+            Long userId,
+            AssignmentStatus status
+    );
 
     @Query("""
         select count(sa)
