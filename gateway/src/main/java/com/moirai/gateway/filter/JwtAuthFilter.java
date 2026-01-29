@@ -15,6 +15,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -44,6 +45,7 @@ public class JwtAuthFilter implements GlobalFilter {
             "/actuator/health",
             "/alloc/api/auth/login",
             "/alloc/api/auth/refresh",
+            "/alloc/api/auth/logout",
             "/alloc/api/auth/password/reset/**"
     );
 
@@ -72,14 +74,12 @@ public class JwtAuthFilter implements GlobalFilter {
             return chain.filter(exchange);
         }
 
-        // 2) Authorization 헤더 확인
-        String authHeader = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            log.warn("[GW][AUTH] missing or invalid Authorization header cid={} method={} path={}", cid, method, path);
+        // 2) Authorization 헤더 또는 accessToken 쿠키 확인
+        String token = resolveToken(req);
+        if (token == null || token.isBlank()) {
+            log.warn("[GW][AUTH] missing or invalid auth token cid={} method={} path={}", cid, method, path);
             return unauthorized(exchange);
         }
-
-        String token = authHeader.substring(BEARER_PREFIX.length());
 
         try {
             Claims claims = Jwts.parser()
@@ -128,6 +128,18 @@ public class JwtAuthFilter implements GlobalFilter {
             if (pathMatcher.match(pattern, path)) return true;
         }
         return false;
+    }
+
+    private String resolveToken(ServerHttpRequest req) {
+        String authHeader = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+        HttpCookie cookie = req.getCookies().getFirst("accessToken");
+        if (cookie != null && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+            return cookie.getValue();
+        }
+        return null;
     }
 
     private Mono<Void> unauthorized(ServerWebExchange exchange) {
