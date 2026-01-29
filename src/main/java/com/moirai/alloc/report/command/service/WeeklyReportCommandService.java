@@ -105,7 +105,7 @@ public class WeeklyReportCommandService {
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
 
-        report.updateReport(request.reportStatus(), request.changeOfPlan(), request.taskCompletionRate());
+        report.updateReport(request.reportStatus(), request.changeOfPlan(), null);
 
         issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
         weeklyTaskCommandRepository.deleteByReportReportId(report.getReportId());
