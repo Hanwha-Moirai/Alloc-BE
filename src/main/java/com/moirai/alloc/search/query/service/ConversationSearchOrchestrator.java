@@ -7,11 +7,13 @@ import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import com.moirai.alloc.search.query.presentation.dto.ConversationSearchResponse;
 import com.moirai.alloc.search.query.presentation.mapper.PersonViewMapper;
+import com.moirai.alloc.search.query.service.validation.SearchIntentValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,10 +26,17 @@ public class ConversationSearchOrchestrator {
     private final OpenSearchPersonSearcher searcher;
     private final PersonViewMapper mapper;
     private final ConversationContext context;
+    private final SearchIntentValidator validator;
 
     public ConversationSearchResponse search(String conversationId, String nl) {
 
         SearchIntent intent = intentParser.parse(conversationId, nl);
+
+        //유효한 질문인지 판단
+        Optional<String> error = validator.validate(intent);
+        if (error.isPresent()) {
+            return ConversationSearchResponse.invalid(error.get());
+        }
 
         // 질문 제한 여부 판단
         boolean questionLimitReached =

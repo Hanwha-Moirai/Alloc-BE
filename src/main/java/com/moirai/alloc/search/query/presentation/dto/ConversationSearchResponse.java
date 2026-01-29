@@ -6,12 +6,22 @@ public class ConversationSearchResponse {
 
     private ResponseType type;   // RESULT or QUESTION
     private List<PersonView> people;
-    private String question;     //  질문 문장
+    private String question;
+    private String message; //  질문 문장
 
     public enum ResponseType {
         RESULT,
-        QUESTION
+        QUESTION,
+        INVALID
     }
+
+    public static ConversationSearchResponse invalid(String message) {
+        ConversationSearchResponse r = new ConversationSearchResponse();
+        r.type = ResponseType.INVALID;
+        r.message = message;
+        return r;
+    }
+
 
     // ===== factory methods =====
 

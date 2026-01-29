@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 public class ConversationIntentParser {
 
     private final ConversationContext context;
+    private Set<JobRole> detectedJobRoles;
 
     // -------------------------
     // 룰 테이블(딕셔너리 파일 분리 X, 파서 내부 상수로 유지)
@@ -118,6 +119,10 @@ public class ConversationIntentParser {
                 b.jobRole(e.getValue());
                 return;
             }
+        }
+        if(!roles.isEmpty()) {
+            b.jobRole(roles.iterator().next());
+            b.detectedJobRoles(roles);
         }
     }
 
