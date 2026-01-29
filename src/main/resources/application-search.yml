@@ -1,0 +1,24 @@
+spring:
+  profiles:
+    active: search
+
+opensearch:
+  host: localhost
+  port: 9200
+  scheme: http
+
+# 보안 / JWT / DB 전부 비활성
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+opensearch:
+  host: localhost
+  port: 9200
+  scheme: https
+  username: admin
+  password: "Zp8$Lr@4X!sM29"
+  ssl:
+    enabled: true
+    trustAll: true

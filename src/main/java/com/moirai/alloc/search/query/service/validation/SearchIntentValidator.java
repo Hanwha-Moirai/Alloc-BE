@@ -31,11 +31,11 @@ public class SearchIntentValidator {
     }
 
     private boolean isEmptyIntent(SearchIntent intent) {
-        return intent.getJobRole() == null
-                && intent.getSeniorityRange() == null
+        return intent.getSeniorityRange() == null
                 && intent.getJobGradeRange() == null
                 && (intent.getSkillConditions() == null || intent.getSkillConditions().isEmpty())
-                && intent.getExperienceDomain() == null;
+                && intent.getExperienceDomain() == null
+                && (intent.getFreeText() == null || intent.getFreeText().isBlank());
     }
 
     private boolean isContradictorySeniority(SearchIntent intent) {
@@ -49,8 +49,10 @@ public class SearchIntentValidator {
     }
 
     private boolean isInsufficient(SearchIntent intent) {
-        return intent.getJobRole() == null
-                && (intent.getSkillConditions() == null || intent.getSkillConditions().isEmpty());
+        return (intent.getSkillConditions() == null || intent.getSkillConditions().isEmpty())
+                && intent.getExperienceDomain() == null
+                && intent.getSeniorityRange() == null
+                && intent.getJobGradeRange() == null;
     }
 
 }
