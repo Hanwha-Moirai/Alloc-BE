@@ -120,10 +120,6 @@ public class ConversationIntentParser {
                 return;
             }
         }
-        if(!roles.isEmpty()) {
-            b.jobRole(roles.iterator().next());
-            b.detectedJobRoles(roles);
-        }
     }
 
     private void parseSeniority(String nl, SearchIntent.SearchIntentBuilder b) {
