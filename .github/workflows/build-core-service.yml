@@ -71,6 +71,7 @@ jobs:
           cache-from: type=registry,ref=${{ env.img-uri }}:cache
           context: .
           file: Dockerfile
+          platforms: linux/arm64
 
       - name: 이미지 태그를 출력한다
         env:
