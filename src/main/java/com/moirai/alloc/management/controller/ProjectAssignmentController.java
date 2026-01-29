@@ -1,22 +1,18 @@
-package com.moirai.alloc.management.api;
+package com.moirai.alloc.management.controller;
 
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
-import com.moirai.alloc.management.query.dto.selectedWorker.AssignedMemberDTO;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentManagementPageView;
 import com.moirai.alloc.management.query.dto.selectedList.AssignmentStatusDTO;
 import com.moirai.alloc.management.query.service.GetAssignedMembers;
 import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
-import com.moirai.alloc.management.query.service.GetAssignmentMembers;
-import com.moirai.alloc.management.query.service.GetAssignmentStatus;
+import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +20,7 @@ import java.util.List;
 public class ProjectAssignmentController {
 
     private final GetAssignmentCandidates getAssignmentCandidates;
-    private final GetAssignmentMembers getAssignmentMembers; //배치 관리 화면용 유스케이스
-    private final GetAssignmentStatus getAssignmentStatus;
+    private final GetAssignedStatus getAssignmentStatus;
     private final SelectAssignmentCandidates selectAssignmentCandidates;
     private final SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
     private final GetAssignedMembers getAssignedMembers; //최종 확정 인원 조회 유스케이스
@@ -65,13 +60,12 @@ public class ProjectAssignmentController {
         return new AssignmentManagementPageView(
                 getAssignmentStatus.getSummary(projectId),
                 getAssignmentStatus.getStatus(projectId),
-                getAssignmentMembers.getMembers(projectId)
+                getAssignedMembers.getMembers(projectId)
         );
     }
 
 
-     //최초 인력 선발 저장 (PM만 가능)
-
+    //최초 인력 선발 저장 (PM만 가능)
     @PreAuthorize("hasRole('PM')")
     @PostMapping("/assignments")
     public void assignCandidates(
@@ -100,14 +94,6 @@ public class ProjectAssignmentController {
     ) {
         selectAdditionalAssignmentCandidates
                 .selectAdditionalCandidates(projectId);
-    }
-    // 최종 선정된 팀원 리스트
-    @GetMapping("/assignments/assigned")
-    @PreAuthorize("hasRole('PM') or hasRole('USER')")
-    public List<AssignedMemberDTO> getAssignedMembers(
-            @PathVariable Long projectId
-    ) {
-        return getAssignedMembers.getAssignedMembers(projectId);
     }
 
 }
