@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.api;
+package com.moirai.alloc.management.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.management.command.dto.EditProjectDTO;

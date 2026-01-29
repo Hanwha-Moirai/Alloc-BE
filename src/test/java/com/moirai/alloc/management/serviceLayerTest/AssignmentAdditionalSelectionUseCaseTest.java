@@ -9,12 +9,14 @@ import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
+import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Map;
@@ -31,12 +33,15 @@ class AssignmentAdditionalSelectionUseCaseTest {
 
     @Mock
     private SquadAssignmentRepository assignmentRepository;
-
+    @Mock
+    private GetAssignedStatus getAssignedStatus;
     @Mock
     private AssignmentShortageCalculator shortageCalculator;
 
     @Mock
     private CandidateSelectionService candidateSelectionService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private SelectAdditionalAssignmentCandidates useCase;
@@ -70,6 +75,8 @@ class AssignmentAdditionalSelectionUseCaseTest {
 
         when(candidateSelectionService.select(project, Map.of(10L, 1)))
                 .thenReturn(dto);
+        when(assignmentRepository.save(any(SquadAssignment.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
         useCase.selectAdditionalCandidates(projectId);
