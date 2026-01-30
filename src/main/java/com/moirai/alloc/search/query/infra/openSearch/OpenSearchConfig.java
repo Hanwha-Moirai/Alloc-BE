@@ -38,15 +38,18 @@ public class OpenSearchConfig {
     @Bean
     public RestHighLevelClient openSearchClient() {
 
-        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        CredentialsProvider credentialsProvider =
+                new BasicCredentialsProvider();
+
         credentialsProvider.setCredentials(
                 AuthScope.ANY,
                 new UsernamePasswordCredentials(username, password)
         );
+
         SSLContext sslContext;
         try {
             sslContext = SSLContexts.custom()
-                    .loadTrustMaterial(null, (chain, authType) -> true) // 🔥 Trust ALL
+                    .loadTrustMaterial(null, (chain, authType) -> true)
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -54,9 +57,11 @@ public class OpenSearchConfig {
 
         RestClientBuilder builder = RestClient.builder(
                 new HttpHost(host, port, scheme)
-        ).setHttpClientConfigCallback(httpClientBuilder ->
+        );
+
+        builder.setHttpClientConfigCallback(httpClientBuilder ->
                 httpClientBuilder
-                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .setDefaultCredentialsProvider(credentialsProvider) // ⭐ 핵심
                         .setSSLContext(sslContext)
                         .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
         );
