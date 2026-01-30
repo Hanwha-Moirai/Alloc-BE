@@ -17,6 +17,7 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.common.xcontent.XContentType;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,29 +33,34 @@ public class EmployeeSearchDocumentIndexer {
     @Transactional(readOnly = true)
     public void reindex(Long employeeId) {
 
+        System.out.println("▶ reindex employeeId = " + employeeId);
+
         Employee employee = employeeRepository.findByIdForIndexing(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-
+        System.out.println("▶ employee found = " + employee.getUser().getUserName());
         // 기술 숙련도
         List<TechSkillRow> techSkillRows =
                 employeeSkillRepository.findTechSkillsForIndexing(employeeId);
-
+        System.out.println("▶ techSkillRows size = " + techSkillRows.size());
+        techSkillRows.forEach(row ->
+                System.out.println("▶ skill = " + row.getTechName()
+                        + " / " + row.getProficiency())
+        );
         Map<String, SkillLevel> techSkills =
                 techSkillRows.stream()
                         .collect(Collectors.toMap(
                                 TechSkillRow::getTechName,
-                                row -> SkillLevel.valueOf(
-                                        row.getProficiency().name()
-                                )
+                                row -> SkillLevel.valueOf(row.getProficiency().name())
                         ));
 
 
         Map<String, Integer> techSkillLevels =
-                techSkills.entrySet().stream()
+                techSkillRows.stream()
                         .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> e.getValue().number()
+                                TechSkillRow::getTechName,
+                                row -> row.getProficiency().ordinal() + 1
                         ));
+
 
         int activeProjectCount =
                 squadAssignmentRepository.countActiveProjects(employeeId);
@@ -92,31 +98,42 @@ public class EmployeeSearchDocumentIndexer {
 
     private void save(PersonDocument document) {
         try {
+            System.out.println("▶ indexing personId = " + document.getPersonId());
+
+            Map<String, Object> source = new HashMap<>();
+
+            source.put("personId", document.getPersonId());
+            source.put("name", document.getName());
+            source.put("jobTitle", document.getJobTitle());
+            source.put("department", document.getDepartment());
+            source.put("seniorityLevelLevel", document.getSeniorityLevelLevel());
+            source.put("jobGradeLevel", document.getJobGradeLevel());
+            source.put("activeProjectCount", document.getActiveProjectCount());
+            source.put("profileSummary", document.getProfileSummary());
+            source.put("experienceDomainText", document.getExperienceDomainText());
+
+            if (!document.getTechSkills().isEmpty()) {
+                source.put("techSkills", document.getTechSkills());
+                source.put("techSkillNumericLevels", document.getTechSkillNumericLevels());
+            }
+
             IndexRequest request = new IndexRequest("people_index")
                     .id(document.getPersonId().toString())
-                    .source(
-                            Map.ofEntries(
-                                    Map.entry("personId", document.getPersonId()),
-                                    Map.entry("name", document.getName()),
-                                    Map.entry("jobTitle", document.getJobTitle()),
-                                    Map.entry("department", document.getDepartment()),
-                                    Map.entry("seniorityLevelLevel", document.getSeniorityLevelLevel()),
-                                    Map.entry("jobGradeLevel", document.getJobGradeLevel()),
-                                    Map.entry("techSkills", document.getTechSkills()),
-                                    Map.entry("techSkillNumericLevels", document.getTechSkillNumericLevels()),
-                                    Map.entry("activeProjectCount", document.getActiveProjectCount()),
-                                    Map.entry("profileSummary", document.getProfileSummary()),
-                                    Map.entry("experienceDomainText", document.getExperienceDomainText())
-                            ),
-                            XContentType.JSON
-                    );
+                    .source(source);
 
             client.index(request, RequestOptions.DEFAULT);
 
+            System.out.println("✅ indexed personId = " + document.getPersonId());
+
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to index employee", e);
+            e.printStackTrace();
+            throw new IllegalStateException(
+                    "Failed to index employee: " + e.getMessage(),
+                    e
+            );
         }
     }
+
 
     private SeniorityLevel resolveSeniority(Employee employee) {
         if (employee == null || employee.getTitleStandard() == null) {

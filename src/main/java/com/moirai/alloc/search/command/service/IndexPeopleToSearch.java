@@ -19,6 +19,7 @@ public class IndexPeopleToSearch {
 
     // 전체 직원 검색 인덱스 재생성용도, 초기 배포, 인덱스 손상 복구, 운영자 수동 실행 용도
     public void reindexAll() {
+
         employeeIndexer.reindexAll();
     }
 

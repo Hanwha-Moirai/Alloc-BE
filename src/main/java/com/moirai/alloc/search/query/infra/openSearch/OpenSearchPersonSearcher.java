@@ -1,6 +1,5 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
-import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
@@ -23,8 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.moirai.alloc.search.query.domain.condition.ComparisonType.*;
 
 @Component
 @RequiredArgsConstructor
@@ -271,11 +268,11 @@ public class OpenSearchPersonSearcher {
 
     /**
      * OpenSearch 응답으로부터 techSkills를 안전하게 변환한다.
-     *
+     * <p>
      * OpenSearch에서는 Map<String, String> 형태로 반환되지만,
      * PersonDocument에서는 Map<String, SkillLevel>을 사용하므로
      * 문자열 숙련도를 enum으로 변환하는 보조 로직이 필요하다.
-     *
+     * <p>
      * - JSON 역직렬화 안정성 확보
      * - Enum 타입 안전성 보장
      */
