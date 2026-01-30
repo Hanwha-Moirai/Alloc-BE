@@ -42,9 +42,12 @@ public class EmployeeSearchDocumentIndexer {
         Map<String, SkillLevel> techSkills =
                 techSkillRows.stream()
                         .collect(Collectors.toMap(
-                                TechSkillRow::techName,
-                                row -> SkillLevel.valueOf(row.proficiency().name())
+                                TechSkillRow::getTechName,
+                                row -> SkillLevel.valueOf(
+                                        row.getProficiency().name()
+                                )
                         ));
+
 
         Map<String, Integer> techSkillLevels =
                 techSkills.entrySet().stream()

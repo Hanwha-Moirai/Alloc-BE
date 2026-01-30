@@ -22,10 +22,10 @@ public interface EmployeeSkillRepository extends JpaRepository<EmployeeSkill,Lon
     List<String> findTechNamesForIndexing(@Param("employeeId") Long employeeId);
 
     @Query("""
-        select new com.moirai.alloc.search.dto.TechSkillRow(
-            es.tech.techName,
-            es.proficiency
-        )
+        select new com.moirai.alloc.search.command.infra.indexing.TechSkillRow(
+                                                  es.tech.techName,
+                                                  es.proficiency
+                                              )
         from EmployeeSkill es
         where es.employee.userId = :employeeId
     """)

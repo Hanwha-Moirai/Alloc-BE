@@ -37,8 +37,6 @@ join fetch e.user u
 join fetch e.job j
 join fetch e.department d
 join fetch e.titleStandard ts
-left join fetch e.assignments a
-left join fetch a.project p
 where e.userId = :employeeId
 """)
     Optional<Employee> findByIdForIndexing(
