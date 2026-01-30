@@ -6,14 +6,16 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.opensearch.client.RestClient;
+import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.net.ssl.SSLContext;
+
 
 @Configuration
 public class OpenSearchConfig {
@@ -35,30 +37,30 @@ public class OpenSearchConfig {
 
     @Bean
     public RestHighLevelClient openSearchClient() {
+
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(username, password)
+        );
+        SSLContext sslContext;
         try {
-            // 🔥 SSL 인증서 무시 (trust all)
-            SSLContext sslContext = SSLContextBuilder.create()
-                    .loadTrustMaterial(null, (chain, authType) -> true)
+            sslContext = SSLContexts.custom()
+                    .loadTrustMaterial(null, (chain, authType) -> true) // 🔥 Trust ALL
                     .build();
-
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(
-                    AuthScope.ANY,
-                    new UsernamePasswordCredentials(username, password)
-            );
-
-            return new RestHighLevelClient(
-                    RestClient.builder(new HttpHost(host, port, scheme))
-                            .setHttpClientConfigCallback(httpClientBuilder ->
-                                    httpClientBuilder
-                                            .setSSLContext(sslContext)
-                                            .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-                                            .setDefaultCredentialsProvider(credentialsProvider)
-                            )
-            );
-
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create OpenSearch client", e);
+            throw new RuntimeException(e);
         }
+
+        RestClientBuilder builder = RestClient.builder(
+                new HttpHost(host, port, scheme)
+        ).setHttpClientConfigCallback(httpClientBuilder ->
+                httpClientBuilder
+                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .setSSLContext(sslContext)
+                        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+        );
+
+        return new RestHighLevelClient(builder);
     }
 }

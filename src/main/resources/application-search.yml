@@ -3,7 +3,4 @@ opensearch:
   port: 9200
   scheme: https
   username: admin
-  password: "Zp8$Lr@4X!sM29"
-  ssl:
-    enabled: true
-    trustAll: true
+  password: Zp8$Lr@4X!sM29
