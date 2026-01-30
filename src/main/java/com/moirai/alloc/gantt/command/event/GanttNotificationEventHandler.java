@@ -1,7 +1,5 @@
-package com.moirai.alloc.notification.command.event;
+package com.moirai.alloc.gantt.command.event;
 
-import com.moirai.alloc.gantt.command.event.MilestoneCreatedEvent;
-import com.moirai.alloc.gantt.command.event.TaskAssigneeAssignedEvent;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
@@ -18,7 +16,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class NotificationDomainEventHandler {
+public class GanttNotificationEventHandler {
 
     private final NotificationPort notificationPort;
     private final SquadAssignmentRepository squadAssignmentRepository;
@@ -58,5 +56,4 @@ public class NotificationDomainEventHandler {
                 .build();
         notificationPort.notify(command);
     }
-
 }
