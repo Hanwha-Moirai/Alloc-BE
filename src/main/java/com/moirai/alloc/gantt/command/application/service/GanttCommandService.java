@@ -78,23 +78,15 @@ public class GanttCommandService {
                 .endDate(requireNonNull(request.endDate(), "endDate"))
                 .build();
 
-        // 태스크 저장
         taskRepository.save(task);
-
-        // 태스크 로그 업데이트 내용 저장 (생성 로그)
         taskUpdateLogRepository.save(TaskUpdateLog.create(task.getTaskId(), "CREATE"));
-
-        // 마일스톤 완료 여부 갱신
         syncMilestoneCompletion(milestone.getMilestoneId());
-
-        // 태스크 할당 이벤트 발생
         eventPublisher.publishEvent(new TaskAssigneeAssignedEvent(
                 projectId,
                 task.getTaskId(),
                 task.getUserId(),
                 task.getTaskName()
         ));
-
         return task.getTaskId();
     }
 
