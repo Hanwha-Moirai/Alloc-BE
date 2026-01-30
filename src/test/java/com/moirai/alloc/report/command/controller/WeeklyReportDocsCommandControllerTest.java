@@ -51,7 +51,6 @@ class WeeklyReportDocsCommandControllerTest {
                   "reportId": 77001,
                   "reportStatus": "REVIEWED",
                   "changeOfPlan": "변경",
-                  "taskCompletionRate": 0.8,
                   "completedTasks": [{"taskId": 77001}],
                   "incompleteTasks": [{"taskId": 77002, "delayReason": "지연"}],
                   "nextWeekTasks": [{"taskId": 77003, "plannedStartDate": "2025-01-13", "plannedEndDate": "2025-01-17"}]
@@ -93,7 +92,6 @@ class WeeklyReportDocsCommandControllerTest {
                   "reportId": 77001,
                   "reportStatus": "REVIEWED",
                   "changeOfPlan": "변경",
-                  "taskCompletionRate": 0.8,
                   "completedTasks": [{"taskId": 77001}],
                   "incompleteTasks": [{"taskId": 77002, "delayReason": "지연"}],
                   "nextWeekTasks": [{"taskId": 77003, "plannedStartDate": "2025-01-13", "plannedEndDate": "2025-01-17"}]

@@ -77,7 +77,6 @@ class WeeklyReportCommandServiceTest {
                 REPORT_ID,
                 WeeklyReport.ReportStatus.REVIEWED,
                 "변경",
-                0.8,
                 List.of(new CompletedTaskRequest(77001L)),
                 List.of(new IncompleteTaskRequest(77002L, "지연")),
                 List.of(new NextWeekTaskRequest(
