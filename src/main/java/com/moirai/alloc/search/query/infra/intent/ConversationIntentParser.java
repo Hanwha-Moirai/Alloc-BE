@@ -100,11 +100,11 @@ public class ConversationIntentParser {
     private SearchIntent parseRule(String nl) {
 
         SearchIntent.SearchIntentBuilder b = SearchIntent.builder();
-        b.freeText(nl);
+        b.freeText(normalizeFreeText(nl));
 
-        parseJobRole(nl, b);          // ⭐ 직군
-        parseSeniority(nl, b);        // ⭐ 직위/시니어리티
-        parseJobGrade(nl, b);         // ⭐ 직급(인턴~임원)
+        parseJobRole(nl, b);          // 직군
+        parseSeniority(nl, b);        // 직위/시니어리티
+        parseJobGrade(nl, b);         // 직급(인턴~임원)
         parseProjectCount(nl, b);     // 프로젝트 수
         parseSkills(nl, b);           // 기술
         parseExperienceDomain(nl, b); // 경험 도메인
@@ -289,4 +289,12 @@ public class ConversationIntentParser {
         if (nl.contains("LV1")) return SkillLevel.LV1;
         return null;
     }
+    private String normalizeFreeText(String nl) {
+        return nl
+                .replace("찾아줘", "")
+                .replace("추천", "")
+                .replace("사람", "")
+                .trim();
+    }
+
 }

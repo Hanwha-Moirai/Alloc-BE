@@ -56,7 +56,7 @@ public class OpenSearchConfig {
         }
 
         RestClientBuilder builder = RestClient.builder(
-                new HttpHost(host, port, scheme)
+                new HttpHost(host, port, "http")
         );
 
         builder.setHttpClientConfigCallback(httpClientBuilder ->

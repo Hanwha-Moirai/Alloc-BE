@@ -49,7 +49,7 @@ public class EmployeeSearchDocumentIndexer {
         Map<String, SkillLevel> techSkills =
                 techSkillRows.stream()
                         .collect(Collectors.toMap(
-                                TechSkillRow::getTechName,
+                                row -> row.getTechName().toUpperCase().replace(" ", "_"),
                                 row -> SkillLevel.valueOf(row.getProficiency().name())
                         ));
 
@@ -57,9 +57,10 @@ public class EmployeeSearchDocumentIndexer {
         Map<String, Integer> techSkillLevels =
                 techSkillRows.stream()
                         .collect(Collectors.toMap(
-                                TechSkillRow::getTechName,
+                                row -> row.getTechName().toUpperCase().replace(" ", "_"),
                                 row -> row.getProficiency().ordinal() + 1
                         ));
+
 
 
         int activeProjectCount =
