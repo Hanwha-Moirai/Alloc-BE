@@ -2,7 +2,6 @@ package com.moirai.alloc.search.query.infra.intent;
 
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
-import com.moirai.alloc.search.query.domain.vocabulary.ExperienceDomain;
 import com.moirai.alloc.search.query.domain.vocabulary.JobGrade;
 import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
 import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
@@ -17,9 +16,6 @@ import java.util.regex.Pattern;
 @Component
 @RequiredArgsConstructor
 public class ConversationIntentParser {
-
-//    private final ConversationContext context;
-//    private Set<JobRole> detectedJobRoles;
 
     // -------------------------
     // 룰 테이블(딕셔너리 파일 분리 X, 파서 내부 상수로 유지)
@@ -78,29 +74,10 @@ public class ConversationIntentParser {
             Map.entry("안드로이드", JobRole.MOBILE),
             Map.entry("ios", JobRole.MOBILE)
     );
-//
-//    private static final Map<String, ExperienceDomain> DOMAIN_RULES = Map.ofEntries(
-//            Map.entry("금융", ExperienceDomain.FINANCE),
-//            Map.entry("핀테크", ExperienceDomain.FINANCE),
-//            Map.entry("공공", ExperienceDomain.PUBLIC),
-//            Map.entry("커머스", ExperienceDomain.RETAIL),
-//            Map.entry("쇼핑", ExperienceDomain.RETAIL),
-//            Map.entry("물류", ExperienceDomain.LOGISTICS),
-//            Map.entry("제조", ExperienceDomain.MANUFACTURING)
-//    );
 
     public SearchIntent parse(String conversationId, String nl) {
 
         return parseRule(nl);
-//        SearchIntent incoming = parseRule(nl);
-//        SearchIntent previous = context.getLastIntent(conversationId);
-//
-//        SearchIntent merged = (previous == null)
-//                ? incoming
-//                : merge(previous, incoming);
-//
-//        context.saveIntent(conversationId, merged);
-//        return merged;
     }
 
     // =========================
@@ -116,11 +93,6 @@ public class ConversationIntentParser {
         parseSeniority(nl, b);        // 직위/시니어리티
         parseProjectCount(nl, b);     // 프로젝트 수
         return b.build();
-//        SearchIntent.SearchIntentBuilder b = SearchIntent.builder();
-//        b.freeText(normalizeFreeText(nl));
-//        parseExperienceDomain(nl, b); // 경험 도메인
-//
-//        return b.build();
     }
 
     private void parseJobRole(String nl, SearchIntent.SearchIntentBuilder b) {
@@ -147,7 +119,7 @@ public class ConversationIntentParser {
         }
     }
 
-    // ✅ 인턴~임원까지 전부 커버
+    // 인턴~임원까지 전부 커버
     private void parseJobGrade(String nl, SearchIntent.SearchIntentBuilder b) {
         if (nl.contains("인턴")) {
             b.jobGradeRange(new JobGradeRange(JobGrade.INTERN, JobGrade.INTERN));
@@ -225,81 +197,6 @@ public class ConversationIntentParser {
         }
     }
 
-//    private void parseExperienceDomain(String nl, SearchIntent.SearchIntentBuilder b) {
-//        for (var entry : DOMAIN_RULES.entrySet()) {
-//            if (nl.contains(entry.getKey())) {
-//                b.experienceDomain(entry.getValue());
-//                return;
-//            }
-//        }
-//    }
-//
-//    // =========================
-//    // 2) intent 병합
-//    // =========================
-//    private SearchIntent merge(SearchIntent prev, SearchIntent cur) {
-//
-//        return SearchIntent.builder()
-//                .freeText(mergeFreeText(prev.getFreeText(), cur.getFreeText()))
-//
-//                .jobRole(cur.getJobRole() != null ? cur.getJobRole() : prev.getJobRole())
-//
-//                .seniorityRange(cur.getSeniorityRange() != null ? cur.getSeniorityRange() : prev.getSeniorityRange())
-//                .jobGradeRange(cur.getJobGradeRange() != null ? cur.getJobGradeRange() : prev.getJobGradeRange())
-//
-//                .activeProjectCount(cur.getActiveProjectCount() != null ? cur.getActiveProjectCount() : prev.getActiveProjectCount())
-//                .projectCountcomparisonType(cur.getProjectCountcomparisonType() != null ? cur.getProjectCountcomparisonType() : prev.getProjectCountcomparisonType())
-//
-//                .skillConditions(mergeSkillConditions(prev.getSkillConditions(), cur.getSkillConditions()))
-//
-//                .experienceDomain(cur.getExperienceDomain() != null ? cur.getExperienceDomain() : prev.getExperienceDomain())
-//
-//                .department(cur.getDepartment() != null ? cur.getDepartment() : prev.getDepartment())
-//                .limit(cur.getLimit() != null ? cur.getLimit() : prev.getLimit())
-//
-//                // 질문 카운트는 Orchestrator가 관리하므로 여기서는 prev 값 유지
-//                .questionCount(prev.getQuestionCount())
-//                .build();
-//    }
-//
-//    // =========================
-//    // merge helpers
-//    // =========================
-//    private List<SkillCondition> mergeSkillConditions(List<SkillCondition> prev, List<SkillCondition> cur) {
-//        if (cur == null || cur.isEmpty()) return prev;
-//        if (prev == null || prev.isEmpty()) return cur;
-//
-//        Map<String, SkillCondition> map = new LinkedHashMap<>();
-//        prev.forEach(sc -> map.put(sc.getTechName(), sc));
-//        cur.forEach(sc -> map.put(sc.getTechName(), sc));
-//        return new ArrayList<>(map.values());
-//    }
-//
-//    private String mergeFreeText(String a, String b) {
-//        if (a == null || a.isBlank()) return b;
-//        if (b == null || b.isBlank()) return a;
-//        return a + " " + b;
-//    }
-//
-//    // =========================
-//    // low-level extractors
-//    // =========================
-//    private void addSkill(List<SkillCondition> list, String nl, String tech) {
-//        SkillLevel level = extractSkillLevel(nl);
-//        if (level == null) {
-//            // 레벨 없으면 기본 레벨을 두거나, EQUAL로 두는 방식 선택 가능
-//            // MVP에서는 LV1로 기본값 처리(혹은 null이면 추가 안 하는 방식도 가능)
-//            level = SkillLevel.LV1;
-//        }
-//
-//        ComparisonType type =
-//                nl.contains("이상") ? ComparisonType.GREATER_THAN_OR_EQUAL :
-//                        nl.contains("이하") ? ComparisonType.LESS_THAN_OR_EQUAL :
-//                                ComparisonType.EQUAL;
-//
-//        list.add(new SkillCondition(tech, level, type));
-//    }
-//
     private Integer extractNumber(String nl) {
         Matcher m = Pattern.compile("(\\d+)").matcher(nl);
         return m.find() ? Integer.parseInt(m.group(1)) : null;

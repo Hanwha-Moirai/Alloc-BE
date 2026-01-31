@@ -34,15 +34,12 @@ public class EmployeeSearchDocumentIndexer {
     @Transactional(readOnly = true)
     public void reindex(Long employeeId) {
 
-        System.out.println("▶ reindex employeeId = " + employeeId);
-
         Employee employee = employeeRepository.findByIdForIndexing(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-        System.out.println("▶ employee found = " + employee.getUser().getUserName());
         // 기술 숙련도
         List<TechSkillRow> techSkillRows =
                 employeeSkillRepository.findTechSkillsForIndexing(employeeId);
-        System.out.println("▶ techSkillRows size = " + techSkillRows.size());
+
         techSkillRows.forEach(row ->
                 System.out.println("▶ skill = " + row.getTechName()
                         + " / " + row.getProficiency())
@@ -101,7 +98,6 @@ public class EmployeeSearchDocumentIndexer {
 
     private void save(PersonDocument document) {
         try {
-            System.out.println("▶ indexing personId = " + document.getPersonId());
 
             Map<String, Object> source = new HashMap<>();
 
@@ -127,7 +123,6 @@ public class EmployeeSearchDocumentIndexer {
 
             client.index(request, RequestOptions.DEFAULT);
 
-            System.out.println("✅ indexed personId = " + document.getPersonId());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,7 +134,7 @@ public class EmployeeSearchDocumentIndexer {
     }
     private JobRole resolveJobRole(Employee employee) {
 
-        // 1️⃣ 직무명 기반
+        //  직무명 기반
         if (employee.getJob() != null) {
             String jobName =
                     employee.getJob().getJobName().toLowerCase();
@@ -158,7 +153,7 @@ public class EmployeeSearchDocumentIndexer {
             }
         }
 
-        // 2️⃣ 기술 스택 기반 fallback
+        //  기술 스택 기반 fallback
         List<String> techs =
                 employeeSkillRepository
                         .findTechSkillsForIndexing(employee.getUserId())

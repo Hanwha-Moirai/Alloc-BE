@@ -4,6 +4,8 @@ import java.util.List;
 
 public class ConversationSearchResponse {
 
+    //todo : 대화형 검색 염두한 dto
+
     private ResponseType type;   // RESULT or QUESTION
     private List<PersonView> people;
     private String question;

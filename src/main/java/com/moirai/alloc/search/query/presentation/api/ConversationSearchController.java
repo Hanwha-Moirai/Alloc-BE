@@ -1,4 +1,4 @@
-package com.moirai.alloc.search;
+package com.moirai.alloc.search.query.presentation.api;
 
 import com.moirai.alloc.search.query.presentation.dto.ConversationSearchResponse;
 import com.moirai.alloc.search.query.service.ConversationSearchOrchestrator;

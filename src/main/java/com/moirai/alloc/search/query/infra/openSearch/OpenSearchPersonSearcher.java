@@ -26,10 +26,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class OpenSearchPersonSearcher {
-//    SearchCondition을 받아
-//    검색 의도를 쿼리 형태로 ‘번역’하는 컴포넌트
-    private final RestHighLevelClient client;
 
+    private final RestHighLevelClient client;
 
     public List<PersonDocument> search(SearchIntent intent) {
         // 1. SearchCondition 확인
@@ -42,11 +40,6 @@ public class OpenSearchPersonSearcher {
         applySkillConditions(intent, bool);
         applySeniorityRange(intent, bool);
         applyProjectCount(intent, bool);
-//        applyFreeText(intent, boolQuery);
-
-//        applyExperienceDomain(intent, boolQuery);
-
-
 
 
         if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
@@ -109,38 +102,6 @@ public class OpenSearchPersonSearcher {
         );
     }
 
-
-//    private void applyExperienceDomain(SearchIntent intent, BoolQueryBuilder bool) {
-//        if (intent.getExperienceDomain() == null) return;
-//
-//        String keyword = intent.getExperienceDomain().name().toLowerCase();
-//
-//        bool.must(
-//                QueryBuilders.matchQuery(
-//                        "experienceDomainText",
-//                        keyword
-//                ).boost(2.5f)
-//        );
-//    }
-
-
-//    private void applyFreeText(SearchIntent intent, BoolQueryBuilder bool) {
-//        // 자유 자연어 검색, 동의어 없어도 동작
-//        if(intent.getFreeText() == null || intent.getFreeText().isBlank()){
-//            return; //해당되지 않으면 넘어가기
-//        }
-//        bool.should(
-//                QueryBuilders.multiMatchQuery(intent.getFreeText())
-//                        .field("experienceDomainText", 5.0f)
-//                        .field("profileSummary", 4.0f)
-//                        .field("jobTitle", 3.0f)
-//                        .field("department")
-//                        .field("name")
-//        );
-////        if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
-////            bool.minimumShouldMatch(1);
-////        }
-//    }
 
     private void applyProjectCount(SearchIntent intent, BoolQueryBuilder bool){
         if(intent.getActiveProjectCount() == null || intent.getProjectCountcomparisonType() == null) {
@@ -209,29 +170,7 @@ public class OpenSearchPersonSearcher {
         return QueryBuilders.rangeQuery(
                 "techSkillNumericLevels." + tech
         ).gte(level);
-//        return switch (sc.getComparisonType()) {
-//            case GREATER_THAN_OR_EQUAL ->
-//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-//                            .gte(level);
-//
-//            case GREATER_THAN ->
-//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-//                            .gt(level);
-//
-//            case LESS_THAN_OR_EQUAL ->
-//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-//                            .lte(level);
-//
-//            case LESS_THAN ->
-//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-//                            .lt(level);
-//
-//            case EQUAL ->
-//                    QueryBuilders.termQuery(
-//                            "techSkills." + tech,
-//                            sc.getSkillLevel().name()
-//                    );
-//        };
+
     }
     private String resolveIndexTechKey(String techName) {
         if (techName == null) return null;

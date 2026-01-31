@@ -41,6 +41,6 @@ public class PersonViewMapper {
     public List<PersonView> toViews(List<PersonDocument> docs) {
         return docs.stream()
                 .map(this::toView)
-                .toList(); // Java 16+ (아니면 collect)
+                .toList();
     }
 }
