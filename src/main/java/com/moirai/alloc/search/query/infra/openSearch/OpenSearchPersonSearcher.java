@@ -36,51 +36,56 @@ public class OpenSearchPersonSearcher {
         // 2. 조건별로 쿼리 조립
         // 3. OpenSearch 호출 (아직 구현 X)
         // 4. PersonDocument 리스트 반환
-        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder bool = QueryBuilders.boolQuery();
+        applyJobGradeRange(intent, bool);
+        applyJobRole(intent, bool);
+        applySkillConditions(intent, bool);
+        applySeniorityRange(intent, bool);
+        applyProjectCount(intent, bool);
+//        applyFreeText(intent, boolQuery);
 
-        applyFreeText(intent, boolQuery);
-        //applyJobRole(intent, boolQuery);
-        applyExperienceDomain(intent, boolQuery);
+//        applyExperienceDomain(intent, boolQuery);
 
-        applyProjectCount(intent, boolQuery);
-        applySeniorityRange(intent, boolQuery);
-        applyJobGradeRange(intent, boolQuery);
-        applySkillConditions(intent, boolQuery);
 
+
+
+        if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
+            bool.should(
+                    QueryBuilders.multiMatchQuery(intent.getFreeText())
+                            .field("profileSummary", 3.0f)
+                            .field("jobTitle", 2.0f)
+                            .field("department")
+                            .field("name")
+            );
+        }
+        bool.should(QueryBuilders.matchAllQuery().boost(0.1f));
         // search request 생성
         SearchSourceBuilder source = new SearchSourceBuilder()
-                .query(boolQuery)
-                .size(resolveLimit(intent));
+                .query(bool)
+                .size(10);
 
         // open search 호출
         return executeSearch(source);
     }
     private static final Map<String, String> TECH_KEY_TO_INDEX_KEY = Map.ofEntries(
-            Map.entry("JAVA", "Java"),
-            Map.entry("SPRING", "Spring Boot"),   // 너 인덱스는 Spring Boot로 들어가 있음
-            Map.entry("PYTHON", "Python"),
-            Map.entry("DOCKER", "Docker"),
-            Map.entry("KUBERNETES", "Kubernetes"),
-            Map.entry("REDIS", "Redis"),
-            Map.entry("KAFKA", "Kafka"),
-            Map.entry("MYSQL", "MySQL"),
-            Map.entry("MARIADB", "MariaDB"),
-            Map.entry("POSTGRESQL", "PostgreSQL"),
-            Map.entry("OPENSEARCH", "OpenSearch"),
-            Map.entry("ELASTICSEARCH", "Elasticsearch"),
-            Map.entry("JPA", "JPA"),
-            Map.entry("MYBATIS", "MyBatis"),
-            Map.entry("NODEJS", "Node.js"),
-            Map.entry("GO", "Go"),
-            Map.entry("MONGODB", "MongoDB"),
-            Map.entry("REACT", "React"),
-            Map.entry("VUE", "Vue.js"),
-            Map.entry("TYPESCRIPT", "TypeScript"),
-            Map.entry("NEXTJS", "Next.js"),
-            Map.entry("HTMLCSS", "HTML/CSS"),
-            Map.entry("AWS", "AWS"),
-            Map.entry("JENKINS", "Jenkins")
+            Map.entry("JAVA", "JAVA"),
+            Map.entry("SPRING", "SPRING_BOOT"),
+            Map.entry("PYTHON", "PYTHON"),
+
+            Map.entry("MYSQL", "MYSQL"),
+            Map.entry("MARIADB", "MARIADB"),
+            Map.entry("POSTGRESQL", "POSTGRESQL"),
+
+            Map.entry("REDIS", "REDIS"),
+            Map.entry("KAFKA", "KAFKA"),
+
+            Map.entry("DOCKER", "DOCKER"),
+            Map.entry("KUBERNETES", "KUBERNETES"),
+
+            Map.entry("OPENSEARCH", "OPENSEARCH"),
+            Map.entry("ELASTICSEARCH", "ELASTICSEARCH")
     );
+
 
     private List<String> resolveJobRoleKeywords(JobRole role) {
         return switch (role) {
@@ -93,66 +98,67 @@ public class OpenSearchPersonSearcher {
             default -> List.of();
         };
     }
-//    private void applyJobRole(SearchIntent intent, BoolQueryBuilder bool) {
-//        if (intent.getJobRole() == null) return;
+    private void applyJobRole(SearchIntent intent, BoolQueryBuilder bool) {
+        if (intent.getJobRole() == null) return;
+
+        BoolQueryBuilder roleQuery = QueryBuilders.boolQuery();
+
+        for (String keyword : resolveJobRoleKeywords(intent.getJobRole())) {
+            roleQuery.should(
+                    QueryBuilders.matchQuery("jobTitle", keyword).boost(3.0f)
+            );
+            roleQuery.should(
+                    QueryBuilders.matchQuery("profileSummary", keyword).boost(2.0f)
+            );
+        }
+
+        // 기술도 role 보강 점수로 추가
+        if (intent.getSkillConditions() != null) {
+            intent.getSkillConditions().forEach(sc ->
+                    roleQuery.should(
+                            QueryBuilders.matchQuery(
+                                    "profileSummary",
+                                    sc.getTechName()
+                            ).boost(2.5f)
+                    )
+            );
+        }
+        roleQuery.minimumShouldMatch(1);
+
+        bool.should(roleQuery);
+    }
+
+//    private void applyExperienceDomain(SearchIntent intent, BoolQueryBuilder bool) {
+//        if (intent.getExperienceDomain() == null) return;
 //
-//        BoolQueryBuilder roleQuery = QueryBuilders.boolQuery();
+//        String keyword = intent.getExperienceDomain().name().toLowerCase();
 //
-//        for (String keyword : resolveJobRoleKeywords(intent.getJobRole())) {
-//            roleQuery.should(
-//                    QueryBuilders.matchQuery("jobTitle", keyword).boost(3.0f)
-//            );
-//            roleQuery.should(
-//                    QueryBuilders.matchQuery("profileSummary", keyword).boost(2.0f)
-//            );
-//        }
-//
-//        // 기술도 role 보강 점수로 추가
-//        if (intent.getSkillConditions() != null) {
-//            intent.getSkillConditions().forEach(sc ->
-//                    roleQuery.should(
-//                            QueryBuilders.matchQuery(
-//                                    "profileSummary",
-//                                    sc.getTechName()
-//                            ).boost(2.5f)
-//                    )
-//            );
-//        }
-//
-//        bool.should(roleQuery);
+//        bool.must(
+//                QueryBuilders.matchQuery(
+//                        "experienceDomainText",
+//                        keyword
+//                ).boost(2.5f)
+//        );
 //    }
 
-    private void applyExperienceDomain(SearchIntent intent, BoolQueryBuilder bool) {
-        if (intent.getExperienceDomain() == null) return;
 
-        String keyword = intent.getExperienceDomain().name().toLowerCase();
-
-        bool.must(
-                QueryBuilders.matchQuery(
-                        "experienceDomainText",
-                        keyword
-                ).boost(2.5f)
-        );
-    }
-
-
-    private void applyFreeText(SearchIntent intent, BoolQueryBuilder bool) {
-        // 자유 자연어 검색, 동의어 없어도 동작
-        if(intent.getFreeText() == null || intent.getFreeText().isBlank()){
-            return; //해당되지 않으면 넘어가기
-        }
-        bool.should(
-                QueryBuilders.multiMatchQuery(intent.getFreeText())
-                        .field("experienceDomainText", 5.0f)
-                        .field("profileSummary", 4.0f)
-                        .field("jobTitle", 3.0f)
-                        .field("department")
-                        .field("name")
-        );
-        if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
-            bool.minimumShouldMatch(1);
-        }
-    }
+//    private void applyFreeText(SearchIntent intent, BoolQueryBuilder bool) {
+//        // 자유 자연어 검색, 동의어 없어도 동작
+//        if(intent.getFreeText() == null || intent.getFreeText().isBlank()){
+//            return; //해당되지 않으면 넘어가기
+//        }
+//        bool.should(
+//                QueryBuilders.multiMatchQuery(intent.getFreeText())
+//                        .field("experienceDomainText", 5.0f)
+//                        .field("profileSummary", 4.0f)
+//                        .field("jobTitle", 3.0f)
+//                        .field("department")
+//                        .field("name")
+//        );
+////        if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
+////            bool.minimumShouldMatch(1);
+////        }
+//    }
 
     private void applyProjectCount(SearchIntent intent, BoolQueryBuilder bool){
         if(intent.getActiveProjectCount() == null || intent.getProjectCountcomparisonType() == null) {
@@ -185,7 +191,7 @@ public class OpenSearchPersonSearcher {
         JobGradeRange range = intent.getJobGradeRange();
         if (range == null) return;
 
-        bool.filter(
+        bool.must(
                 QueryBuilders.rangeQuery("jobGradeLevel")
                         .gte(range.getMinGrade().getLevel())
                         .lte(range.getMaxGrade().getLevel())
@@ -218,30 +224,32 @@ public class OpenSearchPersonSearcher {
         String tech = resolveIndexTechKey(sc.getTechName());
 
         int level = sc.getSkillLevel().number();
-
-        return switch (sc.getComparisonType()) {
-            case GREATER_THAN_OR_EQUAL ->
-                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-                            .gte(level);
-
-            case GREATER_THAN ->
-                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-                            .gt(level);
-
-            case LESS_THAN_OR_EQUAL ->
-                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-                            .lte(level);
-
-            case LESS_THAN ->
-                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
-                            .lt(level);
-
-            case EQUAL ->
-                    QueryBuilders.termQuery(
-                            "techSkills." + tech,
-                            sc.getSkillLevel().name()
-                    );
-        };
+        return QueryBuilders.rangeQuery(
+                "techSkillNumericLevels." + tech
+        ).gte(level);
+//        return switch (sc.getComparisonType()) {
+//            case GREATER_THAN_OR_EQUAL ->
+//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+//                            .gte(level);
+//
+//            case GREATER_THAN ->
+//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+//                            .gt(level);
+//
+//            case LESS_THAN_OR_EQUAL ->
+//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+//                            .lte(level);
+//
+//            case LESS_THAN ->
+//                    QueryBuilders.rangeQuery("techSkillNumericLevels." + tech)
+//                            .lt(level);
+//
+//            case EQUAL ->
+//                    QueryBuilders.termQuery(
+//                            "techSkills." + tech,
+//                            sc.getSkillLevel().name()
+//                    );
+//        };
     }
     private String resolveIndexTechKey(String techName) {
         if (techName == null) return null;
@@ -255,7 +263,7 @@ public class OpenSearchPersonSearcher {
     }
     private List<PersonDocument> executeSearch(SearchSourceBuilder source) {
         try {
-            System.out.println("🔥 QUERY = " + source.toString());
+            System.out.println("QUERY = " + source.toString());
             SearchRequest request = new SearchRequest("people_index");
             request.source(source);
 
