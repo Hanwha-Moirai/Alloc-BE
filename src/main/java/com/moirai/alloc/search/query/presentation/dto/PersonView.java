@@ -14,13 +14,16 @@ public class PersonView {
     private String name;
     private String jobTitle;
 
-    // 기술 요약
+    // 직군
+    private String jobRole;
+
+    // 주력 기술
     private List<String> techNames;
     private SkillLevel representativeSkillLevel;
 
-    //상태 정보
+    //투입 상태 판단용
     private Integer activeProjectCount;
-    private String department;
 
+    private String department;
     private String profileSummary;
 }
