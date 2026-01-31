@@ -1,0 +1,4 @@
+DELETE FROM task WHERE task_id IN (99301, 99302, 99303);
+DELETE FROM milestone WHERE milestone_id IN (99201, 99202);
+DELETE FROM project WHERE project_id IN (99101, 99102);
+DELETE FROM users WHERE user_id IN (99111, 99112);

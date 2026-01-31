@@ -1,7 +1,8 @@
-package com.moirai.alloc.gantt.query.application;
+package com.moirai.alloc.gantt.query;
 
 import com.moirai.alloc.gantt.common.security.AuthenticatedUserProvider;
 import com.moirai.alloc.gantt.command.domain.entity.Task.TaskCategory;
+import com.moirai.alloc.gantt.query.application.GanttQueryService;
 import com.moirai.alloc.gantt.query.dto.request.TaskSearchRequest;
 import com.moirai.alloc.gantt.query.dto.response.MilestoneResponse;
 import com.moirai.alloc.gantt.query.dto.response.TaskResponse;
@@ -12,9 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 

@@ -69,6 +69,8 @@ public class WeeklyReportCommandService {
                 reportDate,
                 reportDate
         );
+        Double taskCompletionRate = calculateTaskCompletionRate(projectId, reportDate);
+        report.updateReport(null, null, taskCompletionRate);
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
         saveWeeklyTasksSnapshot(saved);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
@@ -103,7 +105,7 @@ public class WeeklyReportCommandService {
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
 
-        report.updateReport(request.reportStatus(), request.changeOfPlan(), request.taskCompletionRate());
+        report.updateReport(request.reportStatus(), request.changeOfPlan(), null);
 
         issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
         weeklyTaskCommandRepository.deleteByReportReportId(report.getReportId());
@@ -235,6 +237,26 @@ public class WeeklyReportCommandService {
             return Integer.MAX_VALUE;
         }
         return (int) diff;
+    }
+
+    private Double calculateTaskCompletionRate(Long projectId, LocalDate reportDate) {
+        List<TaskProjection> dueTasks = taskQueryMapper.findTasks(
+                projectId,
+                null,
+                null,
+                null,
+                reportDate,
+                null
+        );
+        int total = dueTasks.size();
+        if (total == 0) {
+            return 0.0;
+        }
+        long completed = dueTasks.stream()
+                .filter(task -> Boolean.TRUE.equals(task.isCompleted())
+                        || Task.TaskStatus.DONE.equals(task.taskStatus()))
+                .count();
+        return completed / (double) total;
     }
 
     private void validateMembership(Long projectId, Long userId) {

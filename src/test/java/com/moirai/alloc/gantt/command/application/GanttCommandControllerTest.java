@@ -19,6 +19,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,6 +32,9 @@ class GanttCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     @Test
     @DisplayName("PM 권한으로 태스크 생성이 성공한다.")
@@ -47,6 +53,7 @@ class GanttCommandControllerTest {
 
         mockMvc.perform(post("/api/projects/{projectId}/tasks", 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -58,7 +65,8 @@ class GanttCommandControllerTest {
     @DisplayName("PM 권한으로 태스크 삭제가 성공한다.")
     void deleteTask_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth())))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrfToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -97,5 +105,14 @@ class GanttCommandControllerTest {
                 "pw"
         );
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private RequestPostProcessor csrfToken() {
+        return request -> {
+            String token = "test-csrf-token";
+            request.setCookies(new Cookie(authCookieProperties.getCsrfTokenName(), token));
+            request.addHeader("X-CSRF-Token", token);
+            return request;
+        };
     }
 }
