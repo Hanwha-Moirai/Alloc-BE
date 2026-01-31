@@ -56,7 +56,6 @@ public class SecurityConfig {
                 // 인가 설정
                 // ========================================================
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/search/reindex").permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -80,10 +79,10 @@ public class SecurityConfig {
         // ========================================================
         // JWT 필터
         // ========================================================
-//        http.addFilterBefore(
-//                new DoubleSubmitCsrfFilter(authCookieProperties.getCsrfTokenName(), objectMapper),
-//                UsernamePasswordAuthenticationFilter.class
-//        );
+        http.addFilterBefore(
+                new DoubleSubmitCsrfFilter(authCookieProperties.getCsrfTokenName(), objectMapper),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         http.addFilterBefore(
                 new JwtAuthenticationFilter(
