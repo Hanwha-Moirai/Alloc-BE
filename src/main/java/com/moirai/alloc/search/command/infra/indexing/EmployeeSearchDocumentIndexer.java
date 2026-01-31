@@ -6,6 +6,7 @@ import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
 import com.moirai.alloc.search.command.infra.builder.ProfileSummaryBuilder;
 import com.moirai.alloc.search.query.domain.vocabulary.JobGrade;
+import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
 import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
 import com.moirai.alloc.search.query.domain.vocabulary.SkillLevel;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
@@ -69,12 +70,13 @@ public class EmployeeSearchDocumentIndexer {
         SeniorityLevel seniorityLevel = resolveSeniority(employee);
         JobGrade jobGrade =
                 JobGrade.fromTitleName(employee.getTitleStandard().getTitleName());
-
+        JobRole jobRole = resolveJobRole(employee);
         PersonDocument document = PersonDocument.builder()
                 .personId(employee.getUserId())
                 .name(employee.getUser().getUserName())
                 .jobTitle(employee.getTitleStandard().getTitleName())
                 .department(employee.getDepartment().getDeptName())
+                .jobRole(jobRole.name())
                 .seniorityLevelLevel(seniorityLevel.level())
                 .jobGradeLevel(jobGrade.getLevel())
                 .techSkills(techSkills)
@@ -107,6 +109,7 @@ public class EmployeeSearchDocumentIndexer {
             source.put("name", document.getName());
             source.put("jobTitle", document.getJobTitle());
             source.put("department", document.getDepartment());
+            source.put("jobRole", document.getJobRole());
             source.put("seniorityLevelLevel", document.getSeniorityLevelLevel());
             source.put("jobGradeLevel", document.getJobGradeLevel());
             source.put("activeProjectCount", document.getActiveProjectCount());
@@ -134,6 +137,48 @@ public class EmployeeSearchDocumentIndexer {
             );
         }
     }
+    private JobRole resolveJobRole(Employee employee) {
+
+        // 1️⃣ 직무명 기반
+        if (employee.getJob() != null) {
+            String jobName =
+                    employee.getJob().getJobName().toLowerCase();
+
+            if (jobName.contains("백엔드") || jobName.contains("서버")) {
+                return JobRole.BACKEND;
+            }
+            if (jobName.contains("프론트")) {
+                return JobRole.FRONTEND;
+            }
+            if (jobName.contains("인프라") || jobName.contains("devops")) {
+                return JobRole.INFRA;
+            }
+            if (jobName.contains("데이터")) {
+                return JobRole.DATA;
+            }
+        }
+
+        // 2️⃣ 기술 스택 기반 fallback
+        List<String> techs =
+                employeeSkillRepository
+                        .findTechSkillsForIndexing(employee.getUserId())
+                        .stream()
+                        .map(r -> r.getTechName().toLowerCase())
+                        .toList();
+
+        if (techs.contains("java") || techs.contains("spring")) {
+            return JobRole.BACKEND;
+        }
+        if (techs.contains("react") || techs.contains("vue")) {
+            return JobRole.FRONTEND;
+        }
+        if (techs.contains("docker") || techs.contains("kubernetes")) {
+            return JobRole.INFRA;
+        }
+
+        return JobRole.ETC;
+    }
+
 
 
     private SeniorityLevel resolveSeniority(Employee employee) {

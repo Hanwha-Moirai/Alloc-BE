@@ -24,6 +24,7 @@ public class PersonViewMapper {
                 .personId(doc.getPersonId())
                 .name(doc.getName())
                 .jobTitle(doc.getJobTitle())
+                .jobRole(doc.getJobRole())
                 //기술요약
                 .techNames(
                         doc.getTechSkills() == null

@@ -101,32 +101,14 @@ public class OpenSearchPersonSearcher {
     private void applyJobRole(SearchIntent intent, BoolQueryBuilder bool) {
         if (intent.getJobRole() == null) return;
 
-        BoolQueryBuilder roleQuery = QueryBuilders.boolQuery();
-
-        for (String keyword : resolveJobRoleKeywords(intent.getJobRole())) {
-            roleQuery.should(
-                    QueryBuilders.matchQuery("jobTitle", keyword).boost(3.0f)
-            );
-            roleQuery.should(
-                    QueryBuilders.matchQuery("profileSummary", keyword).boost(2.0f)
-            );
-        }
-
-        // 기술도 role 보강 점수로 추가
-        if (intent.getSkillConditions() != null) {
-            intent.getSkillConditions().forEach(sc ->
-                    roleQuery.should(
-                            QueryBuilders.matchQuery(
-                                    "profileSummary",
-                                    sc.getTechName()
-                            ).boost(2.5f)
-                    )
-            );
-        }
-        roleQuery.minimumShouldMatch(1);
-
-        bool.should(roleQuery);
+        bool.filter(
+                QueryBuilders.termQuery(
+                        "jobRole",
+                        intent.getJobRole().name()
+                )
+        );
     }
+
 
 //    private void applyExperienceDomain(SearchIntent intent, BoolQueryBuilder bool) {
 //        if (intent.getExperienceDomain() == null) return;
@@ -290,6 +272,7 @@ public class OpenSearchPersonSearcher {
                 .name((String) source.get("name"))
                 .jobTitle((String) source.get("jobTitle"))
                 .department((String) source.get("department"))
+                .jobRole((String) source.get("jobRole"))
                 .activeProjectCount(
                         ((Number) source.get("activeProjectCount")).intValue()
                 )
