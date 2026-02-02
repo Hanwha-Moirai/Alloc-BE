@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -20,6 +21,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
+import jakarta.servlet.http.Cookie;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +36,9 @@ class GanttUpdateTaskControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     @Test
     @DisplayName("태스크 생성 직후 담당자가 상태 변경에 성공한다.")
@@ -51,8 +57,9 @@ class GanttUpdateTaskControllerTest {
 
         var createResult = mockMvc.perform(post("/api/projects/{projectId}/tasks", 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(createBody))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andReturn();
@@ -70,8 +77,9 @@ class GanttUpdateTaskControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, taskId)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateBody))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -87,8 +95,9 @@ class GanttUpdateTaskControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -104,8 +113,9 @@ class GanttUpdateTaskControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isForbidden());
     }
 
@@ -120,8 +130,9 @@ class GanttUpdateTaskControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isForbidden());
     }
 
@@ -136,8 +147,9 @@ class GanttUpdateTaskControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/tasks/{taskId}", 99001, 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(assigneeAuth()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                .with(csrfToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
@@ -176,5 +188,14 @@ class GanttUpdateTaskControllerTest {
                 "pw"
         );
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private RequestPostProcessor csrfToken() {
+        return request -> {
+            String token = "test-csrf-token";
+            request.setCookies(new Cookie(authCookieProperties.getCsrfTokenName(), token));
+            request.addHeader("X-CSRF-Token", token);
+            return request;
+        };
     }
 }

@@ -77,13 +77,6 @@ public class SquadAssignment {
         return sa;
     }
 
-    private void validateNotDecided() {
-        if (this.finalDecision != FinalDecision.PENDING) {
-            throw new IllegalStateException(
-                    "이미 최종 결정된 인력 배치는 상태를 변경할 수 없습니다."
-            );
-        }
-    }
     private void validateAssignedUser(Long actorUserId) {
         if (!this.userId.equals(actorUserId)) {
             throw new IllegalStateException("배정 대상자만 수행할 수 있는 작업입니다.");
@@ -93,7 +86,6 @@ public class SquadAssignment {
     // 직원 수락
     public void acceptAssignment(Long actorUserId) {
         validateAssignedUser(actorUserId);
-        validateNotDecided();
 
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 수락할 수 있습니다.");
@@ -106,7 +98,6 @@ public class SquadAssignment {
     // 직원 인터뷰 요청
     public void requestInterview(Long actorUserId) {
         validateAssignedUser(actorUserId);
-        validateNotDecided();
 
         if (this.assignmentStatus != AssignmentStatus.REQUESTED) {
             throw new IllegalStateException("요청 상태에서만 인터뷰 요청이 가능합니다.");
@@ -116,15 +107,22 @@ public class SquadAssignment {
     }
     // pm 액션
     public void finalAssign() {
-        validateNotDecided();
+        validateInterviewRequested();
         this.finalDecision = FinalDecision.ASSIGNED;
         this.decidedAt = LocalDateTime.now();
     }
 
     public void finalExclude() {
-        validateNotDecided();
+        validateInterviewRequested();
         this.finalDecision = FinalDecision.EXCLUDED;
         this.decidedAt = LocalDateTime.now();
+    }
+    private void validateInterviewRequested() {
+        if (this.assignmentStatus != AssignmentStatus.INTERVIEW_REQUESTED) {
+            throw new IllegalStateException(
+                    "인터뷰 요청 상태에서만 PM이 최종 결정을 할 수 있습니다."
+            );
+        }
     }
     //조회용
     public boolean isPending() {

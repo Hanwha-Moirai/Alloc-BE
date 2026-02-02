@@ -8,7 +8,6 @@ public record UpdateWeeklyReportRequest(
         Long reportId,
         WeeklyReport.ReportStatus reportStatus,
         String changeOfPlan,
-        Double taskCompletionRate,
         List<CompletedTaskRequest> completedTasks,
         List<IncompleteTaskRequest> incompleteTasks,
         List<NextWeekTaskRequest> nextWeekTasks
