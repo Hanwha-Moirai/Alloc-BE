@@ -4,6 +4,8 @@ import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.management.command.dto.EditProjectDTO;
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
 import com.moirai.alloc.management.command.service.EditProject;
+import com.moirai.alloc.management.command.service.ProjectSpecIngestService;
+import com.moirai.alloc.management.command.dto.ProjectSpecParseResponse;
 import com.moirai.alloc.management.command.service.RegisterProject;
 import com.moirai.alloc.management.query.dto.projectDetail.ProjectDetailViewDTO;
 import com.moirai.alloc.management.query.dto.projectList.ProjectListItemDTO;
@@ -15,7 +17,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,7 @@ public class ProjectController {
     private final RegisterProject registerProject;
     private final GetProjectRegistrationView getProjectRegistrationView;
     private final EditProject editProject;
+    private final ProjectSpecIngestService projectSpecIngestService;
     // 프로젝트 목록 조회 (USER + PM)
     @GetMapping
     public List<ProjectListItemDTO> getProjects(
@@ -77,5 +82,15 @@ public class ProjectController {
             throw new IllegalArgumentException("Project ID mismatch");
         }
         editProject.update(command);
+    }
+
+    // 프로젝트 기획서(PDF) 업로드 및 자동 메타 채움 (PM 전용)
+    @PreAuthorize("hasRole('PM')")
+    @PostMapping(value = "/{projectId}/docs/project-spec", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProjectSpecParseResponse uploadProjectSpec(
+            @PathVariable Long projectId,
+            @RequestPart("file") MultipartFile file
+    ) {
+        return projectSpecIngestService.ingest(projectId, file);
     }
 }
