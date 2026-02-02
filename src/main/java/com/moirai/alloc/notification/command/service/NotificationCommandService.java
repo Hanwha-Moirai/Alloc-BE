@@ -9,6 +9,7 @@ import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
 import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Transactional(transactionManager = "transactionManager")
+@Slf4j
 public class NotificationCommandService {
 
     private final AlarmLogRepository alarmLogRepository;
@@ -37,11 +39,17 @@ public class NotificationCommandService {
      */
     public InternalNotificationCreateResponse createInternalNotifications(InternalNotificationCommand cmd) {
 
+        log.info("Creating notifications templateType={} targetUserIds={} targetType={} targetId={} linkUrl={}",
+                cmd.templateType(), cmd.targetUserIds(), cmd.targetType(), cmd.targetId(), cmd.linkUrl());
+
         AlarmTemplate template = alarmTemplateRepository
                 .findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(cmd.templateType())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "알림 템플릿을 찾을 수 없습니다. type=" + cmd.templateType()
                 ));
+
+        log.info("Resolved alarm template id={} type={} title={}",
+                template.getId(), template.getAlarmTemplateType(), template.getTemplateTitle());
 
         String mergedTitle = mergeVariables(template.getTemplateTitle(), cmd.variables());
         String mergedBody  = mergeVariables(template.getTemplateContext(), cmd.variables());
@@ -59,6 +67,8 @@ public class NotificationCommandService {
                 .toList();
 
         List<AlarmLog> saved = alarmLogRepository.saveAll(logs);
+        log.info("Saved alarm_log count={} ids={}",
+                saved.size(), saved.stream().map(AlarmLog::getId).toList());
 
         List<AlarmSendLog> sendLogs = saved.stream()
                 .map(alarm -> AlarmSendLog.builder()
@@ -71,6 +81,7 @@ public class NotificationCommandService {
                 .toList();
 
         alarmSendLogRepository.saveAll(sendLogs);
+        log.info("Saved alarm_send_log count={}", sendLogs.size());
 
         for (AlarmLog alarm : saved) {
             eventPublisher.publishEvent(AlarmCreatedEvent.builder()
