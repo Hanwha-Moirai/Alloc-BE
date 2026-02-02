@@ -1,11 +1,12 @@
 package com.moirai.alloc.admin.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import com.moirai.alloc.support.TestCsrf;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,11 +26,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/admin/tech_stack_setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-@EnableJpaAuditing
 class AdminTechStackCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     @Test
     void createTechStack_returnsId() throws Exception {
@@ -41,6 +44,7 @@ class AdminTechStackCommandControllerTest {
 
         mockMvc.perform(post("/api/admin/tech-stacks")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                        .with(TestCsrf.csrfToken(authCookieProperties))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -58,6 +62,7 @@ class AdminTechStackCommandControllerTest {
 
         mockMvc.perform(patch("/api/admin/tech-stacks/{stackId}", 99001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                        .with(TestCsrf.csrfToken(authCookieProperties))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -68,7 +73,8 @@ class AdminTechStackCommandControllerTest {
     @Test
     void deleteTechStack_returnsId() throws Exception {
         mockMvc.perform(delete("/api/admin/tech-stacks/{stackId}", 99002)
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth())))
+                        .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                        .with(TestCsrf.csrfToken(authCookieProperties)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data").value(99002));
@@ -84,6 +90,7 @@ class AdminTechStackCommandControllerTest {
 
         mockMvc.perform(post("/api/admin/tech-stacks")
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                        .with(TestCsrf.csrfToken(authCookieProperties))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());

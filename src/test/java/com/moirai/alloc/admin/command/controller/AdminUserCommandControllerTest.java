@@ -1,5 +1,7 @@
 package com.moirai.alloc.admin.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
+import com.moirai.alloc.support.TestCsrf;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,9 @@ class AdminUserCommandControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
+
     // user_setup.sql 기준
     private static final Long JOB_ID_BACKEND = 1L;
     private static final Long DEPT_ID_DEV = 1L;
@@ -74,6 +79,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -102,6 +108,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -131,6 +138,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -172,6 +180,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -200,6 +209,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -229,6 +239,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -248,6 +259,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -263,6 +275,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -284,6 +297,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -311,6 +325,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -334,6 +349,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -349,6 +365,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/999999")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -364,6 +381,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())

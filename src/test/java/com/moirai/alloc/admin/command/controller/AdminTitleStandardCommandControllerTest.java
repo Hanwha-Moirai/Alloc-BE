@@ -1,6 +1,8 @@
 package com.moirai.alloc.admin.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import com.moirai.alloc.support.TestCsrf;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,9 @@ class AdminTitleStandardCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     // title_setup.sql 기준 ID
     private static final Long TITLE_ID_JUNIOR = 88001L;
@@ -88,6 +93,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(post("/api/admin/titles")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -108,6 +114,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(post("/api/admin/titles")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -125,6 +132,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -143,6 +151,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(post("/api/admin/titles")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -161,6 +170,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(post("/api/admin/titles")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -179,6 +189,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(post("/api/admin/titles")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -202,6 +213,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -222,6 +234,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -239,6 +252,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -257,6 +271,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", 99999L)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isNotFound())
@@ -275,6 +290,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -293,6 +309,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -311,6 +328,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -331,6 +349,7 @@ class AdminTitleStandardCommandControllerTest {
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
+                            .with(TestCsrf.csrfToken(authCookieProperties))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
