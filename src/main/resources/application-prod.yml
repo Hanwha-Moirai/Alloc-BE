@@ -25,3 +25,8 @@ spring:
 
 mail:
   from: ${MAIL_FROM:allocmoirai@gmail.com}
+
+management:
+  health:
+    mail:
+      enabled: false
