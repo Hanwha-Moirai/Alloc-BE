@@ -126,12 +126,12 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: moirai-core-service
+          service: moirai-core-service2
           cluster: app-ecs-fargate-cluster
           wait-for-service-stability: true
 
       - name: 배포 완료
         run: |
           echo "# ECS 배포 완료" >> $GITHUB_STEP_SUMMARY
-          echo "서비스: moirai-core-service" >> $GITHUB_STEP_SUMMARY
+          echo "서비스: moirai-core-service2" >> $GITHUB_STEP_SUMMARY
           echo "이미지: ${{ needs.build.outputs.img-uri }}:${{ needs.build.outputs.img-tag }}" >> $GITHUB_STEP_SUMMARY
