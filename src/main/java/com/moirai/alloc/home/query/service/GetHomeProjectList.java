@@ -1,5 +1,6 @@
 package com.moirai.alloc.home.query.service;
 
+import com.moirai.alloc.gantt.query.application.GanttQueryService;
 import com.moirai.alloc.home.query.dto.HomeProjectListItemDTO;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.project.command.domain.Project;
@@ -12,8 +13,13 @@ import java.util.List;
 @Transactional(readOnly=true)
 public class GetHomeProjectList {
     private final SquadAssignmentRepository squadAssignmentRepository;
-    public GetHomeProjectList(SquadAssignmentRepository squadAssignmentRepository) {
+    private final GanttQueryService ganttQueryService;
+
+    public GetHomeProjectList(
+            SquadAssignmentRepository squadAssignmentRepository,
+            GanttQueryService ganttQueryService) {
         this.squadAssignmentRepository = squadAssignmentRepository;
+        this.ganttQueryService = ganttQueryService;
     }
     public List<HomeProjectListItemDTO> getHomeProjectList(Long userId){
 //        1) userId를 기준으로 사용자 식별
@@ -23,14 +29,22 @@ public class GetHomeProjectList {
                 squadAssignmentRepository.findProjectsByUserId(userId);
 
         return projects.stream()
-                .map(project -> new HomeProjectListItemDTO(
-                        project.getProjectId(),
-                        project.getName(),
-                        project.getStartDate(),
-                        project.getEndDate(),
-                        project.getProjectStatus(),
-                        null   // progressRate (타 팀원)
-                ))
+                .map(project -> {
+
+                    Double rate =
+                            ganttQueryService.findMilestoneCompletionRate(
+                                    project.getProjectId()
+                            );
+
+                    return new HomeProjectListItemDTO(
+                            project.getProjectId(),
+                            project.getName(),
+                            project.getStartDate(),
+                            project.getEndDate(),
+                            project.getProjectStatus(),
+                            rate == null ? 0 : rate.intValue()
+                    );
+                })
                 .toList();
     }
 }
