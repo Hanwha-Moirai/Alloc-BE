@@ -1,3 +1,6 @@
+DELETE FROM employee_skill WHERE user_id IN (99001, 99002);
+DELETE FROM employee WHERE user_id IN (99001, 99002);
+
 INSERT INTO users (user_id, login_id, password, user_name, email, phone, status, auth)
 VALUES
     (99001, 'test_pm_99001', 'pw', 'PM User', 'pm99001@example.com', '01000000001', 'ACTIVE', 'PM'),
@@ -26,4 +29,15 @@ INSERT INTO task (task_id, milestone_id, user_id, task_category, task_name, task
 VALUES
     (99001, 99001, 99002, 'DEVELOPMENT', 'Seed Task 1', 'desc', 'TODO', '2025-01-02', '2025-01-05', 0, 0, '2025-01-02 00:00:00', '2025-01-02 00:00:00'),
     (99002, 99002, 99002, 'TESTING', 'Done Task', 'desc', 'DONE', '2025-01-03', '2025-01-04', 1, 0, '2025-01-03 00:00:00', '2025-01-05 00:00:00')
-ON DUPLICATE KEY UPDATE task_name = VALUES(task_name);
+ON DUPLICATE KEY UPDATE
+    milestone_id = VALUES(milestone_id),
+    user_id = VALUES(user_id),
+    task_category = VALUES(task_category),
+    task_name = VALUES(task_name),
+    task_description = VALUES(task_description),
+    task_status = VALUES(task_status),
+    start_date = VALUES(start_date),
+    end_date = VALUES(end_date),
+    is_completed = VALUES(is_completed),
+    is_deleted = VALUES(is_deleted),
+    updated_at = VALUES(updated_at);

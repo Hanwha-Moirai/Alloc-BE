@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,6 +61,7 @@ class MeetingRecordDocsCommandControllerTest {
 
         mockMvc.perform(post("/api/projects/{projectId}/docs/meeting_record/create", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -95,6 +97,7 @@ class MeetingRecordDocsCommandControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/docs/meeting_record/save", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -106,6 +109,7 @@ class MeetingRecordDocsCommandControllerTest {
     void deleteMeetingRecord_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/projects/{projectId}/docs/meeting_record/delete", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrf())
                         .param("meetingId", "88001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
