@@ -1,6 +1,8 @@
 package com.moirai.alloc.meeting.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +17,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,6 +34,9 @@ class MeetingRecordDocsCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     @Test
     @DisplayName("회의록 생성 요청이 성공한다.")
@@ -61,7 +66,7 @@ class MeetingRecordDocsCommandControllerTest {
 
         mockMvc.perform(post("/api/projects/{projectId}/docs/meeting_record/create", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .with(csrf())
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -97,7 +102,7 @@ class MeetingRecordDocsCommandControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/docs/meeting_record/save", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .with(csrf())
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -109,7 +114,7 @@ class MeetingRecordDocsCommandControllerTest {
     void deleteMeetingRecord_returnsOk() throws Exception {
         mockMvc.perform(delete("/api/projects/{projectId}/docs/meeting_record/delete", 88001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
-                        .with(csrf())
+                        .with(csrfToken())
                         .param("meetingId", "88001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
@@ -125,5 +130,14 @@ class MeetingRecordDocsCommandControllerTest {
                 "pw"
         );
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private RequestPostProcessor csrfToken() {
+        return request -> {
+            String token = "test-csrf-token";
+            request.setCookies(new Cookie(authCookieProperties.getCsrfTokenName(), token));
+            request.addHeader("X-CSRF-Token", token);
+            return request;
+        };
     }
 }

@@ -1,5 +1,7 @@
 package com.moirai.alloc.profile.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.time.LocalDate;
 
@@ -53,6 +56,9 @@ class MyProfileCommandControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
+
     @Nested
     @DisplayName("기본 정보 수정 API")
     class UpdateMyProfileApi {
@@ -67,6 +73,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(put("/api/users/me/profile")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized());
@@ -86,6 +93,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(put("/api/users/me/profile")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -107,6 +115,7 @@ class MyProfileCommandControllerTest {
             String requestJson = "{}";
 
             mockMvc.perform(put("/api/users/me/profile")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -129,6 +138,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/users/me/tech-stacks")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized());
@@ -146,6 +156,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             MvcResult result = mockMvc.perform(post("/api/users/me/tech-stacks")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andDo(print())
@@ -170,6 +181,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/users/me/tech-stacks")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isConflict())
@@ -191,6 +203,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA + "/proficiency")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized());
@@ -207,6 +220,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA + "/proficiency")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -227,6 +241,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA + "/proficiency")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -244,6 +259,7 @@ class MyProfileCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/users/me/tech-stacks/999999/proficiency")
+                            .with(csrfToken())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isNotFound())
@@ -258,7 +274,8 @@ class MyProfileCommandControllerTest {
         @Test
         @DisplayName("인증되지 않은 사용자는 401을 받는다")
         void unauthorized() throws Exception {
-            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA))
+            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA)
+                            .with(csrfToken()))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -266,7 +283,8 @@ class MyProfileCommandControllerTest {
         @DisplayName("기술 스택을 삭제한다")
         @WithUserDetails("kmj")
         void deleteTechStack_success() throws Exception {
-            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA))
+            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA)
+                            .with(csrfToken()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.employeeTechId").value(EMPLOYEE_TECH_ID_JAVA))
@@ -278,7 +296,8 @@ class MyProfileCommandControllerTest {
         @DisplayName("다른 사용자의 기술 스택 삭제 시 403을 받는다")
         @WithUserDetails("nostack")
         void forbidden() throws Exception {
-            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA))
+            mockMvc.perform(delete("/api/users/me/tech-stacks/" + EMPLOYEE_TECH_ID_JAVA)
+                            .with(csrfToken()))
                     .andExpect(status().isForbidden())
                     .andDo(print());
         }
@@ -287,9 +306,19 @@ class MyProfileCommandControllerTest {
         @DisplayName("존재하지 않는 기술 스택이면 404를 받는다")
         @WithUserDetails("kmj")
         void notFound() throws Exception {
-            mockMvc.perform(delete("/api/users/me/tech-stacks/999999"))
+            mockMvc.perform(delete("/api/users/me/tech-stacks/999999")
+                            .with(csrfToken()))
                     .andExpect(status().isNotFound())
                     .andDo(print());
         }
+    }
+
+    private RequestPostProcessor csrfToken() {
+        return request -> {
+            String token = "test-csrf-token";
+            request.setCookies(new Cookie(authCookieProperties.getCsrfTokenName(), token));
+            request.addHeader("X-CSRF-Token", token);
+            return request;
+        };
     }
 }
