@@ -2,6 +2,8 @@ package com.moirai.alloc.report.command.service;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.gantt.command.domain.entity.Task;
+import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
+import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
@@ -11,10 +13,11 @@ import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
-import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportCreateResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
 import com.moirai.alloc.report.query.repository.ReportMembershipRepository;
 import com.moirai.alloc.report.query.repository.WeeklyReportQueryRepository;
+import com.moirai.alloc.notification.command.service.NotificationCommandService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class WeeklyReportCommandService {
@@ -32,6 +36,8 @@ public class WeeklyReportCommandService {
     private final IssueBlockerCommandRepository issueBlockerCommandRepository;
     private final ReportMembershipRepository membershipRepository;
     private final WeeklyReportQueryRepository weeklyReportQueryRepository;
+    private final NotificationCommandService notificationCommandService;
+    private final TaskQueryMapper taskQueryMapper;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -40,12 +46,16 @@ public class WeeklyReportCommandService {
                                       WeeklyTaskCommandRepository weeklyTaskCommandRepository,
                                       IssueBlockerCommandRepository issueBlockerCommandRepository,
                                       ReportMembershipRepository membershipRepository,
-                                      WeeklyReportQueryRepository weeklyReportQueryRepository) {
+                                      WeeklyReportQueryRepository weeklyReportQueryRepository,
+                                      NotificationCommandService notificationCommandService,
+                                      TaskQueryMapper taskQueryMapper) {
         this.weeklyReportCommandRepository = weeklyReportCommandRepository;
         this.weeklyTaskCommandRepository = weeklyTaskCommandRepository;
         this.issueBlockerCommandRepository = issueBlockerCommandRepository;
         this.membershipRepository = membershipRepository;
         this.weeklyReportQueryRepository = weeklyReportQueryRepository;
+        this.notificationCommandService = notificationCommandService;
+        this.taskQueryMapper = taskQueryMapper;
     }
 
     @Transactional
@@ -59,9 +69,13 @@ public class WeeklyReportCommandService {
                 reportDate,
                 reportDate
         );
+        Double taskCompletionRate = calculateTaskCompletionRate(projectId, reportDate);
+        report.updateReport(null, null, taskCompletionRate);
         WeeklyReport saved = weeklyReportCommandRepository.save(report);
+        saveWeeklyTasksSnapshot(saved);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        //notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
         return new WeeklyReportCreateResponse(
                 detail.reportId(),
                 detail.projectId(),
@@ -91,23 +105,39 @@ public class WeeklyReportCommandService {
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
 
-        report.updateReport(request.reportStatus(), request.changeOfPlan(), request.taskCompletionRate());
+        report.updateReport(request.reportStatus(), request.changeOfPlan(), null);
 
         issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
         weeklyTaskCommandRepository.deleteByReportReportId(report.getReportId());
 
+        // request의 완수 task 목록이 비어 있는 것이 아니라면
         if (request.completedTasks() != null) {
             request.completedTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
-                WeeklyTask weeklyTask = WeeklyTask.create(report, task, WeeklyTask.TaskType.COMPLETED, null, null);
+                WeeklyTask weeklyTask = WeeklyTask.create(
+                        report,
+                        task,
+                        WeeklyTask.TaskType.COMPLETED,
+                        null,
+                        null,
+                        task.getIsCompleted()
+                );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
         }
 
+        // request의 미완수 task 목록이 비어 있다면
         if (request.incompleteTasks() != null) {
             request.incompleteTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
-                WeeklyTask weeklyTask = WeeklyTask.create(report, task, WeeklyTask.TaskType.INCOMPLETE, null, null);
+                WeeklyTask weeklyTask = WeeklyTask.create(
+                        report,
+                        task,
+                        WeeklyTask.TaskType.INCOMPLETE,
+                        null,
+                        null,
+                        task.getIsCompleted()
+                );
                 WeeklyTask savedTask = weeklyTaskCommandRepository.save(weeklyTask);
                 createIssueBlocker(savedTask, taskRequest);
             });
@@ -121,7 +151,8 @@ public class WeeklyReportCommandService {
                         task,
                         WeeklyTask.TaskType.NEXT_WEEK,
                         taskRequest.plannedStartDate(),
-                        taskRequest.plannedEndDate()
+                        taskRequest.plannedEndDate(),
+                        task.getIsCompleted()
                 );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
@@ -143,16 +174,89 @@ public class WeeklyReportCommandService {
     }
 
     private void createIssueBlocker(WeeklyTask weeklyTask, IncompleteTaskRequest request) {
-        if (request.delayReason() == null) {
-            return;
-        }
+        Integer delayedDates = calculateDelayedDates(weeklyTask.getReport(), weeklyTask.getTask());
         IssueBlocker blocker = IssueBlocker.create(
                 weeklyTask,
                 request.delayReason(),
                 null,
-                null
+                delayedDates
         );
         issueBlockerCommandRepository.save(blocker);
+    }
+
+    private void createIssueBlocker(WeeklyTask weeklyTask) {
+        Integer delayedDates = calculateDelayedDates(weeklyTask.getReport(), weeklyTask.getTask());
+        IssueBlocker blocker = IssueBlocker.create(
+                weeklyTask,
+                null,
+                null,
+                delayedDates
+        );
+        issueBlockerCommandRepository.save(blocker);
+    }
+
+    private void saveWeeklyTasksSnapshot(WeeklyReport report) {
+        List<TaskProjection> tasks = taskQueryMapper.findTasks(
+                report.getProjectId(),
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        for (TaskProjection projection : tasks) {
+            Task task = entityManager.getReference(Task.class, projection.taskId());
+            boolean isCompleted = Boolean.TRUE.equals(projection.isCompleted());
+            WeeklyTask.TaskType taskType = isCompleted
+                    ? WeeklyTask.TaskType.COMPLETED
+                    : WeeklyTask.TaskType.INCOMPLETE;
+            WeeklyTask weeklyTask = WeeklyTask.create(
+                    report,
+                    task,
+                    taskType,
+                    null,
+                    null,
+                    isCompleted
+            );
+            WeeklyTask savedTask = weeklyTaskCommandRepository.save(weeklyTask);
+            if (taskType == WeeklyTask.TaskType.INCOMPLETE) {
+                createIssueBlocker(savedTask);
+            }
+        }
+    }
+
+    private Integer calculateDelayedDates(WeeklyReport report, Task task) {
+        if (report.getWeekEndDate() == null || task.getEndDate() == null) {
+            return null;
+        }
+        long diff = java.time.temporal.ChronoUnit.DAYS.between(task.getEndDate(), report.getWeekEndDate());
+        if (diff <= 0) {
+            return 0;
+        }
+        if (diff > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) diff;
+    }
+
+    private Double calculateTaskCompletionRate(Long projectId, LocalDate reportDate) {
+        List<TaskProjection> dueTasks = taskQueryMapper.findTasks(
+                projectId,
+                null,
+                null,
+                null,
+                reportDate,
+                null
+        );
+        int total = dueTasks.size();
+        if (total == 0) {
+            return 0.0;
+        }
+        long completed = dueTasks.stream()
+                .filter(task -> Boolean.TRUE.equals(task.isCompleted())
+                        || Task.TaskStatus.DONE.equals(task.taskStatus()))
+                .count();
+        return completed / (double) total;
     }
 
     private void validateMembership(Long projectId, Long userId) {
@@ -168,4 +272,18 @@ public class WeeklyReportCommandService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "권한이 없습니다.");
         }
     }
+
+    /*
+    private void notifyWeeklyReportCreated(Long reportId, Long projectId, String reporterName, Long userId) {
+        InternalNotificationCreateRequest request = InternalNotificationCreateRequest.of(
+                AlarmTemplateType.WEEKLY_REPORT,
+                java.util.List.of(userId),
+                java.util.Map.of("weeklyReportName", reporterName),
+                TargetType.WEEKLY_REPORT,
+                reportId,
+                "/projects/" + projectId + "/docs/report/" + reportId
+        );
+        notificationCommandService.createInternalNotifications(request);
+    }
+     */
 }

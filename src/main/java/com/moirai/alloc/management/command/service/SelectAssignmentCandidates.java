@@ -3,11 +3,13 @@ package com.moirai.alloc.management.command.service;
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
+import com.moirai.alloc.management.command.event.ProjectTempAssignmentEvent;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
 import com.moirai.alloc.project.command.domain.Project;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +28,16 @@ public class SelectAssignmentCandidates {
 
     private final SquadAssignmentRepository assignmentRepository;
     private final ProjectRepository projectRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public SelectAssignmentCandidates(
             SquadAssignmentRepository assignmentRepository,
-            ProjectRepository projectRepository
+            ProjectRepository projectRepository,
+            ApplicationEventPublisher eventPublisher
     ) {
         this.assignmentRepository = assignmentRepository;
         this.projectRepository = projectRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public void selectAssignmentCandidates(AssignCandidateDTO command) {
@@ -54,13 +59,18 @@ public class SelectAssignmentCandidates {
                     continue;
                 }
 
-                assignmentRepository.save(
+                SquadAssignment saved = assignmentRepository.save(
                         SquadAssignment.propose(
                                 project.getProjectId(),
                                 userId,
                                 candidate.getFitnessScore()
                         )
                 );
+                eventPublisher.publishEvent(new ProjectTempAssignmentEvent(
+                        project.getProjectId(),
+                        project.getName(),
+                        saved.getUserId()
+                ));
             }
         }
     }

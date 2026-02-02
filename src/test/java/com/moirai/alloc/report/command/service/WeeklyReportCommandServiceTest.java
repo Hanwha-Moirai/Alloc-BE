@@ -11,12 +11,11 @@ import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
 import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
-import com.moirai.alloc.report.query.dto.WeeklyReportCreateResponse;
+import com.moirai.alloc.report.command.dto.response.WeeklyReportCreateResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -78,7 +77,6 @@ class WeeklyReportCommandServiceTest {
                 REPORT_ID,
                 WeeklyReport.ReportStatus.REVIEWED,
                 "변경",
-                0.8,
                 List.of(new CompletedTaskRequest(77001L)),
                 List.of(new IncompleteTaskRequest(77002L, "지연")),
                 List.of(new NextWeekTaskRequest(
@@ -101,10 +99,17 @@ class WeeklyReportCommandServiceTest {
         List<WeeklyTask> tasks = weeklyTaskCommandRepository.findAll();
         assertThat(tasks).hasSize(3);
         assertThat(tasks.stream().anyMatch(task -> task.getTaskType() == WeeklyTask.TaskType.NEXT_WEEK)).isTrue();
+        assertThat(tasks.stream()
+                .filter(task -> task.getTaskType() == WeeklyTask.TaskType.COMPLETED)
+                .allMatch(task -> Boolean.TRUE.equals(task.getIsCompleted()))).isTrue();
+        assertThat(tasks.stream()
+                .filter(task -> task.getTaskType() != WeeklyTask.TaskType.COMPLETED)
+                .allMatch(task -> Boolean.FALSE.equals(task.getIsCompleted()))).isTrue();
 
         List<IssueBlocker> blockers = issueBlockerCommandRepository.findAll();
         assertThat(blockers).hasSize(1);
         assertThat(blockers.get(0).getCauseOfDelay()).isEqualTo("지연");
+        assertThat(blockers.get(0).getDelayedDates()).isEqualTo(6);
     }
 
     @Test

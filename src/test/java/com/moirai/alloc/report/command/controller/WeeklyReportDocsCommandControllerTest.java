@@ -1,6 +1,8 @@
 package com.moirai.alloc.report.command.controller;
 
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -26,17 +29,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 @Sql(scripts = "/sql/report/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+//@Sql(scripts = "/sql/report/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class WeeklyReportDocsCommandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private AuthCookieProperties authCookieProperties;
 
     @Test
     @DisplayName("주간보고 생성 요청이 성공한다.")
     void createReport_returnsCreatedResponse() throws Exception {
         mockMvc.perform(post("/api/projects/{projectId}/docs/report/create", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -51,7 +58,6 @@ class WeeklyReportDocsCommandControllerTest {
                   "reportId": 77001,
                   "reportStatus": "REVIEWED",
                   "changeOfPlan": "변경",
-                  "taskCompletionRate": 0.8,
                   "completedTasks": [{"taskId": 77001}],
                   "incompleteTasks": [{"taskId": 77002, "delayReason": "지연"}],
                   "nextWeekTasks": [{"taskId": 77003, "plannedStartDate": "2025-01-13", "plannedEndDate": "2025-01-17"}]
@@ -60,6 +66,7 @@ class WeeklyReportDocsCommandControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/docs/report/save", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -78,6 +85,7 @@ class WeeklyReportDocsCommandControllerTest {
 
         mockMvc.perform(delete("/api/projects/{projectId}/docs/report/delete", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(pmAuth()))
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -93,7 +101,6 @@ class WeeklyReportDocsCommandControllerTest {
                   "reportId": 77001,
                   "reportStatus": "REVIEWED",
                   "changeOfPlan": "변경",
-                  "taskCompletionRate": 0.8,
                   "completedTasks": [{"taskId": 77001}],
                   "incompleteTasks": [{"taskId": 77002, "delayReason": "지연"}],
                   "nextWeekTasks": [{"taskId": 77003, "plannedStartDate": "2025-01-13", "plannedEndDate": "2025-01-17"}]
@@ -102,6 +109,7 @@ class WeeklyReportDocsCommandControllerTest {
 
         mockMvc.perform(patch("/api/projects/{projectId}/docs/report/save", 77001)
                         .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
+                        .with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
@@ -129,5 +137,14 @@ class WeeklyReportDocsCommandControllerTest {
                 "pw"
         );
         return new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    }
+
+    private RequestPostProcessor csrfToken() {
+        return request -> {
+            String token = "test-csrf-token";
+            request.setCookies(new Cookie(authCookieProperties.getCsrfTokenName(), token));
+            request.addHeader("X-CSRF-Token", token);
+            return request;
+        };
     }
 }

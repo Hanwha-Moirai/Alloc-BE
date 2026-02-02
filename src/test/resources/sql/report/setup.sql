@@ -15,10 +15,10 @@ VALUES
     (77002, 77001, 77002, '2025-01-01 00:00:00', 'REQUESTED', 'ASSIGNED', NULL)
 ON DUPLICATE KEY UPDATE assignment_status = VALUES(assignment_status);
 
-INSERT INTO milestone (milestone_id, project_id, milestone_name, start_date, end_date, achievement_rate, is_deleted, created_at, updated_at)
+INSERT INTO milestone (milestone_id, project_id, milestone_name, start_date, end_date, achievement_rate, is_deleted, is_completed, created_at, updated_at)
 VALUES
-    (77001, 77001, 'M1', '2025-01-01', '2025-01-15', 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
-    (77002, 77001, 'M2', '2025-01-16', '2025-01-31', 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
+    (77001, 77001, 'M1', '2025-01-01', '2025-01-15', 0, 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00'),
+    (77002, 77001, 'M2', '2025-01-16', '2025-01-31', 0, 0, 0, '2025-01-01 00:00:00', '2025-01-01 00:00:00')
 ON DUPLICATE KEY UPDATE milestone_name = VALUES(milestone_name);
 
 INSERT INTO task (task_id, milestone_id, user_id, task_category, task_name, task_description, task_status, start_date, end_date, is_completed, is_deleted, created_at, updated_at)
@@ -42,14 +42,14 @@ ON DUPLICATE KEY UPDATE
     summary_text = VALUES(summary_text),
     is_deleted = VALUES(is_deleted);
 
-INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date)
+INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date, is_completed)
 VALUES
-    (77001, 77001, 77001, 'COMPLETED', NULL, NULL),
-    (77002, 77001, 77002, 'INCOMPLETE', NULL, NULL),
-    (77003, 77001, 77003, 'NEXT_WEEK', '2025-01-13', '2025-01-17')
+    (77001, 77001, 77001, 'COMPLETED', NULL, NULL, 1),
+    (77002, 77001, 77002, 'INCOMPLETE', NULL, NULL, 0),
+    (77003, 77001, 77003, 'NEXT_WEEK', '2025-01-13', '2025-01-17', 0)
 ON DUPLICATE KEY UPDATE task_type = VALUES(task_type);
 
 INSERT INTO issue_blockers (issue_blockers_id, weekly_tasks_id, cause_of_delay, dependency_summary, delayed_dates)
 VALUES
-    (77001, 77002, 'Blocked', NULL, NULL)
+    (77001, 77002, 'Blocked', NULL, 6)
 ON DUPLICATE KEY UPDATE cause_of_delay = VALUES(cause_of_delay);

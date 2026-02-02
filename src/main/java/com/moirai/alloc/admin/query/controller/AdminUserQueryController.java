@@ -1,6 +1,7 @@
 package com.moirai.alloc.admin.query.controller;
 
 import com.moirai.alloc.admin.query.dto.AdminTechStackListItem;
+import com.moirai.alloc.admin.query.dto.AdminUserDetailResponse;
 import com.moirai.alloc.admin.query.dto.AdminUserListItem;
 import com.moirai.alloc.admin.query.dto.AdminUserMetaResponse;
 import com.moirai.alloc.common.dto.ApiResponse;
@@ -28,6 +29,12 @@ public class AdminUserQueryController {
             @RequestParam(required = false) String status
     ) {
         return ApiResponse.success(service.getUsers(page, size, q, role, status));
+    }
+
+    // 사용자 상세 조회
+    @GetMapping("/{userId}")
+    public ApiResponse<AdminUserDetailResponse> getUserDetail(@PathVariable Long userId) {
+        return ApiResponse.success(service.getUserDetail(userId));
     }
 
     // 사용자 등록/수정 시 메타 데이터 조회(드롭다운)

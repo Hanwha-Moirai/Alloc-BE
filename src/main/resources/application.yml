@@ -13,13 +13,6 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
-
   mail:
     host: smtp.gmail.com
     port: 587
@@ -50,6 +43,15 @@ notification:
       initial-delay-ms: 5000
       event-name: PING
       data: ok
+
+auth:
+  cookie:
+    access-token-name: accessToken
+    refresh-token-name: refreshToken
+    csrf-token-name: csrfToken
+    same-site: Lax
+    secure: false
+    path: /
 
 #ALB 헬스체크용
 management:

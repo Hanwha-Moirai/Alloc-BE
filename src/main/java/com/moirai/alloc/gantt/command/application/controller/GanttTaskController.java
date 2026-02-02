@@ -2,6 +2,7 @@ package com.moirai.alloc.gantt.command.application.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
 import com.moirai.alloc.gantt.command.application.service.GanttCommandService;
+import com.moirai.alloc.gantt.command.application.service.GanttUpdateTaskService;
 import com.moirai.alloc.gantt.command.application.dto.request.CreateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.request.UpdateTaskRequest;
 import com.moirai.alloc.gantt.command.application.dto.response.CreatedIdResponse;
@@ -19,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class GanttTaskController {
 
     private final GanttCommandService ganttCommandService;
+    private final GanttUpdateTaskService ganttUpdateTaskService;
 
-    public GanttTaskController(GanttCommandService ganttCommandService) {
+    public GanttTaskController(GanttCommandService ganttCommandService,
+                               GanttUpdateTaskService ganttUpdateTaskService) {
         this.ganttCommandService = ganttCommandService;
+        this.ganttUpdateTaskService = ganttUpdateTaskService;
     }
 
     // 태스크 생성
@@ -39,7 +43,7 @@ public class GanttTaskController {
     public ApiResponse<Void> updateTask(@PathVariable Long projectId,
                                         @PathVariable Long taskId,
                                         @RequestBody UpdateTaskRequest request) {
-        ganttCommandService.updateTask(projectId, taskId, request);
+        ganttUpdateTaskService.updateTask(projectId, taskId, request);
         return ApiResponse.success(null);
     }
 

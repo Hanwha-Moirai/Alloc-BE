@@ -1,5 +1,6 @@
 package com.moirai.alloc.management.domain.repo;
 
+import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.project.command.domain.Project;
@@ -106,4 +107,44 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
           and sa.finalDecision = 'ASSIGNED'
     """)
     List<SquadAssignment> findAssignedByProjectId(@Param("projectId") Long projectId);
+
+    List<SquadAssignment> findByUserIdAndAssignmentStatus(
+            Long userId,
+            AssignmentStatus status
+    );
+
+    @Query("""
+        select count(sa)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :employeeId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectStatus = 'ACTIVE'
+    """)
+    int countActiveProjects(@Param("employeeId") Long employeeId);
+
+    @Query("""
+        select distinct p.projectType
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :employeeId
+          and sa.finalDecision = 'ASSIGNED'
+    """)
+    List<Project.ProjectType> findExperiencedProjectTypes(
+            @Param("employeeId") Long employeeId
+    );
+
+    @Query("""
+    select distinct p.name
+    from SquadAssignment sa
+    join Project p on sa.projectId = p.projectId
+    where sa.userId = :employeeId
+      and sa.finalDecision = 'ASSIGNED'
+""")
+    List<String> findExperiencedProjectTitles(
+            @Param("employeeId") Long employeeId
+    );
+
+
+
 }

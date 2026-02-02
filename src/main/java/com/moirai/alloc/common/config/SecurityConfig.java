@@ -1,8 +1,11 @@
 package com.moirai.alloc.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.moirai.alloc.auth.cookie.AuthCookieProperties;
+import com.moirai.alloc.auth.service.CustomUserDetailsService;
+import com.moirai.alloc.common.security.csrf.DoubleSubmitCsrfFilter;
 import com.moirai.alloc.common.security.jwt.JwtAuthenticationFilter;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
-import com.moirai.alloc.auth.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +33,8 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
+    private final AuthCookieProperties authCookieProperties;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -59,6 +64,8 @@ public class SecurityConfig {
 
                         // 인증(로그인) 관련: 필요한 것만 permitAll
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
 
                         // 비밀번호 재설정 관련 API는 모두 허용
                         .requestMatchers(HttpMethod.POST, "/api/auth/password/reset/**").permitAll()
@@ -73,7 +80,16 @@ public class SecurityConfig {
         // JWT 필터
         // ========================================================
         http.addFilterBefore(
-                new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService),
+                new DoubleSubmitCsrfFilter(authCookieProperties.getCsrfTokenName(), objectMapper),
+                UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.addFilterBefore(
+                new JwtAuthenticationFilter(
+                        jwtTokenProvider,
+                        customUserDetailsService,
+                        authCookieProperties.getAccessTokenName()
+                ),
                 UsernamePasswordAuthenticationFilter.class
         );
 
@@ -94,7 +110,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5713"));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

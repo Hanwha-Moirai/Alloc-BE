@@ -4,7 +4,7 @@ import com.moirai.alloc.auth.dto.request.LoginRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetConfirmRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetSendRequest;
 import com.moirai.alloc.auth.dto.request.PasswordResetVerifyRequest;
-import com.moirai.alloc.auth.dto.response.AuthResponse;
+import com.moirai.alloc.auth.dto.response.AuthTokens;
 import com.moirai.alloc.auth.dto.response.PasswordResetSendResponse;
 import com.moirai.alloc.auth.dto.response.PasswordResetVerifyResponse;
 import com.moirai.alloc.auth.policy.PasswordPolicyValidator;
@@ -44,7 +44,7 @@ public class AuthService {
     private final SecureRandom secureRandom = new SecureRandom();
 
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthTokens login(LoginRequest request) {
 
         // 1) loginId로 사용자 조회
         User user = userRepository.findByLoginId(request.getLoginId())
@@ -74,7 +74,7 @@ public class AuthService {
 
         log.info("LOGIN success userId={}, role={}", userId, user.getAuth().name());
 
-        return new AuthResponse(accessToken, false);
+        return new AuthTokens(accessToken, refreshToken);
     }
 
     public PasswordResetSendResponse sendPasswordResetCode(PasswordResetSendRequest request) {
