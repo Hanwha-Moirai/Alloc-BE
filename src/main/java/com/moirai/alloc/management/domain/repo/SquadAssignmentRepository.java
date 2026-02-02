@@ -113,4 +113,38 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             AssignmentStatus status
     );
 
+    @Query("""
+        select count(sa)
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :employeeId
+          and sa.finalDecision = 'ASSIGNED'
+          and p.projectStatus = 'ACTIVE'
+    """)
+    int countActiveProjects(@Param("employeeId") Long employeeId);
+
+    @Query("""
+        select distinct p.projectType
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :employeeId
+          and sa.finalDecision = 'ASSIGNED'
+    """)
+    List<Project.ProjectType> findExperiencedProjectTypes(
+            @Param("employeeId") Long employeeId
+    );
+
+    @Query("""
+    select distinct p.name
+    from SquadAssignment sa
+    join Project p on sa.projectId = p.projectId
+    where sa.userId = :employeeId
+      and sa.finalDecision = 'ASSIGNED'
+""")
+    List<String> findExperiencedProjectTitles(
+            @Param("employeeId") Long employeeId
+    );
+
+
+
 }

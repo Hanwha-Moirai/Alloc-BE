@@ -76,6 +76,8 @@ repositories {
 }
 
 dependencies {
+    implementation "org.opensearch.client:opensearch-rest-high-level-client:2.11.1"
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
