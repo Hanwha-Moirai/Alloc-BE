@@ -2,8 +2,10 @@ DELETE FROM job_standard WHERE job_id >= 99001;
 
 -- 31 rows (10개씩 페이징하면 4페이지: 10/10/10/1)
 INSERT INTO job_standard (job_id, job_name, created_at, updated_at) VALUES
-(99001, 'Job 001', NOW(), NOW()),
-(99002, 'Job 002', NOW(), NOW()),
+
+(99001, 'BackendDeveloper', NOW(), NOW()),
+(99002, 'FrontendDeveloper', NOW(), NOW()),
+
 (99003, 'Job 003', NOW(), NOW()),
 (99004, 'Job 004', NOW(), NOW()),
 (99005, 'Job 005', NOW(), NOW()),

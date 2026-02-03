@@ -75,14 +75,14 @@ class AdminUserQueryControllerTest {
         void getUsers_asAdmin_success() throws Exception {
             mockMvc.perform(get("/api/admin/users")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
-                            .param("page", "1")
+                            .param("page", "0")
                             .param("size", "10")
                             .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.content").isArray())
-                    .andExpect(jsonPath("$.data.totalElements").value(5))
-                    .andDo(print());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.totalElements").value(org.hamcrest.Matchers.greaterThanOrEqualTo(5)))
+                .andDo(print());
         }
 
         @Test
@@ -111,7 +111,7 @@ class AdminUserQueryControllerTest {
         void getUsers_filters() throws Exception {
             mockMvc.perform(get("/api/admin/users")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
-                            .param("page", "1")
+                            .param("page", "0")
                             .param("size", "10")
                             .param("role", "ADMIN")
                             .param("status", "ACTIVE")

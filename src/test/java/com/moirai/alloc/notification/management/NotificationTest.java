@@ -13,7 +13,7 @@ import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
 import com.moirai.alloc.management.query.service.GetAssignedStatus;
-import com.moirai.alloc.notification.command.event.ManagementNotificationEventHandler;
+import com.moirai.alloc.management.event.ManagementNotificationEventHandler;
 import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.common.contract.TargetType;

@@ -32,7 +32,7 @@ class AdminTitleStandardQueryServiceTest {
     @Test
     @DisplayName("직급 목록을 페이징 조회한다")
     void getTitleStandard_success() {
-        PageResponse<AdminTitleStandardListItem> res = service.getTitleStandard(1, 10, null);
+        PageResponse<AdminTitleStandardListItem> res = service.getTitleStandard(0, 10, null);
 
         assertThat(res).isNotNull();
         assertThat(res.getContent()).isNotNull();
@@ -40,19 +40,19 @@ class AdminTitleStandardQueryServiceTest {
         assertThat(res.getContent().size()).isBetween(1, 10);
         assertThat(res.getTotalElements()).isGreaterThan(0);
 
-        assertThat(res.getCurrentPage()).isEqualTo(1);
+        assertThat(res.getCurrentPage()).isEqualTo(0);
         assertThat(res.getSize()).isEqualTo(10);
     }
 
     @Test
     @DisplayName("검색어로 직급 목록을 필터링한다")
     void getTitleStandard_withQuery() {
-        PageResponse<AdminTitleStandardListItem> res = service.getTitleStandard(1, 10, "사원");
+        PageResponse<AdminTitleStandardListItem> res = service.getTitleStandard(0, 10, "Junior");
 
         assertThat(res.getTotalElements()).isEqualTo(1);
         assertThat(res.getContent())
                 .extracting(AdminTitleStandardListItem::getTitleName)
-                .allMatch(name -> name.startsWith("사원"));
+                .allMatch(name -> name.startsWith("Junior"));
     }
 
     @Test
@@ -60,7 +60,7 @@ class AdminTitleStandardQueryServiceTest {
     void pageAndSize_normalized() {
         PageResponse<AdminTitleStandardListItem> res = service.getTitleStandard(0, 0, null);
 
-        assertThat(res.getCurrentPage()).isEqualTo(1);
+        assertThat(res.getCurrentPage()).isEqualTo(0);
         assertThat(res.getSize()).isEqualTo(1);
         assertThat(res.getTotalElements()).isEqualTo(4);
         assertThat(res.getContent().size()).isEqualTo(1);
