@@ -90,15 +90,15 @@ class AdminTechStackQueryControllerTest {
         void getTechStacks_asAdmin_withQuery() throws Exception {
             mockMvc.perform(get("/api/admin/tech-stacks")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
-                            .param("page", "1")
+                            .param("page", "0")
                             .param("size", "10")
-                            .param("q", "DevOpsTool")
+                            .param("q", "Docker")
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.totalElements").value(1))
                     .andExpect(jsonPath("$.data.content[0].techId").value(99003))
-                    .andExpect(jsonPath("$.data.content[0].techName").value("DevOpsTool"))
+                    .andExpect(jsonPath("$.data.content[0].techName").value("Docker"))
                     .andDo(print());
         }
 
