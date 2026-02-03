@@ -7,6 +7,7 @@ import com.moirai.alloc.profile.command.dto.request.TechStackProficiencyUpdateRe
 import com.moirai.alloc.profile.command.dto.response.MyProfileUpdateResponse;
 import com.moirai.alloc.profile.command.dto.response.TechStackDeleteResponse;
 import com.moirai.alloc.profile.command.dto.response.TechStackItemResponse;
+import com.moirai.alloc.common.exception.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,8 +33,8 @@ import static org.assertj.core.api.Assertions.*;
         SqlScriptsTestExecutionListener.class,
         TransactionalTestExecutionListener.class
 })
-//@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-//@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/profile/setup.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "/sql/profile/cleanup.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
 class MyProfileCommandServiceTest {
 
     private static final Long USER_ID_KMJ = 77001L;
@@ -235,7 +236,7 @@ class MyProfileCommandServiceTest {
 
             assertThatThrownBy(() -> myProfileCommandService.updateProficiency(
                     USER_ID_KMJ, 999999L, req))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(NotFoundException.class)
                     .hasMessage("EMPLOYEE_TECH_NOT_FOUND");
         }
     }
@@ -267,7 +268,7 @@ class MyProfileCommandServiceTest {
         @DisplayName("존재하지 않는 기술 스택이면 예외를 발생시킨다")
         void notFound_throwsException() {
             assertThatThrownBy(() -> myProfileCommandService.deleteTechStack(USER_ID_KMJ, 999999L))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(NotFoundException.class)
                     .hasMessage("EMPLOYEE_TECH_NOT_FOUND");
         }
     }

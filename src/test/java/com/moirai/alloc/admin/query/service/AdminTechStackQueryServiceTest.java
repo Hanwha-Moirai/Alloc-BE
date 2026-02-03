@@ -32,7 +32,7 @@ class AdminTechStackQueryServiceTest {
     @Test
     @DisplayName("기술 스택을 페이징 조회한다")
     void getTechStacks_success() {
-        PageResponse<AdminTechStackListItem> res = service.getTechStacks(1, 10, null);
+        PageResponse<AdminTechStackListItem> res = service.getTechStacks(0, 10, null);
 
         assertThat(res.getContent()).isNotNull();
         assertThat(res.getContent().size()).isBetween(1, 10);
@@ -41,19 +41,19 @@ class AdminTechStackQueryServiceTest {
         assertThat(res.getTotalElements()).isGreaterThan(0);
 
         // 페이지 파라미터 보정 확인
-        assertThat(res.getCurrentPage()).isEqualTo(1);
+        assertThat(res.getCurrentPage()).isEqualTo(0);
         assertThat(res.getSize()).isEqualTo(10);
 
     }
     @Test
     @DisplayName("검색어로 기술 스택을 필터링한다")
     void getTechStacks_withQuery() {
-        PageResponse<AdminTechStackListItem> res = service.getTechStacks(1, 10, "DevOps");
+        PageResponse<AdminTechStackListItem> res = service.getTechStacks(0, 10, "Docker");
 
         assertThat(res.getTotalElements()).isEqualTo(1);
         assertThat(res.getContent()).hasSize(1);
         assertThat(res.getContent().get(0).getTechId()).isEqualTo(99003L);
-        assertThat(res.getContent().get(0).getTechName()).isEqualTo("DevOpsTool");
+        assertThat(res.getContent().get(0).getTechName()).isEqualTo("Docker");
     }
 
     @Test
@@ -61,7 +61,7 @@ class AdminTechStackQueryServiceTest {
     void pageAndSize_normalized() {
         PageResponse<AdminTechStackListItem> res = service.getTechStacks(0, 0, null);
 
-        assertThat(res.getCurrentPage()).isEqualTo(1);
+        assertThat(res.getCurrentPage()).isEqualTo(0);
         assertThat(res.getSize()).isEqualTo(1);
     }
 }
