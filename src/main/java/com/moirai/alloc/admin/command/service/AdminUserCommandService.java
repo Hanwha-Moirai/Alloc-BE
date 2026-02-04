@@ -11,6 +11,7 @@ import com.moirai.alloc.hr.command.repository.JobStandardRepository;
 import com.moirai.alloc.hr.command.repository.TitleStandardRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
+import com.moirai.alloc.auth.client.AuthUserSyncClient;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class AdminUserCommandService {
     private final TitleStandardRepository titleStandardRepository;
 
     private final PasswordEncoder passwordEncoder;
+    private final AuthUserSyncClient authUserSyncClient;
 
     public AdminUserResponse createUser(AdminUserCreateRequest req) {
 
@@ -81,6 +83,8 @@ public class AdminUserCommandService {
                 .build();
 
         employeeRepository.save(employee);
+
+        authUserSyncClient.sync(user);
 
         return toResponse(user, employee);
     }
@@ -132,6 +136,8 @@ public class AdminUserCommandService {
         if (req.getEmployeeType() != null) {
             employee.changeEmployeeType(req.getEmployeeType());
         }
+
+        authUserSyncClient.sync(user);
 
         return toResponse(user, employee);
     }

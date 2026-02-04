@@ -1,6 +1,6 @@
 package com.moirai.alloc.common.security.jwt;
 
-import com.moirai.alloc.auth.service.CustomUserDetailsService;
+import com.moirai.alloc.common.security.auth.UserDetailsByIdService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +23,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final UserDetailsByIdService userDetailsByIdService;
     private final String accessTokenCookieName;
 
     @Override
@@ -58,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             Long userId = Long.parseLong(claims.getSubject());
-            UserDetails userDetails = customUserDetailsService.loadUserById(userId);
+            UserDetails userDetails = userDetailsByIdService.loadUserById(userId);
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(

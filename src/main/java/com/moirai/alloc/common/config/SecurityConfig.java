@@ -2,9 +2,10 @@ package com.moirai.alloc.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.auth.cookie.AuthCookieProperties;
-import com.moirai.alloc.auth.service.CustomUserDetailsService;
+import com.moirai.alloc.security.AllocUserDetailsService;
+import com.moirai.alloc.security.GatewayHeaderAuthenticationFilter;
 import com.moirai.alloc.common.security.csrf.DoubleSubmitCsrfFilter;
-import com.moirai.alloc.common.security.jwt.JwtAuthenticationFilter;
+import com.moirai.alloc.internal.auth.security.InternalTokenAuthenticationFilter;
 import com.moirai.alloc.common.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final AllocUserDetailsService userDetailsService;
     private final AuthCookieProperties authCookieProperties;
     private final ObjectMapper objectMapper;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -70,6 +71,9 @@ public class SecurityConfig {
                         // 비밀번호 재설정 관련 API는 모두 허용
                         .requestMatchers(HttpMethod.POST, "/api/auth/password/reset/**").permitAll()
 
+                        // 내부 연동 API
+                        .requestMatchers("/api/internal/**").hasAuthority("INTERNAL")
+
                         // 관리자 전용 API
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
@@ -85,11 +89,12 @@ public class SecurityConfig {
         );
 
         http.addFilterBefore(
-                new JwtAuthenticationFilter(
-                        jwtTokenProvider,
-                        customUserDetailsService,
-                        authCookieProperties.getAccessTokenName()
-                ),
+                new InternalTokenAuthenticationFilter(jwtTokenProvider),
+                UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.addFilterBefore(
+                new GatewayHeaderAuthenticationFilter(userDetailsService),
                 UsernamePasswordAuthenticationFilter.class
         );
 
