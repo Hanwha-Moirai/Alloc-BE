@@ -52,6 +52,8 @@ auth:
     same-site: Lax
     secure: false
     path: /
+  sync:
+    base-url: ${AUTH_SYNC_BASE_URL:http://localhost:8082}
 
 #ALB 헬스체크용
 management:
@@ -73,8 +75,8 @@ opensearch:
   host: ${OPENSEARCH_HOST:localhost}
   port: ${OPENSEARCH_PORT:9200}
   scheme: ${OPENSEARCH_SCHEME:http}
-  username: ${OPENSEARCH_USERNAME:}
-  password: ${OPENSEARCH_PASSWORD:}
+  username: ${OPENSEARCH_USERNAME:admin}
+  password: ${OPENSEARCH_PASSWORD:Zp8$Lr@4X!sM29}
   ssl:
     enabled: ${OPENSEARCH_SSL_ENABLED:false}
     trustAll: ${OPENSEARCH_SSL_TRUST_ALL:false}
