@@ -87,7 +87,7 @@ public class SelectAssignmentCandidates {
         }
     }
     /**
-     * 🆕 프론트 전용 Command 진입점
+     * 프론트 전용 Command 진입점
      * userIds → AssignCandidateDTO 재구성
      */
     public void selectByUserIds(Long projectId, List<Long> userIds) {
@@ -100,7 +100,7 @@ public class SelectAssignmentCandidates {
         AssignmentCandidatePageView page =
                 getAssignmentCandidates.getAssignmentCandidates(projectId, null);
 
-        // 3) userId 기준 필터 + jobId 기준 그룹핑 (⭐ 핵심)
+        // 3) userId 기준 필터 + jobId 기준 그룹핑
         Map<Long, List<ScoredCandidateDTO>> groupedByJob =
                 page.getCandidates().stream()
                         .filter(item -> userIds.contains(item.getUserId()))
