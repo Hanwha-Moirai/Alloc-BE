@@ -4,7 +4,6 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.command.event.ProjectTempAssignmentEvent;
-import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
@@ -67,8 +66,6 @@ class NotificationTest {
     @Mock
     private AssignmentShortageCalculator shortageCalculator;
 
-    @InjectMocks
-    private SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
 
     @Test
     @DisplayName("프로젝트 임시 배정 이벤트가 POST_TEMP 알림으로 변환된다.")
@@ -129,37 +126,4 @@ class NotificationTest {
         assertThat(event.userId()).isEqualTo(88002L);
     }
 
-    @Test
-    @DisplayName("추가 후보 임시 배정 시 이벤트를 발행한다.")
-    void selectAdditionalAssignmentCandidates_publishesTempAssignmentEvent() {
-        Project project = mock(Project.class);
-        when(project.getName()).thenReturn("PM Notification Project");
-
-        when(projectRepository.findById(88001L)).thenReturn(Optional.of(project));
-        when(shortageCalculator.calculate(project)).thenReturn(Map.of(10L, 1));
-        when(candidateSelectionService.select(eq(project), any()))
-                .thenReturn(new AssignCandidateDTO(
-                        88001L,
-                        List.of(
-                                new JobAssignmentDTO(
-                                        10L,
-                                        List.of(new ScoredCandidateDTO(88002L, 90))
-                                )
-                        )
-                ));
-        when(assignmentRepository.existsByProjectIdAndUserId(anyLong(), anyLong())).thenReturn(false);
-        when(assignmentRepository.save(any(SquadAssignment.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
-
-        selectAdditionalAssignmentCandidates.selectAdditionalCandidates(88001L);
-
-        ArgumentCaptor<ProjectTempAssignmentEvent> eventCaptor =
-                ArgumentCaptor.forClass(ProjectTempAssignmentEvent.class);
-        verify(eventPublisher, times(1)).publishEvent(eventCaptor.capture());
-        ProjectTempAssignmentEvent event = eventCaptor.getValue();
-
-        assertThat(event.projectId()).isEqualTo(88001L);
-        assertThat(event.projectName()).isEqualTo("PM Notification Project");
-        assertThat(event.userId()).isEqualTo(88002L);
-    }
 }

@@ -1,8 +1,6 @@
-package com.moirai.alloc.management.serviceLayerTest;
+package com.moirai.alloc.management.command.service;
 
 import com.moirai.alloc.management.command.dto.RegisterProjectCommandDTO;
-import com.moirai.alloc.management.command.service.AssignProjectManager;
-import com.moirai.alloc.management.command.service.RegisterProject;
 import com.moirai.alloc.management.domain.entity.TechReqLevel;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
