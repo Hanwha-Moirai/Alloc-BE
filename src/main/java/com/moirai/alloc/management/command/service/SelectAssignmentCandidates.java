@@ -8,6 +8,7 @@ import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
+import com.moirai.alloc.management.query.dto.candidateList.AssignmentCandidateItemDTO;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
 import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
 import com.moirai.alloc.project.command.domain.Project;
@@ -37,10 +38,12 @@ public class SelectAssignmentCandidates {
     public SelectAssignmentCandidates(
             SquadAssignmentRepository assignmentRepository,
             ProjectRepository projectRepository,
+            GetAssignmentCandidates getAssignmentCandidates,
             ApplicationEventPublisher eventPublisher
     ) {
         this.assignmentRepository = assignmentRepository;
         this.projectRepository = projectRepository;
+        this.getAssignmentCandidates = getAssignmentCandidates;
         this.eventPublisher = eventPublisher;
     }
 
@@ -84,21 +87,32 @@ public class SelectAssignmentCandidates {
      */
     public void selectByUserIds(Long projectId, List<Long> userIds) {
 
-        // 1) 현재 추천/후보 상태 조회 (Query)
+        // 1) 프로젝트 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        // 2) 현재 후보 조회
         AssignmentCandidatePageView page =
                 getAssignmentCandidates.getAssignmentCandidates(projectId, null);
 
-        // 2) userId 기준 후보 필터링
+        // 3) userId 기준 필터 + jobId 기준 그룹핑 (⭐ 핵심)
         Map<Long, List<ScoredCandidateDTO>> groupedByJob =
                 page.getCandidates().stream()
-                        .flatMap(job -> job.getCandidates().stream())
-                        .filter(c -> userIds.contains(c.getUserId()))
+                        .filter(item -> userIds.contains(item.getUserId()))
                         .collect(Collectors.groupingBy(
-                                ScoredCandidateDTO::getJobId,
-                                Collectors.toList()
+                                AssignmentCandidateItemDTO::getJobId,
+                                Collectors.mapping(
+                                        item -> new ScoredCandidateDTO(
+                                                item.getUserId(),
+                                                item.getSkillScore()
+                                                        + item.getExperienceScore()
+                                                        + item.getAvailabilityScore()
+                                        ),
+                                        Collectors.toList()
+                                )
                         ));
 
-        // 3) 내부 Command DTO로 변환
+        // 4) 내부 Command DTO로 변환
         List<JobAssignmentDTO> assignments =
                 groupedByJob.entrySet().stream()
                         .map(e -> new JobAssignmentDTO(
@@ -107,11 +121,10 @@ public class SelectAssignmentCandidates {
                         ))
                         .toList();
 
-        AssignCandidateDTO command =
-                new AssignCandidateDTO(projectId, assignments);
-
-        // 4) 기존 로직 재사용
-        selectAssignmentCandidates(command);
+        // 5) 기존 로직 재사용
+        selectAssignmentCandidates(
+                new AssignCandidateDTO(projectId, assignments)
+        );
     }
 
     //직군별로 requiredCount를 정확히 충족했는지 검증

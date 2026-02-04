@@ -1,10 +1,6 @@
 package com.moirai.alloc.management.controller;
 
-import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.AssignUsersCommandDTO;
-import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
-import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
-import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
@@ -17,9 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/projects/{projectId}")
@@ -28,12 +21,11 @@ public class ProjectAssignmentController {
     private final GetAssignmentCandidates getAssignmentCandidates;
     private final GetAssignedStatus getAssignmentStatus;
     private final SelectAssignmentCandidates selectAssignmentCandidates;
-    private final SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
-    private final GetAssignedMembers getAssignedMembers; //최종 확정 인원 조회 유스케이스
-    //인력 추천 및 선발 현황 화면 조회
-    //이미 선택된 인원 + 추천 후보를 하나의 리스트로 반환
-    //사용자 / PM 모두 접근 가능
+    private final GetAssignedMembers getAssignedMembers;
 
+    //인력 선발 현황 화면 조회
+    // - 이미 선택된 인원 + 추천 후보를 하나의 리스트로 반환
+    // - 사용자 / PM 모두 접근 가능
     @GetMapping("/assign")
     public AssignmentCandidatePageView getAssignmentCandidatePage(
             @PathVariable Long projectId,
@@ -56,9 +48,9 @@ public class ProjectAssignmentController {
 
 
     //    프로젝트 인력 배치 관리 화면
-//    선발된 인원 목록
-//    응답 상태 요약
-//    직군별 부족 인원 현황
+    //    - 선발된 인원 목록
+    //    - 응답 상태 요약
+    //    - 직군별 부족 인원 현황
     @GetMapping("/members")
     public AssignmentManagementPageView getAssignmentManagementPage(
             @PathVariable Long projectId
@@ -78,30 +70,9 @@ public class ProjectAssignmentController {
             @PathVariable Long projectId,
             @RequestBody AssignUsersCommandDTO request
     ) {
-        AssignCandidateDTO command =
-                mapToAssignCandidateDTO(projectId, request);
-        selectAssignmentCandidates.selectAssignmentCandidates(command);
+        selectAssignmentCandidates
+                .selectByUserIds(projectId, request.getUserIds());
     }
-    private AssignCandidateDTO mapToAssignCandidateDTO(
-            Long projectId,
-            AssignUsersCommandDTO request
-    ) {
-        // 현재 추천 결과 / 화면 상태 기반으로
-        // userId → jobId 매핑 구성
-        Map<Long, List<ScoredCandidateDTO>> groupedByJob =
-                /* 이미 화면에 있던 후보 리스트 기준 */;
-
-        List<JobAssignmentDTO> assignments =
-                groupedByJob.entrySet().stream()
-                        .map(e -> new JobAssignmentDTO(
-                                e.getKey(),
-                                e.getValue()
-                        ))
-                        .toList();
-
-        return new AssignCandidateDTO(projectId, assignments);
-    }
-
 
     //프로젝트 인력 배치 현황 조회(사용자 / PM 가능)
     @GetMapping("/assignments")
@@ -109,16 +80,6 @@ public class ProjectAssignmentController {
             @PathVariable Long projectId
     ) {
         return getAssignmentStatus.getStatus(projectId);
-    }
-
-    //추가 후보 생성 (pm만)
-    @PreAuthorize("hasRole('PM')")
-    @PostMapping("/assignments/additional")
-    public void addMoreCandidates(
-            @PathVariable Long projectId
-    ) {
-        selectAdditionalAssignmentCandidates
-                .selectAdditionalCandidates(projectId);
     }
 
 }

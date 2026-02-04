@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -52,49 +52,66 @@ public class GetAssignmentCandidates {
     private final WeightPolicy weightPolicy;
     private final ScoreWeightAdjuster scoreWeightAdjuster;
 
-    public AssignmentCandidatePageView getAssignmentCandidates(Long projectId, CandidateScoreFilter filter) {
+    //최초 / 전체 후보 조회
+    public AssignmentCandidatePageView getAssignmentCandidates(
+            Long projectId,
+            CandidateScoreFilter filter
+    ) {
+        Project project = findProject(projectId);
 
-        // 프로젝트 조회
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-
-        // policy 기반 추천 후보 계산 조회 - 추천 정책 계산에 필요한 입력 값
         Map<Long, Integer> requiredCountByJobId =
-                project.getJobRequirements().stream()
-                        .collect(Collectors.toMap(
-                                JobRequirement::getJobId,
-                                JobRequirement::getRequiredCount
-                        ));
+                buildFullRequiredCount(project);
 
-        //Policy 기반 추천 후보 계산 - 아직 선택되지 않은 잠재 후보
+        return buildPage(project, requiredCountByJobId, filter);
+    }
+
+    //추가 / 재선발 후보 조회 (shortage 기준)
+
+    public AssignmentCandidatePageView getAdditionalAssignmentCandidates(
+            Long projectId,
+            CandidateScoreFilter filter
+    ) {
+        Project project = findProject(projectId);
+
+        Map<Long, Integer> requiredCountByJobId =
+                buildShortageRequiredCount(project);
+
+        return buildPage(project, requiredCountByJobId, filter);
+    }
+
+    // =========================
+    // 공통 페이지 구성 로직
+    // =========================
+    private AssignmentCandidatePageView buildPage(
+            Project project,
+            Map<Long, Integer> requiredCountByJobId,
+            CandidateScoreFilter filter
+    ) {
+        Long projectId = project.getProjectId();
+
+        // 1) 정책 기반 후보 추천
         AssignCandidateDTO recommended =
                 candidateSelectionService.select(project, requiredCountByJobId);
 
-
-        // 현재까지 선발된(선택) 후보 조회; summary 용
+        // 2) 현재까지 배정된 인원
         List<SquadAssignment> assignments =
                 assignmentRepository.findByProjectId(projectId);
 
-
-        // employee 조회 범위 결정; 선발된 인원 + 추천 후보
-        Set<Long> recommendedUserIds =
+        // 3) employee 조회
+        Set<Long> userIds =
                 recommended.getAssignments().stream()
                         .flatMap(a -> a.getCandidates().stream())
                         .map(ScoredCandidateDTO::getUserId)
                         .collect(Collectors.toSet());
 
-        Set<Long> allUserIds = new HashSet<>();
-        allUserIds.addAll(recommendedUserIds);
-
         Map<Long, Employee> employeeMap =
-                employeeRepository.findAllById(allUserIds).stream()
+                employeeRepository.findAllById(userIds).stream()
                         .collect(Collectors.toMap(
                                 Employee::getUserId,
                                 Function.identity()
                         ));
 
-
-        //Job 이름 맵 (jobId → jobName)
+        // 4) jobId → jobName
         Map<Long, String> jobNameMap =
                 jobStandardRepository.findAllById(
                                 project.getJobRequirements().stream()
@@ -107,7 +124,7 @@ public class GetAssignmentCandidates {
                                 JobStandard::getJobName
                         ));
 
-        //Job 요약 생성
+        // 5) 직군 요약
         List<JobAssignmentSummaryDTO> jobSummaries =
                 project.getJobRequirements().stream()
                         .map(req -> createJobSummary(
@@ -118,15 +135,12 @@ public class GetAssignmentCandidates {
                         ))
                         .toList();
 
-        // 현재 근무 중인 인원 Set (N+1 제거) - 근무 상태(workStatus) 계산에 사용
+        // 6) 근무 중 인원
         Set<Long> workingUserIds =
                 assignmentRepository.findUserIdsByFinalDecision(FinalDecision.ASSIGNED);
 
-        //가중치 파라미터 적용
-        // 기본 가중치 (프로젝트 타입 기준)
+        // 7) 점수 가중치
         ScoreWeight baseWeight = weightPolicy.getBaseWeight(project);
-
-// 파라미터 조정 가중치 (UI 슬라이더 반영)
         ScoreWeight adjustedWeight = scoreWeightAdjuster.adjust(baseWeight, filter);
 
         Map<Long, Integer> weightedScoreMap = new HashMap<>();
@@ -145,24 +159,25 @@ public class GetAssignmentCandidates {
                                             ? AssignmentCandidateItemDTO.WorkStatus.ASSIGNED
                                             : AssignmentCandidateItemDTO.WorkStatus.AVAILABLE;
 
-                            CandidateScore rawScore =
+                            CandidateScore raw =
                                     candidateScoringService.score(project, e);
 
                             int weightedScore =
-                                    weightPolicy.apply(rawScore, adjustedWeight);
+                                    weightPolicy.apply(raw, adjustedWeight);
 
                             weightedScoreMap.put(u.getUserId(), weightedScore);
 
                             return new AssignmentCandidateItemDTO(
                                     u.getUserId(),
                                     u.getUserName(),
+                                    e.getJob().getJobId(),
                                     e.getJob().getJobName(),
                                     resolveMainSkill(e),
                                     e.getTitleStandard().getMonthlyCost(),
                                     workStatus,
-                                    rawScore.getSkillScore(),
-                                    rawScore.getExperienceScore(),
-                                    rawScore.getAvailabilityScore(),
+                                    raw.getSkillScore(),
+                                    raw.getExperienceScore(),
+                                    raw.getAvailabilityScore(),
                                     false
                             );
                         })
@@ -178,7 +193,49 @@ public class GetAssignmentCandidates {
         return new AssignmentCandidatePageView(jobSummaries, candidates);
     }
 
-    // 헬퍼 메서드
+    // =========================
+    // requiredCount 계산
+    // =========================
+    private Map<Long, Integer> buildFullRequiredCount(Project project) {
+        return project.getJobRequirements().stream()
+                .collect(Collectors.toMap(
+                        JobRequirement::getJobId,
+                        JobRequirement::getRequiredCount
+                ));
+    }
+
+    private Map<Long, Integer> buildShortageRequiredCount(Project project) {
+
+        Long projectId = project.getProjectId();
+        Map<Long, Integer> result = new HashMap<>();
+
+        for (JobRequirement req : project.getJobRequirements()) {
+
+            long assignedCount =
+                    assignmentRepository.countAssignedByProjectAndJob(
+                            projectId,
+                            req.getJobId()
+                    );
+
+            int shortage =
+                    req.getRequiredCount() - (int) assignedCount;
+
+            if (shortage > 0) {
+                result.put(req.getJobId(), shortage);
+            }
+        }
+
+        return result;
+    }
+
+    // =========================
+    // 헬퍼
+    // =========================
+    private Project findProject(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+    }
+
     private JobAssignmentSummaryDTO createJobSummary(
             JobRequirement req,
             List<SquadAssignment> assignments,
