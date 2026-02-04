@@ -21,7 +21,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import jakarta.servlet.http.Cookie;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,6 +47,15 @@ class AdminJobCommandControllerTest {
 
     private static final Long JOB_ID_BACKEND = 99001L;
     private static final Long JOB_ID_FRONTEND = 99002L;
+    private static final String CSRF_TOKEN = "test-csrf-token";
+
+    private static RequestPostProcessor withCsrf() {
+        return request -> {
+            request.addHeader("X-CSRF-Token", CSRF_TOKEN);
+            request.setCookies(new Cookie("csrfToken", CSRF_TOKEN));
+            return request;
+        };
+    }
 
     private Authentication adminAuth() {
         UserPrincipal principal = new UserPrincipal(
@@ -84,6 +95,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/jobs")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -103,6 +115,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/jobs")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -120,6 +133,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/jobs")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -136,6 +150,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/jobs")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -151,6 +166,7 @@ class AdminJobCommandControllerTest {
             """;
 
             mockMvc.perform(post("/api/admin/jobs")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -174,6 +190,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/jobs/{job_id}", JOB_ID_BACKEND)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -193,6 +210,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/jobs/{job_id}", JOB_ID_BACKEND)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -210,6 +228,7 @@ class AdminJobCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/jobs/{job_id}", 99999L)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -225,6 +244,7 @@ class AdminJobCommandControllerTest {
             """;
 
             mockMvc.perform(patch("/api/admin/jobs/{job_id}", JOB_ID_BACKEND)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -242,6 +262,7 @@ class AdminJobCommandControllerTest {
         @DisplayName("관리자는 직무를 삭제할 수 있다")
         void deleteJob_asAdmin_success() throws Exception {
             mockMvc.perform(delete("/api/admin/jobs/{job_id}", JOB_ID_FRONTEND)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
@@ -253,6 +274,7 @@ class AdminJobCommandControllerTest {
         @DisplayName("일반 사용자는 직무를 삭제할 수 없다 (403 Forbidden)")
         void deleteJob_asUser_forbidden() throws Exception {
             mockMvc.perform(delete("/api/admin/jobs/{job_id}", JOB_ID_FRONTEND)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth())))
                     .andExpect(status().isForbidden())
                     .andDo(print());
@@ -262,6 +284,7 @@ class AdminJobCommandControllerTest {
         @DisplayName("존재하지 않는 직무는 404 Not Found를 반환한다")
         void deleteJob_notFound() throws Exception {
             mockMvc.perform(delete("/api/admin/jobs/{job_id}", 99999L)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth())))
                     .andExpect(status().isNotFound())
                     .andDo(print());

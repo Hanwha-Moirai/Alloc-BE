@@ -12,6 +12,7 @@ import com.moirai.alloc.management.query.dto.candidateList.AssignmentCandidateIt
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
 import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
 import com.moirai.alloc.project.command.domain.Project;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class SelectAssignmentCandidates {
 //        1) projectId로 프로젝트를 조회한다
 //        2) policy 기반 후보 리스트를 조회하고 사용자가 선택한다
@@ -73,11 +75,14 @@ public class SelectAssignmentCandidates {
                                 candidate.getFitnessScore()
                         )
                 );
-                eventPublisher.publishEvent(new ProjectTempAssignmentEvent(
+                ProjectTempAssignmentEvent event = new ProjectTempAssignmentEvent(
                         project.getProjectId(),
                         project.getName(),
                         saved.getUserId()
-                ));
+                );
+                eventPublisher.publishEvent(event);
+                log.info("Published ProjectTempAssignmentEvent projectId={} userId={} projectName={}",
+                        event.projectId(), event.userId(), event.projectName());
             }
         }
     }

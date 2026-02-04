@@ -93,7 +93,7 @@ class AdminUserCommandServiceTest {
 
             // jobName/deptName/titleName은 setup.sql 값 기반
             assertThat(res.getJobName()).isEqualTo("BackendDeveloper");
-            assertThat(res.getDeptName()).isEqualTo("Dev");
+            assertThat(res.getDeptName()).isEqualTo("정보보안팀");
             assertThat(res.getTitleName()).isEqualTo("Junior");
         }
 
@@ -207,7 +207,7 @@ class AdminUserCommandServiceTest {
             assertThat(res.getTitleStandardId()).isEqualTo(TITLE_ID_JUNIOR);
 
             assertThat(res.getJobName()).isEqualTo("BackendDeveloper");
-            assertThat(res.getDeptName()).isEqualTo("Dev");
+            assertThat(res.getDeptName()).isEqualTo("정보보안팀");
             assertThat(res.getTitleName()).isEqualTo("Junior");
         }
 

@@ -17,7 +17,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import jakarta.servlet.http.Cookie;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,6 +49,15 @@ class AdminUserCommandControllerTest {
     private static final Long ADMIN_USER_ID = 99001L;   // admin 계정
     private static final String ADMIN_LOGIN_ID = "admin";
     private static final String NORMAL_LOGIN_ID = "kmj";  // 이미 존재하는 일반 유저
+    private static final String CSRF_TOKEN = "test-csrf-token";
+
+    private static RequestPostProcessor withCsrf() {
+        return request -> {
+            request.addHeader("X-CSRF-Token", CSRF_TOKEN);
+            request.setCookies(new Cookie("csrfToken", CSRF_TOKEN));
+            return request;
+        };
+    }
 
     @Nested
     @DisplayName("관리자 사용자 등록 API")
@@ -74,6 +85,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -102,6 +114,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -131,6 +144,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -172,6 +186,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -200,6 +215,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -229,6 +245,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(post("/api/admin/users")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
@@ -248,6 +265,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -263,6 +281,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isForbidden())
@@ -284,6 +303,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -311,6 +331,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isOk())
@@ -349,6 +370,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/999999")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().is4xxClientError())
@@ -364,6 +386,7 @@ class AdminUserCommandControllerTest {
                 """;
 
             mockMvc.perform(patch("/api/admin/users/" + EXIST_USER_ID)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isBadRequest())
