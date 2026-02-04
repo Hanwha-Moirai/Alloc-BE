@@ -8,11 +8,14 @@ import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
+import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
+import com.moirai.alloc.management.query.service.GetAssignmentCandidates;
 import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,6 +31,7 @@ public class SelectAssignmentCandidates {
 
     private final SquadAssignmentRepository assignmentRepository;
     private final ProjectRepository projectRepository;
+    private final GetAssignmentCandidates getAssignmentCandidates;
     private final ApplicationEventPublisher eventPublisher;
 
     public SelectAssignmentCandidates(
@@ -73,6 +77,41 @@ public class SelectAssignmentCandidates {
                 ));
             }
         }
+    }
+    /**
+     * 🆕 프론트 전용 Command 진입점
+     * userIds → AssignCandidateDTO 재구성
+     */
+    public void selectByUserIds(Long projectId, List<Long> userIds) {
+
+        // 1) 현재 추천/후보 상태 조회 (Query)
+        AssignmentCandidatePageView page =
+                getAssignmentCandidates.getAssignmentCandidates(projectId, null);
+
+        // 2) userId 기준 후보 필터링
+        Map<Long, List<ScoredCandidateDTO>> groupedByJob =
+                page.getCandidates().stream()
+                        .flatMap(job -> job.getCandidates().stream())
+                        .filter(c -> userIds.contains(c.getUserId()))
+                        .collect(Collectors.groupingBy(
+                                ScoredCandidateDTO::getJobId,
+                                Collectors.toList()
+                        ));
+
+        // 3) 내부 Command DTO로 변환
+        List<JobAssignmentDTO> assignments =
+                groupedByJob.entrySet().stream()
+                        .map(e -> new JobAssignmentDTO(
+                                e.getKey(),
+                                e.getValue()
+                        ))
+                        .toList();
+
+        AssignCandidateDTO command =
+                new AssignCandidateDTO(projectId, assignments);
+
+        // 4) 기존 로직 재사용
+        selectAssignmentCandidates(command);
     }
 
     //직군별로 requiredCount를 정확히 충족했는지 검증

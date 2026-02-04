@@ -1,6 +1,9 @@
 package com.moirai.alloc.management.controller;
 
 import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
+import com.moirai.alloc.management.command.dto.AssignUsersCommandDTO;
+import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
+import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
@@ -13,6 +16,9 @@ import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -70,13 +76,32 @@ public class ProjectAssignmentController {
     @PostMapping("/assignments")
     public void assignCandidates(
             @PathVariable Long projectId,
-            @RequestBody AssignCandidateDTO command
+            @RequestBody AssignUsersCommandDTO request
     ) {
-        if (!projectId.equals(command.getProjectId())) {
-            throw new IllegalArgumentException("Project ID mismatch");
-        }
+        AssignCandidateDTO command =
+                mapToAssignCandidateDTO(projectId, request);
         selectAssignmentCandidates.selectAssignmentCandidates(command);
     }
+    private AssignCandidateDTO mapToAssignCandidateDTO(
+            Long projectId,
+            AssignUsersCommandDTO request
+    ) {
+        // 현재 추천 결과 / 화면 상태 기반으로
+        // userId → jobId 매핑 구성
+        Map<Long, List<ScoredCandidateDTO>> groupedByJob =
+                /* 이미 화면에 있던 후보 리스트 기준 */;
+
+        List<JobAssignmentDTO> assignments =
+                groupedByJob.entrySet().stream()
+                        .map(e -> new JobAssignmentDTO(
+                                e.getKey(),
+                                e.getValue()
+                        ))
+                        .toList();
+
+        return new AssignCandidateDTO(projectId, assignments);
+    }
+
 
     //프로젝트 인력 배치 현황 조회(사용자 / PM 가능)
     @GetMapping("/assignments")
