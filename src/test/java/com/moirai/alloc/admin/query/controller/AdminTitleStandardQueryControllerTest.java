@@ -75,14 +75,14 @@ class AdminTitleStandardQueryControllerTest {
         void getTitleStandard_asAdmin_success() throws Exception {
             mockMvc.perform(get("/api/admin/title_standard")
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
-                            .param("page", "1")
+                            .param("page", "0")
                             .param("size", "10")
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
                     .andExpect(jsonPath("$.data.content").isArray())
                     .andExpect(jsonPath("$.data.totalElements").value(4))
-                    .andExpect(jsonPath("$.data.currentPage").value(1))
+                    .andExpect(jsonPath("$.data.currentPage").value(0))
                     .andExpect(jsonPath("$.data.size").value(10))
                     .andDo(print());
         }
@@ -118,7 +118,7 @@ class AdminTitleStandardQueryControllerTest {
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.data.currentPage").value(1))
+                    .andExpect(jsonPath("$.data.currentPage").value(0))
                     .andExpect(jsonPath("$.data.size").value(1))
                     .andExpect(jsonPath("$.data.totalElements").value(4))
                     .andExpect(jsonPath("$.data.content.length()").value(1))

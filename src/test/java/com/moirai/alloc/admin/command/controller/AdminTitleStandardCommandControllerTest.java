@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,9 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.context.web.ServletTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import jakarta.servlet.http.Cookie;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -45,8 +46,17 @@ class AdminTitleStandardCommandControllerTest {
     private MockMvc mockMvc;
 
     // title_setup.sql 기준 ID
-    private static final Long TITLE_ID_JUNIOR = 88001L;
-    private static final Long TITLE_ID_SENIOR = 88002L;
+    private static final Long TITLE_ID_JUNIOR = 99001L;
+    private static final Long TITLE_ID_SENIOR = 99002L;
+    private static final String CSRF_TOKEN = "test-csrf-token";
+
+    private static RequestPostProcessor withCsrf() {
+        return request -> {
+            request.addHeader("X-CSRF-Token", CSRF_TOKEN);
+            request.setCookies(new Cookie("csrfToken", CSRF_TOKEN));
+            return request;
+        };
+    }
 
     private Authentication adminAuth() {
         UserPrincipal principal = new UserPrincipal(
@@ -87,6 +97,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -107,6 +118,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -125,6 +137,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -142,6 +155,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -160,6 +174,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -178,6 +193,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(post("/api/admin/titles")
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -201,6 +217,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -221,6 +238,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(userAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -239,6 +257,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
                     .andExpect(status().isUnauthorized())
@@ -256,6 +275,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", 99999L)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -274,6 +294,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -292,6 +313,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -310,6 +332,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))
@@ -330,6 +353,7 @@ class AdminTitleStandardCommandControllerTest {
                     """;
 
             mockMvc.perform(patch("/api/admin/titles/{title_id}", TITLE_ID_JUNIOR)
+                            .with(withCsrf())
                             .with(SecurityMockMvcRequestPostProcessors.authentication(adminAuth()))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(requestJson))

@@ -2,7 +2,7 @@
 -- profile/setup.sql
 -- =========================================
 
--- 기존 데이터 정리
+-- 기존 데이터 정리 (테스트 대상 ID만 정리)
 SET FOREIGN_KEY_CHECKS = 0;
 
 DELETE FROM project_tech_requirement WHERE project_id IN (101, 102);
@@ -10,10 +10,6 @@ DELETE FROM squad_assignment WHERE user_id IN (77001, 77002, 77003);
 DELETE FROM employee_skill WHERE user_id IN (77001, 77002, 77003);
 DELETE FROM employee WHERE user_id IN (77001, 77002, 77003);
 DELETE FROM project WHERE project_id IN (101, 102);
-DELETE FROM tech_standard WHERE tech_id IN (1, 2, 3, 4);
-DELETE FROM title_standard WHERE title_standard_id = 1;
-DELETE FROM job_standard WHERE job_id = 1;
-DELETE FROM department WHERE dept_id = 1;
 DELETE FROM users WHERE user_id IN (77001, 77002, 77003);
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -33,13 +29,23 @@ VALUES
 -- 2) 기준 데이터(부서/직군/직급)
 -- department.manager_id가 NOT NULL이므로 부서장(user_id=77001)을 지정
 INSERT INTO department (dept_id, dept_name, manager_id, created_at, updated_at)
-VALUES (1, 'IT', 77001, NOW(), NOW());
+VALUES (1, 'IT', 77001, NOW(), NOW())
+    ON DUPLICATE KEY UPDATE
+                         dept_name = VALUES(dept_name),
+                         manager_id = VALUES(manager_id),
+                         updated_at = VALUES(updated_at);
 
 INSERT INTO job_standard (job_id, job_name, created_at, updated_at)
-VALUES (1, 'BackendDeveloper', NOW(), NOW());
+VALUES (1, 'BackendDeveloper', NOW(), NOW())
+    ON DUPLICATE KEY UPDATE
+                         job_name = VALUES(job_name),
+                         updated_at = VALUES(updated_at);
 
 INSERT INTO title_standard (title_standard_id, title_name, created_at, updated_at)
-VALUES (1, '사원', NOW(), NOW());
+VALUES (1, '사원', NOW(), NOW())
+    ON DUPLICATE KEY UPDATE
+                         title_name = VALUES(title_name),
+                         updated_at = VALUES(updated_at);
 
 -- 3) employee (users와 1:1)
 -- job_id는 summary에서 JOIN(job_standard)하므로 77001은 반드시 값 존재해야 함
@@ -57,15 +63,18 @@ VALUES
     (1, 'Java',   NOW(), NOW()),
     (2, 'Spring', NOW(), NOW()),
     (3, 'JPA',    NOW(), NOW()),
-    (4, 'Python', NOW(), NOW());
+    (4, 'Python', NOW(), NOW())
+    ON DUPLICATE KEY UPDATE
+                         tech_name = VALUES(tech_name),
+                         updated_at = VALUES(updated_at);
 
 -- 5) 직원 기술 (employee_skill)
 INSERT INTO employee_skill (employee_tech_id, user_id, tech_id, proficiency, created_at, updated_at)
 VALUES
-      (1001, 77001, 1, 'LV3', NOW(), NOW()),
-      (1002, 77001, 2, 'LV2', NOW(), NOW()),
-      (1003, 77001, 3, 'LV1', NOW(), NOW()),
-      (1004, 77001, 4, 'LV2', NOW(), NOW());
+    (1001, 77001, 1, 'LV3', NOW(), NOW()),
+    (1002, 77001, 2, 'LV2', NOW(), NOW()),
+    (1003, 77001, 3, 'LV1', NOW(), NOW()),
+    (1004, 77001, 4, 'LV2', NOW(), NOW());
 
 
 -- 6) 프로젝트 2개 + 1개는 ACTIVE(assignedNow true 용)

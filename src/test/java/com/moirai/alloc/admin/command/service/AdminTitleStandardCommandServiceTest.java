@@ -29,9 +29,9 @@ class AdminTitleStandardCommandServiceTest {
     @Autowired
     private AdminTitleStandardCommandService service;
 
-    // title_setup.sql 기준
-    private static final Long TITLE_ID_JUNIOR = 88001L;
-    private static final Long TITLE_ID_SENIOR = 88002L;
+    // title_standard_setup.sql 기준
+    private static final Long TITLE_ID_JUNIOR = 99001L;
+    private static final Long TITLE_ID_SENIOR = 99002L;
 
     @Nested
     @DisplayName("직급 등록(createTitle)")
@@ -101,7 +101,7 @@ class AdminTitleStandardCommandServiceTest {
         @Test
         @DisplayName("다른 직급이 이미 같은 이름을 가지고 있으면 예외를 발생시킨다")
         void updateTitle_duplicate_throwsException() {
-            // Junior(88001)을 Senior로 바꾸면 duplicated 로직에 걸림
+            // Junior(99001)을 Senior로 바꾸면 duplicated 로직에 걸림
             assertThatThrownBy(() -> service.updateTitle(TITLE_ID_JUNIOR, "Senior", 123))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("이미 존재하는 직급입니다.");

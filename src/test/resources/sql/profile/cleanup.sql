@@ -2,6 +2,8 @@
 -- profile/cleanup.sql
 -- =========================================
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 -- 1) 프로젝트 기술 요구사항
 DELETE FROM project_tech_requirement
 WHERE project_id IN (101, 102);
@@ -22,20 +24,8 @@ WHERE user_id IN (77001, 77002, 77003);
 DELETE FROM project
 WHERE project_id IN (101, 102);
 
--- 6) 기술 표준
-DELETE FROM tech_standard
-WHERE tech_id IN (1, 2, 3, 4);
-
--- 7) 직급 / 직군 / 부서
-DELETE FROM title_standard
-WHERE title_standard = 1;
-
-DELETE FROM job_standard
-WHERE job_id = 1;
-
-DELETE FROM department
-WHERE dept_id = 1;
-
--- 8) 사용자 (마지막)
+-- 6) 사용자 (마지막)
 DELETE FROM users
 WHERE user_id IN (77001, 77002, 77003);
+
+SET FOREIGN_KEY_CHECKS = 1;

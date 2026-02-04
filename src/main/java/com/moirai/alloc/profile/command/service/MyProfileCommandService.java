@@ -1,5 +1,6 @@
 package com.moirai.alloc.profile.command.service;
 
+import com.moirai.alloc.common.exception.NotFoundException;
 import com.moirai.alloc.hr.command.domain.JobStandard;
 import com.moirai.alloc.hr.command.domain.TechStandard;
 import com.moirai.alloc.hr.command.domain.TitleStandard;
@@ -108,7 +109,7 @@ public class MyProfileCommandService {
                                                    TechStackProficiencyUpdateRequest req) {
 
         EmployeeSkill skill = employeeSkillRepository.findById(employeeTechId)
-                .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_TECH_NOT_FOUND"));
+                .orElseThrow(() -> new NotFoundException("EMPLOYEE_TECH_NOT_FOUND"));
 
         // 본인 기술 스택인지 검증
         if (!skill.getEmployee().getUserId().equals(userId)) {
@@ -134,7 +135,7 @@ public class MyProfileCommandService {
     public TechStackDeleteResponse deleteTechStack(Long userId, Long employeeTechId) {
 
         EmployeeSkill skill = employeeSkillRepository.findById(employeeTechId)
-                .orElseThrow(() -> new IllegalArgumentException("EMPLOYEE_TECH_NOT_FOUND"));
+                .orElseThrow(() -> new NotFoundException("EMPLOYEE_TECH_NOT_FOUND"));
 
         // 본인 기술 스택인지 검증
         if (!skill.getEmployee().getUserId().equals(userId)) {

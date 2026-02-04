@@ -12,6 +12,7 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.util.Map;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class SelectAdditionalAssignmentCandidates {
 // 1) 프로젝트 조회
 // 2) AssignmentShortageCalculator(policy)로 부족 인원 계산
@@ -70,11 +72,14 @@ public class SelectAdditionalAssignmentCandidates {
                                 candidate.getFitnessScore()
                         )
                 );
-                eventPublisher.publishEvent(new ProjectTempAssignmentEvent(
+                ProjectTempAssignmentEvent event = new ProjectTempAssignmentEvent(
                         projectId,
                         project.getName(),
                         saved.getUserId()
-                ));
+                );
+                eventPublisher.publishEvent(event);
+                log.info("Published ProjectTempAssignmentEvent projectId={} userId={} projectName={}",
+                        event.projectId(), event.userId(), event.projectName());
             }
         }
     }
