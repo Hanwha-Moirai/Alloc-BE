@@ -1,7 +1,6 @@
-package com.moirai.alloc.management.serviceLayerTest;
+package com.moirai.alloc.management.command.service;
 
 import com.moirai.alloc.management.command.dto.EditProjectDTO;
-import com.moirai.alloc.management.command.service.EditProject;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.project.command.domain.Project;
 import org.junit.jupiter.api.Test;

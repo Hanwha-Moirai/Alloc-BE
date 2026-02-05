@@ -1,15 +1,11 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import com.moirai.alloc.management.controller.ProjectAssignmentController;
-import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
-import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.dto.candidateList.CandidateScoreFilter;
 import com.moirai.alloc.management.query.dto.controllerDto.AssignmentCandidatePageView;
-import com.moirai.alloc.management.query.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
@@ -25,9 +21,9 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
     @Autowired
     MockMvc mockMvc;
 
-
+    //점수 조정 파라미터 없이 호출하여도 정상적으로 반환되는지 검증
     @Test
-    void getAssignmentCandidatePage_returnsOk_withoutFilter() throws Exception {
+    void getAssignmentCandidatePageReturnsOkWithoutFilter() throws Exception {
         when(getAssignmentCandidates.getAssignmentCandidates(
                 anyLong(),
                 org.mockito.ArgumentMatchers.isNull()
@@ -43,7 +39,7 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
      * - 파라미터 포함 후보 조회
      */
     @Test
-    void getAssignmentCandidatePage_returnsOk_withFilter() throws Exception {
+    void getAssignmentCandidatePageReturnsOkWithFilter() throws Exception {
         when(getAssignmentCandidates.getAssignmentCandidates(
                 anyLong(),
                 org.mockito.ArgumentMatchers.any(CandidateScoreFilter.class)
@@ -62,25 +58,25 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
      * - PM 권한 사용자 가능
      */
     @Test
-    void assignCandidates_returnsOk_forPmUser() throws Exception {
+    void assignCandidatesReturnsOkForPmUser() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments")
                         .with(authenticatedUser("PM"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {
-                                  "projectId": 1,
-                                  "assignments": []
-                                }
-                                """))
+                            {
+                              "userIds": [1, 2, 3]
+                            }
+                            """))
                 .andExpect(status().isOk());
     }
+
 
     /**
      * [POST /api/projects/{projectId}/assignments]
      * - PM 아닌 사용자 차단
      */
     @Test
-    void assignCandidates_returnsForbidden_forNonPmUser() throws Exception {
+    void assignCandidatesReturnsForbiddenForNonPmUser() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments")
                         .with(authenticatedUser("USER"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,14 +84,4 @@ class ProjectAssignmentControllerTest extends ControllerTestSupport {
                 .andExpect(status().isForbidden());
     }
 
-    /**
-     * [POST /api/projects/{projectId}/assignments/additional]
-     * - PM 아닌 사용자 차단
-     */
-    @Test
-    void addMoreCandidates_returnsForbidden_forNonPmUser() throws Exception {
-        mockMvc.perform(post("/api/projects/1/assignments/additional")
-                        .with(authenticatedUser("USER")))
-                .andExpect(status().isForbidden());
-    }
 }

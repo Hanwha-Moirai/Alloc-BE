@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import com.moirai.alloc.management.controller.AssignmentDecisionController;
 import com.moirai.alloc.management.command.service.AcceptAssignment;
@@ -29,7 +29,7 @@ class AssignmentDecisionControllerTest extends ControllerTestSupport {
      * - RequestParam(status) 매핑 검증
      */
     @Test
-    void respondAssignment_returnsOk_forUser() throws Exception {
+    void respondAssignmentReturnsOkForUser() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments/10/response")
                         .with(authenticatedUser("USER"))
                         .param("status", "ACCEPTED"))
@@ -41,7 +41,7 @@ class AssignmentDecisionControllerTest extends ControllerTestSupport {
      * - Role 기반 접근 제어 → 403 Forbidden
      */
     @Test
-    void respondAssignment_returnsForbidden_forPm() throws Exception {
+    void respondAssignmentReturnsForbiddenForPm() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments/10/response")
                         .with(authenticatedUser("PM"))
                         .param("status", "ACCEPTED"))
@@ -53,7 +53,7 @@ class AssignmentDecisionControllerTest extends ControllerTestSupport {
      * - RequestParam(decision) 매핑 및 권한 검증
      */
     @Test
-    void decideAssignment_returnsOk_forPm() throws Exception {
+    void decideAssignmentReturnsOkForPm() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments/10/decision")
                         .with(authenticatedUser("PM"))
                         .param("decision", "ASSIGNED"))
@@ -64,7 +64,7 @@ class AssignmentDecisionControllerTest extends ControllerTestSupport {
      * - 일반 사용자(USER)의 최종 배치 결정 시도 차단 검증
      */
     @Test
-    void decideAssignment_returnsForbidden_forUser() throws Exception {
+    void decideAssignmentReturnsForbiddenForUser() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments/10/decision")
                         .with(authenticatedUser("USER"))
                         .param("decision", "ASSIGNED"))
@@ -77,7 +77,7 @@ class AssignmentDecisionControllerTest extends ControllerTestSupport {
      * - 보안 설정의 우선순위 검증
      */
     @Test
-    void decideAssignment_returnsForbidden_forUserRole() throws Exception {
+    void decideAssignmentReturnsForbiddenForUserRole() throws Exception {
         mockMvc.perform(post("/api/projects/1/assignments/10/decision")
                         .with(authenticatedUser("USER"))
                         .param("decision", "ASSIGNED")
