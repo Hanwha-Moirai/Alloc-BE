@@ -177,11 +177,6 @@ public class SelectAssignmentCandidates {
                 );
             }
 
-            if (selectedNow > remainSlot) {
-                throw new IllegalArgumentException(
-                        "You can select only " + remainSlot + " more candidates"
-                );
-            }
         }
 
     }
