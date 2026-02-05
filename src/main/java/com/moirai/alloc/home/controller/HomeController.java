@@ -6,6 +6,8 @@ import com.moirai.alloc.home.query.dto.HomeProjectSummaryDTO;
 import com.moirai.alloc.home.query.service.GetHomeProjectList;
 import com.moirai.alloc.home.query.service.GetHomeProjectSummary;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +27,11 @@ public class HomeController {
     //홈 - 프로젝트 목록 조회
     @GetMapping("/projects")
     @PreAuthorize("hasRole('USER') or hasRole('PM')")
-    public List<HomeProjectListItemDTO> getHomeProjects(
-            @AuthenticationPrincipal UserPrincipal principal
+    public Page<HomeProjectListItemDTO> getHomeProjects(
+            @AuthenticationPrincipal UserPrincipal principal,
+            Pageable pageable
     ) {
-        return getHomeProjectList.getHomeProjectList(principal.userId());
+        return getHomeProjectList.getHomeProjectList(principal.userId(), pageable);
     }
 
     //홈 - 프로젝트 상태 요약 (진행중/지연/종료)
