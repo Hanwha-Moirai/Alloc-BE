@@ -132,7 +132,7 @@ public class SelectAssignmentCandidates {
         );
     }
 
-    //직군별로 requiredCount를 정확히 충족했는지 검증
+    //직군별로 requiredCount를 정확히 충족했는지 검증, 부족 인원 카운트
     private void validateSelectedCounts(
             Project project,
             AssignCandidateDTO command
@@ -149,21 +149,35 @@ public class SelectAssignmentCandidates {
             JobAssignmentDTO selection =
                     selectionMap.get(requirement.getJobId());
 
-            if (selection == null) {
+            if (selection == null) continue;
+
+            long assigned =
+                    assignmentRepository.countAssignedByProjectAndJob(
+                            project.getProjectId(),
+                            requirement.getJobId()
+                    );
+
+            int remainSlot =
+                    requirement.getRequiredCount() - (int) assigned;
+
+            int selectedNow =
+                    selection.getCandidates().size();
+
+            //  Job Scope 제한
+            if (remainSlot == 0 && selectedNow > 0) {
                 throw new IllegalArgumentException(
-                        "No candidates selected for jobId=" + requirement.getJobId()
+                        "This job role is already fully assigned"
                 );
             }
 
-            if (selection.getCandidates().size()
-                    != requirement.getRequiredCount()) {
+            //  Slot 제한
+            if (selectedNow > remainSlot) {
                 throw new IllegalArgumentException(
-                        "Must select exactly "
-                                + requirement.getRequiredCount()
-                                + " candidates for jobId="
-                                + requirement.getJobId()
+                        "You can select only " + remainSlot + " more candidates"
                 );
             }
+
         }
+
     }
 }

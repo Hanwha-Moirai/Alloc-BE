@@ -92,11 +92,15 @@ class AssignmentSelectionUseCaseTest {
         Long jobId = 10L;
 
         Project project = mock(Project.class);
+        when(project.getProjectId()).thenReturn(projectId); // ⭐ 이거 추가
+
         when(project.getJobRequirements())
                 .thenReturn(List.of(new JobRequirement(jobId, 2)));
 
         when(projectRepository.findById(projectId))
                 .thenReturn(Optional.of(project));
+        when(assignmentRepository.countAssignedByProjectAndJob(projectId, jobId))
+                .thenReturn(2L);
 
         AssignCandidateDTO command = new AssignCandidateDTO(
                 projectId,
