@@ -157,6 +157,18 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             @Param("employeeId") Long employeeId
     );
 
+    @Query("""
+    select count(sa)
+    from SquadAssignment sa
+    where sa.projectId = :projectId
+      and sa.jobId = :jobId
+      and sa.finalDecision = com.moirai.alloc.management.domain.entity.FinalDecision.EXCLUDED
+""")
+    long countExcludedByProjectAndJob(
+            @Param("projectId") Long projectId,
+            @Param("jobId") Long jobId
+    );
+
 
 
 }

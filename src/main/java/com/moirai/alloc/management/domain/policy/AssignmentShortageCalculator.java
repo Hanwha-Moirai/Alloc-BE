@@ -24,17 +24,14 @@ public class AssignmentShortageCalculator {
 
         for (JobRequirement req : project.getJobRequirements()) {
 
-            long assignedCount =
-                    assignmentRepository.countAssignedByProjectAndJob(
+            long excludedCount =
+                    assignmentRepository.countExcludedByProjectAndJob(
                             projectId,
                             req.getJobId()
                     );
 
-            int shortage =
-                    req.getRequiredCount() - (int) assignedCount;
-
-            if (shortage > 0) {
-                shortageByJobId.put(req.getJobId(), shortage);
+            if (excludedCount > 0) {
+                shortageByJobId.put(req.getJobId(), (int)  excludedCount);
             }
         }
 
