@@ -16,6 +16,17 @@ import java.util.Set;
 
 public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
 
+
+    // 기존 List 버전 유지 (Summary용도)
+    @Query("""
+        select distinct p
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+""")
+    List<Project> findProjectsByUserId(@Param("userId") Long userId);
+
+    //페이지네이션 버전
     @Query("""
             select distinct p
             from SquadAssignment sa
@@ -23,7 +34,6 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             where sa.userId = :userId
             """)
     Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
-
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 

@@ -34,18 +34,15 @@ public class SelectAssignmentCandidates {
 
     private final SquadAssignmentRepository assignmentRepository;
     private final ProjectRepository projectRepository;
-    private final GetAssignmentCandidates getAssignmentCandidates;
     private final ApplicationEventPublisher eventPublisher;
 
     public SelectAssignmentCandidates(
             SquadAssignmentRepository assignmentRepository,
             ProjectRepository projectRepository,
-            GetAssignmentCandidates getAssignmentCandidates,
             ApplicationEventPublisher eventPublisher
     ) {
         this.assignmentRepository = assignmentRepository;
         this.projectRepository = projectRepository;
-        this.getAssignmentCandidates = getAssignmentCandidates;
         this.eventPublisher = eventPublisher;
     }
 
@@ -86,57 +83,11 @@ public class SelectAssignmentCandidates {
             }
         }
     }
-    /**
-     * 프론트 전용 Command 진입점
-     * userIds → AssignCandidateDTO 재구성
-     */
-    public void selectByUserIds(Long projectId, List<Long> userIds) {
-
-        // 1) 프로젝트 조회
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-
-        // 2) 현재 후보 조회
-        AssignmentCandidatePageView page =
-                getAssignmentCandidates.getAssignmentCandidates(projectId, null);
-
-        // 3) userId 기준 필터 + jobId 기준 그룹핑
-        Map<Long, List<ScoredCandidateDTO>> groupedByJob =
-                page.getCandidates().stream()
-                        .filter(item -> userIds.contains(item.getUserId()))
-                        .collect(Collectors.groupingBy(
-                                AssignmentCandidateItemDTO::getJobId,
-                                Collectors.mapping(
-                                        item -> new ScoredCandidateDTO(
-                                                item.getUserId(),
-                                                item.getSkillScore()
-                                                        + item.getExperienceScore()
-                                                        + item.getAvailabilityScore()
-                                        ),
-                                        Collectors.toList()
-                                )
-                        ));
-
-        // 4) 내부 Command DTO로 변환
-        List<JobAssignmentDTO> assignments =
-                groupedByJob.entrySet().stream()
-                        .map(e -> new JobAssignmentDTO(
-                                e.getKey(),
-                                e.getValue()
-                        ))
-                        .toList();
-
-        // 5) 기존 로직 재사용
-        selectAssignmentCandidates(
-                new AssignCandidateDTO(projectId, assignments)
-        );
-    }
-
-    //직군별로 requiredCount를 정확히 충족했는지 검증, 부족 인원 카운트
     private void validateSelectedCounts(
             Project project,
             AssignCandidateDTO command
     ) {
+
         Map<Long, JobAssignmentDTO> selectionMap =
                 command.getAssignments().stream()
                         .collect(Collectors.toMap(
@@ -149,45 +100,66 @@ public class SelectAssignmentCandidates {
             JobAssignmentDTO selection =
                     selectionMap.get(requirement.getJobId());
 
-            if (selection == null) continue;
-
-            long assigned =
-                    assignmentRepository.countAssignedByProjectAndJob(
-                            project.getProjectId(),
-                            requirement.getJobId()
-                    );
-
-            int remainSlot =
-                    requirement.getRequiredCount() - (int) assigned;
-
-            int selectedNow =
-                    selection.getCandidates().size();
-
-            log.warn(
-                    "[VALIDATE] projectId={}, jobId={}, requiredCount={}, assignedCount={}, remainSlot={}, selectedNow={}",
-                    project.getProjectId(),
-                    requirement.getJobId(),
-                    requirement.getRequiredCount(),
-                    assigned,
-                    remainSlot,
-                    selectedNow
-            );
-
-            //  Job Scope 제한
-            if (remainSlot == 0 && selectedNow > 0) {
+            if (selection == null) {
                 throw new IllegalArgumentException(
-                        "This job role is already fully assigned"
+                        "No candidates selected for jobId=" + requirement.getJobId()
                 );
             }
 
-            //  Slot 제한
-            if (selectedNow > remainSlot) {
+            if (selection.getCandidates().size() != requirement.getRequiredCount()) {
                 throw new IllegalArgumentException(
-                        "You can select only " + remainSlot + " more candidates"
+                        "Must select exactly "
+                                + requirement.getRequiredCount()
+                                + " candidates for jobId="
+                                + requirement.getJobId()
                 );
             }
-
         }
-
     }
+//    /**
+//     * 프론트 전용 Command 진입점
+//     * userIds → AssignCandidateDTO 재구성
+//     */
+//    public void selectByUserIds(Long projectId, List<Long> userIds) {
+//
+//        // 1) 프로젝트 조회
+//        Project project = projectRepository.findById(projectId)
+//                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+//
+//        // 2) 현재 후보 조회
+//        AssignmentCandidatePageView page =
+//                getAssignmentCandidates.getAssignmentCandidates(projectId, null);
+//
+//        // 3) userId 기준 필터 + jobId 기준 그룹핑
+//        Map<Long, List<ScoredCandidateDTO>> groupedByJob =
+//                page.getCandidates().stream()
+//                        .filter(item -> userIds.contains(item.getUserId()))
+//                        .collect(Collectors.groupingBy(
+//                                AssignmentCandidateItemDTO::getJobId,
+//                                Collectors.mapping(
+//                                        item -> new ScoredCandidateDTO(
+//                                                item.getUserId(),
+//                                                item.getSkillScore()
+//                                                        + item.getExperienceScore()
+//                                                        + item.getAvailabilityScore()
+//                                        ),
+//                                        Collectors.toList()
+//                                )
+//                        ));
+//
+//        // 4) 내부 Command DTO로 변환
+//        List<JobAssignmentDTO> assignments =
+//                groupedByJob.entrySet().stream()
+//                        .map(e -> new JobAssignmentDTO(
+//                                e.getKey(),
+//                                e.getValue()
+//                        ))
+//                        .toList();
+//
+//        // 5) 기존 로직 재사용
+//        selectAssignmentCandidates(
+//                new AssignCandidateDTO(projectId, assignments)
+//        );
+//    }
+
 }
