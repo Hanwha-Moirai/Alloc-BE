@@ -1,7 +1,6 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import com.moirai.alloc.common.security.auth.UserPrincipal;
-import com.moirai.alloc.management.command.service.SelectAdditionalAssignmentCandidates;
 import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.query.service.GetAssignedMembers;
 import com.moirai.alloc.management.query.service.GetAssignedStatus;
@@ -22,7 +21,7 @@ public abstract class ControllerTestSupport {
     @MockBean protected GetAssignmentCandidates getAssignmentCandidates;
     @MockBean protected GetAssignedStatus getAssignedStatus;
     @MockBean protected SelectAssignmentCandidates selectAssignmentCandidates;
-    @MockBean protected SelectAdditionalAssignmentCandidates selectAdditionalAssignmentCandidates;
+
     //  Stage 2 관점
 //  - Controller + Security Context + Role 기반 접근 제어를
 //   통합 관점에서 검증하기 위한 테스트 인프라

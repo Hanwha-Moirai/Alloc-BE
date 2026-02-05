@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.serviceLayerTest;
+package com.moirai.alloc.management.query.service;
 
 import com.moirai.alloc.hr.command.domain.JobStandard;
 import com.moirai.alloc.hr.command.domain.TitleStandard;
@@ -43,7 +43,7 @@ class GetAssignedMembersTest {
     private GetAssignedMembers getAssignedMembers;
 
     @Test
-    void getMembers_returns_assigned_members() {
+    void getMembersReturnsAssignedMembers() {
         // given
         Long projectId = 1L;
 
@@ -52,10 +52,13 @@ class GetAssignedMembersTest {
                 .willReturn(Optional.of(project));
 
         SquadAssignment sa1 = SquadAssignment.propose(projectId, 10L, 80);
+        sa1.requestInterview(10L);
         sa1.finalAssign();
 
         SquadAssignment sa2 = SquadAssignment.propose(projectId, 20L, 90);
+        sa2.requestInterview(20L);
         sa2.finalAssign();
+
 
         given(assignmentRepository.findByProjectId(projectId))
                 .willReturn(List.of(sa1, sa2));
@@ -87,7 +90,7 @@ class GetAssignedMembersTest {
     }
 
     /**
-     * ✅ Employee 도메인 픽스처
+     *  Employee 도메인 픽스처
      * - builder에 없는 필드는 ReflectionTestUtils로 세팅
      */
     private Employee createEmployee(Long userId, String userName, String jobName) {
@@ -109,7 +112,7 @@ class GetAssignedMembersTest {
                 .titleStandard(titleStandard)
                 .build();
 
-        // 🔑 builder에 없는 필드들 수동 주입
+        //  builder에 없는 필드들 수동 주입
         ReflectionTestUtils.setField(employee, "userId", userId);
         ReflectionTestUtils.setField(employee, "skills", List.of());
 
