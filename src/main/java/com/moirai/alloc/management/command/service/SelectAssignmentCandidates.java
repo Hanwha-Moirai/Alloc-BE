@@ -163,6 +163,16 @@ public class SelectAssignmentCandidates {
             int selectedNow =
                     selection.getCandidates().size();
 
+            log.warn(
+                    "[VALIDATE] projectId={}, jobId={}, requiredCount={}, assignedCount={}, remainSlot={}, selectedNow={}",
+                    project.getProjectId(),
+                    requirement.getJobId(),
+                    requirement.getRequiredCount(),
+                    assigned,
+                    remainSlot,
+                    selectedNow
+            );
+
             //  Job Scope 제한
             if (remainSlot == 0 && selectedNow > 0) {
                 throw new IllegalArgumentException(
