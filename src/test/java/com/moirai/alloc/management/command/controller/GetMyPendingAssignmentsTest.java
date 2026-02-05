@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
@@ -33,7 +33,7 @@ public class GetMyPendingAssignmentsTest {
     GetMyPendingAssignments getMyPendingAssignments;
 
     @Test
-    void should_return_pending_assignments_for_user() {
+    void shouldReturnPendingAssignmentsForUser() {
         // given
         Long userId = 1L;
         Long projectId = 100L;
@@ -66,7 +66,7 @@ public class GetMyPendingAssignmentsTest {
         assertThat(dto.getStatus()).isEqualTo(AssignmentStatus.REQUESTED);
     }
     @Test
-    void should_return_empty_list_when_no_pending_assignments() {
+    void shouldReturnEmptyListWhenNoPendingAssignments() {
         // given
         Long userId = 1L;
 
@@ -84,7 +84,7 @@ public class GetMyPendingAssignmentsTest {
     }
 
     @Test
-    void should_only_query_requested_status() {
+    void shouldOnlyQueryRequestedStatus() {
         // given
         Long userId = 1L;
 

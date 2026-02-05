@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import com.moirai.alloc.management.controller.ProjectController;
 import com.moirai.alloc.management.command.dto.EditProjectDTO;
@@ -65,7 +65,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - Controller → Service(getProjectList) 호출 흐름 검증
      */
     @Test
-    void getProjects_returnsOk_forAuthenticatedUser() throws Exception {
+    void getProjectsReturnsOkForAuthenticatedUser() throws Exception {
         when(getProjectList.getProjectList(anyLong()))
                 .thenReturn(List.of());
 
@@ -79,7 +79,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - Spring Security 설정에 따라 403 Forbidden 반환 확인
      */
     @Test
-    void getProjects_returnsForbidden_whenNotAuthenticated() throws Exception {
+    void getProjectsReturnsForbiddenWhenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/projects"))
                 .andExpect(status().isForbidden());
     }
@@ -89,7 +89,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      *   Service Layer로 정확히 전달되는지 검증
      */
     @Test
-    void getProjects_callsServiceWithPrincipalUserId() throws Exception {
+    void getProjectsCallsServiceWithPrincipalUserId() throws Exception {
         when(getProjectList.getProjectList(1L))
                 .thenReturn(List.of());
 
@@ -107,7 +107,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - CSRF 토큰 포함 시 정상 처리 확인
      */
     @Test
-    void registerProject_returnsOk_forPmUser() throws Exception {
+    void registerProjectReturnsOkForPmUser() throws Exception {
         when(registerProject.registerProject(any(), anyLong()))
                 .thenReturn(1L);
 
@@ -124,7 +124,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - Role 기반 접근 제어 → 403 Forbidden
      */
     @Test
-    void registerProject_returnsForbidden_forNonPmUser() throws Exception {
+    void registerProjectReturnsForbiddenForNonPmUser() throws Exception {
         mockMvc.perform(post("/api/projects")
                         .with(authenticatedUser("USER"))
                         .with(csrf())
@@ -138,7 +138,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - 인증 실패 시 403 Forbidden 반환 확인
      */
     @Test
-    void registerProject_returnsForbidden_whenNotAuthenticated() throws Exception {
+    void registerProjectReturnsForbiddenWhenNotAuthenticated() throws Exception {
         mockMvc.perform(post("/api/projects")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -151,7 +151,7 @@ class ProjectControllerTest extends ControllerTestSupport {
      * - @Valid 실패 시 400 Bad Request 반환 확인
      */
     @Test
-    void registerProject_returnsBadRequest_whenRequestBodyIsInvalid() throws Exception {
+    void registerProjectReturnsBadRequestWhenRequestBodyIsInvalid() throws Exception {
         mockMvc.perform(post("/api/projects")
                         .with(authenticatedUser("PM"))
                         .with(csrf())

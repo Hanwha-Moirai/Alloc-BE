@@ -1,7 +1,5 @@
-package com.moirai.alloc.management.serviceLayerTest;
+package com.moirai.alloc.management.command.service;
 
-import com.moirai.alloc.management.command.service.DecideFinalAssignment;
-import com.moirai.alloc.management.command.service.RequestInterview;
 import com.moirai.alloc.management.domain.entity.AssignmentStatus;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;

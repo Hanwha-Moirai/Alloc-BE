@@ -1,4 +1,4 @@
-package com.moirai.alloc.management.controllerLayerTest;
+package com.moirai.alloc.management.command.controller;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
