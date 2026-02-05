@@ -7,6 +7,8 @@ import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +22,7 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             join Project p on sa.projectId = p.projectId
             where sa.userId = :userId
             """)
-    List<Project> findProjectsByUserId(Long userId);
+    Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
 
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);

@@ -16,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 
@@ -32,10 +33,11 @@ public class ProjectController {
     private final EditProject editProject;
     // 프로젝트 목록 조회 (USER + PM)
     @GetMapping
-    public List<ProjectListItemDTO> getProjects(
-            @AuthenticationPrincipal UserPrincipal principal
+    public Page<ProjectListItemDTO> getProjects(
+            @AuthenticationPrincipal UserPrincipal principal,
+            Pageable pageable
     ) {
-        return getProjectList.getProjectList(principal.userId());
+        return getProjectList.getProjectList(principal.userId(), pageable);
     }
 
     // 프로젝트 상세 조회 (USER + PM)
