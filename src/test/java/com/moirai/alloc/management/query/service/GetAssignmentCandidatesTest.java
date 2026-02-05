@@ -7,6 +7,7 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
+import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
@@ -63,7 +64,6 @@ class GetAssignmentCandidatesTest {
         Project project = mock(Project.class);
         when(projectRepository.findById(projectId))
                 .thenReturn(Optional.of(project));
-        when(project.getProjectId()).thenReturn(projectId);
 
         when(project.getJobRequirements())
                 .thenReturn(List.of(new JobRequirement(jobId, 1)));
@@ -88,7 +88,7 @@ class GetAssignmentCandidatesTest {
         when(assignmentRepository.findUserIdsByFinalDecision(FinalDecision.ASSIGNED))
                 .thenReturn(Set.of());
 
-        // scoring 관련 stub (핵심)
+        // ✅ scoring 관련 stub (핵심)
         when(candidateScoringService.score(any(), any()))
                 .thenReturn(
                         CandidateScore.builder()
