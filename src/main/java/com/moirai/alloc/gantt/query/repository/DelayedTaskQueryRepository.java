@@ -43,6 +43,18 @@ public class DelayedTaskQueryRepository {
         StringBuilder where = new StringBuilder();
         List<Object> params = new ArrayList<>();
 
+        if (condition.projectId() != null) {
+            where.append(" and p.project_id = ?");
+            params.add(condition.projectId());
+        }
+        if (condition.from() != null) {
+            where.append(" and t.end_date >= ?");
+            params.add(condition.from());
+        }
+        if (condition.to() != null) {
+            where.append(" and t.end_date <= ?");
+            params.add(condition.to());
+        }
         if (condition.taskName() != null && !condition.taskName().isBlank()) {
             where.append(" and t.task_name like ?");
             params.add("%" + condition.taskName().trim() + "%");
