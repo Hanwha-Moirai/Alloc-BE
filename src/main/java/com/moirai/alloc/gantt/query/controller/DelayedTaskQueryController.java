@@ -23,12 +23,18 @@ public class DelayedTaskQueryController {
 
     @GetMapping("/delayed")
     public ApiResponse<List<DelayedTaskResponse>> findDelayedTasks(
+            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) java.time.LocalDate from,
+            @RequestParam(required = false) java.time.LocalDate to,
             @RequestParam(required = false) String taskName,
             @RequestParam(required = false) String projectName,
             @RequestParam(required = false) String assigneeName,
             @RequestParam(required = false) Integer delayedDays
     ) {
         DelayedTaskSearchRequest request = new DelayedTaskSearchRequest(
+                projectId,
+                from,
+                to,
                 taskName,
                 projectName,
                 assigneeName,
