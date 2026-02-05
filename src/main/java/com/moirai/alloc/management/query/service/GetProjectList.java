@@ -8,29 +8,34 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 @Service
-@Transactional(readOnly=true)
+@Transactional(readOnly = true)
 public class GetProjectList {
+
     private final SquadAssignmentRepository squadAssignmentRepository;
+
     public GetProjectList(SquadAssignmentRepository squadAssignmentRepository) {
         this.squadAssignmentRepository = squadAssignmentRepository;
     }
-    public Page<ProjectListItemDTO> getProjectList(Long userId, Pageable pageable) {
-//        1) userId를 기준으로 사용자 식별
-//        2) 해당 사용자가 참여하고 참여했던(진행/종료) 프로젝트 목록을 조회한다.
-//        3) 프로젝트 목록을 조회용 형태로 반환한다.
-        Page<Project> projectPage =
-                squadAssignmentRepository.findProjectsByUserId(userId, pageable);
 
-        return projectPage.map(project -> new ProjectListItemDTO(
+    public List<ProjectListItemDTO> getProjectList(Long userId) {
+
+        List<Project> projects =
+                squadAssignmentRepository.findProjectsByUserId(userId);
+
+        return projects.stream()
+                .map(project -> new ProjectListItemDTO(
                         project.getProjectId(),
                         project.getName(),
                         project.getStartDate(),
                         project.getEndDate(),
                         project.getProjectStatus(),
-                        null,   // progressRate (타 팀원)
-                        null,   // documentStatus (타 팀원)
-                        null    // riskLevel (타 팀원)
-                ));
+                        null,   // progressRate
+                        null,   // documentStatus
+                        null    // riskLevel
+                ))
+                .toList();
     }
 }

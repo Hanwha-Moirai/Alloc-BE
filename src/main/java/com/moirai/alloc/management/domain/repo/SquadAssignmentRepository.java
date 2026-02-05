@@ -27,13 +27,13 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
     List<Project> findProjectsByUserId(@Param("userId") Long userId);
 
     //페이지네이션 버전
-    @Query("""
-            select distinct p
-            from SquadAssignment sa
-            join Project p on sa.projectId = p.projectId
-            where sa.userId = :userId
-            """)
-    Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
+//    @Query("""
+//            select distinct p
+//            from SquadAssignment sa
+//            join Project p on sa.projectId = p.projectId
+//            where sa.userId = :userId
+//            """)
+//    Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 

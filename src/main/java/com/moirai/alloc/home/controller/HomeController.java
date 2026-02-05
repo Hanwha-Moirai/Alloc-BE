@@ -27,12 +27,12 @@ public class HomeController {
     //홈 - 프로젝트 목록 조회
     @GetMapping("/projects")
     @PreAuthorize("hasRole('USER') or hasRole('PM')")
-    public Page<HomeProjectListItemDTO> getHomeProjects(
-            @AuthenticationPrincipal UserPrincipal principal,
-            Pageable pageable
+    public List<HomeProjectListItemDTO> getHomeProjects(
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return getHomeProjectList.getHomeProjectList(principal.userId(), pageable);
+        return getHomeProjectList.getHomeProjectList(principal.userId());
     }
+
 
     //홈 - 프로젝트 상태 요약 (진행중/지연/종료)
     @GetMapping("/summary")

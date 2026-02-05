@@ -12,8 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(readOnly=true)
+@Transactional(readOnly = true)
 public class GetHomeProjectList {
+
     private final SquadAssignmentRepository squadAssignmentRepository;
     private final GanttQueryService ganttQueryService;
 
@@ -23,14 +24,14 @@ public class GetHomeProjectList {
         this.squadAssignmentRepository = squadAssignmentRepository;
         this.ganttQueryService = ganttQueryService;
     }
-    public Page<HomeProjectListItemDTO> getHomeProjectList(Long userId, Pageable pageable) {
-//        1) userId를 기준으로 사용자 식별
-//        2) 해당 사용자가 참여하고 참여했던(진행/종료) 프로젝트 목록을 조회한다.
-//        3) 프로젝트 목록을 조회용 형태로 반환한다.
-        Page<Project> projectPage =
-                squadAssignmentRepository.findProjectsByUserId(userId, pageable);
 
-        return projectPage.map(project -> {
+    public List<HomeProjectListItemDTO> getHomeProjectList(Long userId) {
+
+        List<Project> projects =
+                squadAssignmentRepository.findProjectsByUserId(userId);
+
+        return projects.stream()
+                .map(project -> {
 
                     Double rate =
                             ganttQueryService.findMilestoneCompletionRate(
@@ -45,6 +46,7 @@ public class GetHomeProjectList {
                             project.getProjectStatus(),
                             rate == null ? 0 : rate.intValue()
                     );
-                });
+                })
+                .toList();
     }
 }

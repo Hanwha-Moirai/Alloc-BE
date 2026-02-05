@@ -33,11 +33,10 @@ public class ProjectController {
     private final EditProject editProject;
     // 프로젝트 목록 조회 (USER + PM)
     @GetMapping
-    public Page<ProjectListItemDTO> getProjects(
-            @AuthenticationPrincipal UserPrincipal principal,
-            Pageable pageable
+    public List<ProjectListItemDTO> getProjects(
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return getProjectList.getProjectList(principal.userId(), pageable);
+        return getProjectList.getProjectList(principal.userId());
     }
 
     // 프로젝트 상세 조회 (USER + PM)
