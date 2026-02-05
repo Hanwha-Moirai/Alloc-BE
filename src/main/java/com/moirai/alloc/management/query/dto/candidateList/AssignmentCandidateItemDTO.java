@@ -9,7 +9,7 @@ public class AssignmentCandidateItemDTO {
     private Long userId;
     private String userName;
 
-    //private Long jobId; // 도메인 식별 용도
+    private Long jobId; // 도메인 식별 용도
     private String jobName;
     private String mainSkill;
 

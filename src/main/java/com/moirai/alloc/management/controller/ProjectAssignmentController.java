@@ -66,12 +66,10 @@ public class ProjectAssignmentController {
     @PostMapping("/assignments")
     public void assignCandidates(
             @PathVariable Long projectId,
-            @RequestBody AssignCandidateDTO command
+            @RequestBody AssignUsersCommandDTO request
     ) {
-        if (!projectId.equals(command.getProjectId())) {
-            throw new IllegalArgumentException("Project ID mismatch");
-        }
-        selectAssignmentCandidates.selectAssignmentCandidates(command);
+        selectAssignmentCandidates
+                .selectByUserIds(projectId, request.getUserIds());
     }
 
     //프로젝트 인력 배치 현황 조회(사용자 / PM 가능)

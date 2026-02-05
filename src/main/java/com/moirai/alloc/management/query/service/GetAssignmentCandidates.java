@@ -147,6 +147,7 @@ public class GetAssignmentCandidates {
                             return new AssignmentCandidateItemDTO(
                                     u.getUserId(),
                                     u.getUserName(),
+                                    e.getJob().getJobId(),
                                     e.getJob().getJobName(),
                                     resolveMainSkill(e),
                                     e.getTitleStandard().getMonthlyCost(),
