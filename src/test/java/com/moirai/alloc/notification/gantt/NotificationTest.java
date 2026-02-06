@@ -137,6 +137,6 @@ class NotificationTest {
         assertThat(command.targetId()).isEqualTo(milestoneId);
         assertThat(command.targetUserIds()).containsExactlyInAnyOrder(99001L, 99002L);
         assertThat(command.variables()).isEqualTo(Map.of("milestoneName", "NOTIFY_MILESTONE"));
-        assertThat(command.linkUrl()).isEqualTo("/projects/99001/milestones/" + milestoneId);
+        assertThat(command.linkUrl()).isEqualTo("/projects/99001/gantt");
     }
 }

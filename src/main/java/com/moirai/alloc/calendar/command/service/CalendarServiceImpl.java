@@ -5,6 +5,7 @@ import com.moirai.alloc.calendar.command.dto.request.*;
 import com.moirai.alloc.calendar.command.dto.response.EventDetailResponse;
 import com.moirai.alloc.calendar.command.dto.response.EventMemberResponse;
 import com.moirai.alloc.calendar.command.dto.response.EventResponse;
+import com.moirai.alloc.calendar.command.event.CalendarScheduleNotificationEvent;
 import com.moirai.alloc.calendar.command.repository.EventsLogRepository;
 import com.moirai.alloc.calendar.command.repository.EventsRepository;
 import com.moirai.alloc.calendar.command.repository.PublicEventsMemberRepository;
@@ -16,10 +17,10 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
 import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
 import com.moirai.alloc.notification.common.contract.TargetType;
-import com.moirai.alloc.notification.common.port.NotificationPort;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class CalendarServiceImpl implements CalendarService {
     private final EventsLogRepository eventsLogRepository;
     private final SquadAssignmentRepository squadAssignmentRepository;
     private final UserRepository userRepository;
-    private final NotificationPort notificationPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 공유 일정(PUBLIC) 생성
@@ -415,15 +416,13 @@ public class CalendarServiceImpl implements CalendarService {
         if (targetUserIds == null || targetUserIds.isEmpty()) {
             return;
         }
-        InternalNotificationCommand command = InternalNotificationCommand.builder()
-                .templateType(templateType)
-                .targetUserIds(targetUserIds)
-                .variables(Map.of("eventName", event.getEventName()))
-                .targetType(TargetType.CALENDAR)
-                .targetId(event.getId())
-                .linkUrl("/projects/" + event.getProjectId() + "/calendar/events/" + event.getId())
-                .build();
-        notificationPort.notify(command);
+        eventPublisher.publishEvent(new CalendarScheduleNotificationEvent(
+                event.getProjectId(),
+                event.getId(),
+                event.getEventName(),
+                targetUserIds,
+                templateType
+        ));
     }
 
     private List<Long> getPublicMemberIds(Long eventId) {

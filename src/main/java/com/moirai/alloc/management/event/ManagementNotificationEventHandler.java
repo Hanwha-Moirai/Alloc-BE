@@ -25,7 +25,7 @@ public class ManagementNotificationEventHandler {
     private final NotificationPort notificationPort;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onProjectTempAssignment(ProjectTempAssignmentEvent event) {
         log.info("Handling ProjectTempAssignmentEvent projectId={} userId={} projectName={}",
                 event.projectId(), event.userId(), event.projectName());
@@ -41,7 +41,7 @@ public class ManagementNotificationEventHandler {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onProjectFinalAssignment(ProjectFinalAssignmentEvent event) {
         log.info("Handling ProjectFinalAssignmentEvent projectId={} userId={} projectName={}",
                 event.projectId(), event.userId(), event.projectName());
