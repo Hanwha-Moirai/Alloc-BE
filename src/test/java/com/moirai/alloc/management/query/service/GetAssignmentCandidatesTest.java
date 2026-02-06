@@ -8,6 +8,7 @@ import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
+import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
@@ -31,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -50,6 +52,7 @@ class GetAssignmentCandidatesTest {
     @Mock private WeightPolicy weightPolicy;
     @Mock private ScoreWeightAdjuster scoreWeightAdjuster;
     @Mock private CandidateScoringService candidateScoringService;
+    @Mock private AssignmentShortageCalculator shortageCalculator;
 
     @InjectMocks
     private GetAssignmentCandidates getAssignmentCandidates;
@@ -67,7 +70,8 @@ class GetAssignmentCandidatesTest {
 
         when(project.getJobRequirements())
                 .thenReturn(List.of(new JobRequirement(jobId, 1)));
-
+        when(shortageCalculator.calculate(any()))
+                .thenReturn(Map.of());
         AssignCandidateDTO recommended =
                 new AssignCandidateDTO(
                         projectId,
