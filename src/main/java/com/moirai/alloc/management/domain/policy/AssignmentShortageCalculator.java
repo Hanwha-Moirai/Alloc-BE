@@ -53,10 +53,7 @@ public class AssignmentShortageCalculator {
 
             if (capacityShortage < 0) capacityShortage = 0;
 
-            int refill = (int) excluded;
-
-            int finalSelectCount =
-                    Math.max(capacityShortage, refill);
+            int finalSelectCount = capacityShortage + (int) excluded;
 
             if (finalSelectCount > 0) {
                 selectCountByJobId.put(jobId, finalSelectCount);

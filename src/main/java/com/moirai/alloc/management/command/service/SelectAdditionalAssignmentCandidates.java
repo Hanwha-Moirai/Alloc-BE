@@ -13,6 +13,7 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.query.service.GetAssignedStatus;
 import com.moirai.alloc.project.command.domain.Project;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.Map;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class SelectAdditionalAssignmentCandidates {
 
     private final ProjectRepository projectRepository;
@@ -52,7 +54,7 @@ public class SelectAdditionalAssignmentCandidates {
                         ? Collections.emptyList()
                         : additionalCandidates.getAssignments();
 
-        for (JobAssignmentDTO assignment : additionalCandidates.getAssignments()) {
+        for (JobAssignmentDTO assignment : assignments) {
             if (assignment == null || assignment.getCandidates() == null) continue;
 
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
@@ -84,6 +86,9 @@ public class SelectAdditionalAssignmentCandidates {
                         )
                 );
             }
+
         }
+        log.info("shortageMap = {}", shortageByJobId);
+
     }
 }

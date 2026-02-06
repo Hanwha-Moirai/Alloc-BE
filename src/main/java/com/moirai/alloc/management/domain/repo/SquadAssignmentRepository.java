@@ -176,8 +176,8 @@ select count(sa)
 from SquadAssignment sa
 join Employee e on sa.userId = e.userId
 where sa.projectId = :projectId
-  and sa.assignmentStatus = 'PENDING'
-  and e.job.jobId = :jobId
+   and sa.finalDecision = com.moirai.alloc.management.domain.entity.FinalDecision.PENDING
+   and e.job.jobId = :jobId
 """)
     long countPendingByProjectAndJob(
             @Param("projectId") Long projectId,
