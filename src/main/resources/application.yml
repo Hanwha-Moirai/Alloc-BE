@@ -28,6 +28,11 @@ spring:
           timeout: 5000
           write timeout: 5000
 
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
 mail:
   appName: ALLOC
 
