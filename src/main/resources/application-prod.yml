@@ -23,6 +23,24 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT:6379}
 
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-northeast-2}   # 코어 공통 region :contentReference[oaicite:2]{index=2}
+      sqs:
+        enabled: true                          # SQS 통합 on :contentReference[oaicite:3]{index=3}
+        region: ${AWS_REGION:ap-northeast-2}   # SqsAsyncClient region :contentReference[oaicite:4]{index=4}
+        # endpoint는 보통 "생략"해도 AWS SDK가 region 기반으로 잡음.
+        # 혹시 환경에서 기본 endpoint가 localhost로 잡히는 문제가 있으면 아래처럼 명시.
+        # endpoint: https://sqs.${AWS_REGION:ap-northeast-2}.amazonaws.com :contentReference[oaicite:5]{index=5}
+
+        queue-not-found-strategy: FAIL         # CREATE/FAIL 중 FAIL 권장 :contentReference[oaicite:6]{index=6}
+
+        listener:
+          max-messages-per-poll: 10
+          poll-timeout: 10s
+          max-inflight-messages-per-queue: 10  # 필요 시 조절 :contentReference[oaicite:7]{index=7}
+
 mail:
   from: ${MAIL_FROM:allocmoirai@gmail.com}
 
@@ -44,3 +62,9 @@ opensearch:
   ssl:
     enabled: ${OPENSEARCH_SSL_ENABLED:true}
     trustAll: ${OPENSEARCH_SSL_TRUST_ALL:false}
+
+notification:
+  port:
+    mode: ${NOTIFICATION_PORT_MODE:sqs}
+  sqs:
+    queue-name: ${NOTIFICATION_SQS_QUEUE_NAME:https://sqs.ap-northeast-2.amazonaws.com/897722680443/alloc-notification}
