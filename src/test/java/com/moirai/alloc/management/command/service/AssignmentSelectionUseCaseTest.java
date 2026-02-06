@@ -4,6 +4,7 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.command.event.ProjectTempAssignmentEvent;
+import com.moirai.alloc.management.command.service.SelectAssignmentCandidates;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
@@ -11,6 +12,7 @@ import com.moirai.alloc.management.domain.vo.JobRequirement;
 import com.moirai.alloc.project.command.domain.Project;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -92,15 +94,11 @@ class AssignmentSelectionUseCaseTest {
         Long jobId = 10L;
 
         Project project = mock(Project.class);
-        when(project.getProjectId()).thenReturn(projectId); // ⭐ 이거 추가
-
         when(project.getJobRequirements())
                 .thenReturn(List.of(new JobRequirement(jobId, 2)));
 
         when(projectRepository.findById(projectId))
                 .thenReturn(Optional.of(project));
-        when(assignmentRepository.countAssignedByProjectAndJob(projectId, jobId))
-                .thenReturn(2L);
 
         AssignCandidateDTO command = new AssignCandidateDTO(
                 projectId,

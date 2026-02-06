@@ -7,6 +7,8 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
+import com.moirai.alloc.management.domain.entity.SquadAssignment;
+import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
@@ -30,6 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -49,6 +52,7 @@ class GetAssignmentCandidatesTest {
     @Mock private WeightPolicy weightPolicy;
     @Mock private ScoreWeightAdjuster scoreWeightAdjuster;
     @Mock private CandidateScoringService candidateScoringService;
+    @Mock private AssignmentShortageCalculator shortageCalculator;
 
     @InjectMocks
     private GetAssignmentCandidates getAssignmentCandidates;
@@ -63,11 +67,11 @@ class GetAssignmentCandidatesTest {
         Project project = mock(Project.class);
         when(projectRepository.findById(projectId))
                 .thenReturn(Optional.of(project));
-        when(project.getProjectId()).thenReturn(projectId);
 
         when(project.getJobRequirements())
                 .thenReturn(List.of(new JobRequirement(jobId, 1)));
-
+        when(shortageCalculator.calculate(any()))
+                .thenReturn(Map.of());
         AssignCandidateDTO recommended =
                 new AssignCandidateDTO(
                         projectId,
@@ -88,7 +92,7 @@ class GetAssignmentCandidatesTest {
         when(assignmentRepository.findUserIdsByFinalDecision(FinalDecision.ASSIGNED))
                 .thenReturn(Set.of());
 
-        // scoring 관련 stub (핵심)
+        // ✅ scoring 관련 stub (핵심)
         when(candidateScoringService.score(any(), any()))
                 .thenReturn(
                         CandidateScore.builder()

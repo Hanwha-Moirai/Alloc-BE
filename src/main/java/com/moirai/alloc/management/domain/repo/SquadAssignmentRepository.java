@@ -7,6 +7,8 @@ import com.moirai.alloc.project.command.domain.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,14 +16,24 @@ import java.util.Set;
 
 public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment, Long> {
 
-    @Query("""
-            select distinct p
-            from SquadAssignment sa
-            join Project p on sa.projectId = p.projectId
-            where sa.userId = :userId
-            """)
-    List<Project> findProjectsByUserId(Long userId);
 
+    // 기존 List 버전 유지 (Summary용도)
+    @Query("""
+        select distinct p
+        from SquadAssignment sa
+        join Project p on sa.projectId = p.projectId
+        where sa.userId = :userId
+""")
+    List<Project> findProjectsByUserId(@Param("userId") Long userId);
+
+    //페이지네이션 버전
+//    @Query("""
+//            select distinct p
+//            from SquadAssignment sa
+//            join Project p on sa.projectId = p.projectId
+//            where sa.userId = :userId
+//            """)
+//    Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
 
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 
@@ -145,6 +157,32 @@ public interface SquadAssignmentRepository extends JpaRepository<SquadAssignment
             @Param("employeeId") Long employeeId
     );
 
+    @Query("""
+select count(sa)
+from SquadAssignment sa
+join Employee e on sa.userId = e.userId
+where sa.projectId = :projectId
+  and e.job.jobId = :jobId
+  and sa.finalDecision = com.moirai.alloc.management.domain.entity.FinalDecision.EXCLUDED
+""")
+
+    long countExcludedByProjectAndJob(
+            @Param("projectId") Long projectId,
+            @Param("jobId") Long jobId
+    );
+
+    @Query("""
+select count(sa)
+from SquadAssignment sa
+join Employee e on sa.userId = e.userId
+where sa.projectId = :projectId
+   and sa.finalDecision = com.moirai.alloc.management.domain.entity.FinalDecision.PENDING
+   and e.job.jobId = :jobId
+""")
+    long countPendingByProjectAndJob(
+            @Param("projectId") Long projectId,
+            @Param("jobId") Long jobId
+    );
 
 
 }

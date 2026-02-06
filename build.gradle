@@ -120,6 +120,10 @@ dependencies {
     // ECS 관련
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // SQS 연동 (AWS Spring Cloud)
+    implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.3.0")
+    implementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"
+
     mockitoAgent 'org.mockito:mockito-core'
 }
 

@@ -18,27 +18,49 @@ public class AssignmentShortageCalculator {
 
     public Map<Long, Integer> calculate(Project project) {
 
-        Map<Long, Integer> shortageByJobId = new HashMap<>();
+        Map<Long, Integer> selectCountByJobId = new HashMap<>();
 
         Long projectId = project.getProjectId();
 
         for (JobRequirement req : project.getJobRequirements()) {
 
-            long assignedCount =
+            Long jobId = req.getJobId();
+
+            int required = req.getRequiredCount();
+
+            long assigned =
                     assignmentRepository.countAssignedByProjectAndJob(
                             projectId,
-                            req.getJobId()
+                            jobId
                     );
 
-            int shortage =
-                    req.getRequiredCount() - (int) assignedCount;
+            long pending =
+                    assignmentRepository.countPendingByProjectAndJob(
+                            projectId,
+                            jobId
+                    );
 
-            if (shortage > 0) {
-                shortageByJobId.put(req.getJobId(), shortage);
+            long excluded =
+                    assignmentRepository.countExcludedByProjectAndJob(
+                            projectId,
+                            jobId
+                    );
+
+            int capacityShortage =
+                    required - (int)(assigned + pending);
+
+
+
+            if (capacityShortage < 0) capacityShortage = 0;
+
+            int finalSelectCount = capacityShortage + (int) excluded;
+
+            if (finalSelectCount > 0) {
+                selectCountByJobId.put(jobId, finalSelectCount);
             }
         }
 
-        return shortageByJobId;
+        return selectCountByJobId;
     }
 
     public boolean hasShortage(Project project) {
