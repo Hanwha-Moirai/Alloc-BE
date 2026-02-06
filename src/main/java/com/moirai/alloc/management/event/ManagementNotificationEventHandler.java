@@ -35,7 +35,7 @@ public class ManagementNotificationEventHandler {
                 .variables(Map.of("projectName", event.projectName()))
                 .targetType(TargetType.POST)
                 .targetId(event.projectId())
-                .linkUrl("/projects/" + event.projectId() + "/assignments")
+                .linkUrl("/projects/" + event.projectId() + "/members")
                 .build();
         notificationPort.notify(command);
     }
@@ -51,7 +51,7 @@ public class ManagementNotificationEventHandler {
                 .variables(Map.of("projectName", event.projectName()))
                 .targetType(TargetType.POST)
                 .targetId(event.projectId())
-                .linkUrl("/projects/" + event.projectId() + "/assignments")
+                .linkUrl("/projects/" + event.projectId() + "/members")
                 .build();
         notificationPort.notify(command);
     }

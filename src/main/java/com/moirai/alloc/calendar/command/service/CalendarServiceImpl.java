@@ -13,6 +13,10 @@ import com.moirai.alloc.common.exception.NotFoundException;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
+import com.moirai.alloc.notification.common.contract.AlarmTemplateType;
+import com.moirai.alloc.notification.common.contract.InternalNotificationCommand;
+import com.moirai.alloc.notification.common.contract.TargetType;
+import com.moirai.alloc.notification.common.port.NotificationPort;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,7 @@ public class CalendarServiceImpl implements CalendarService {
     private final EventsLogRepository eventsLogRepository;
     private final SquadAssignmentRepository squadAssignmentRepository;
     private final UserRepository userRepository;
+    private final NotificationPort notificationPort;
 
     /**
      * 공유 일정(PUBLIC) 생성
@@ -76,6 +81,8 @@ public class CalendarServiceImpl implements CalendarService {
 
         logChange(saved.getId(), principal.userId(), ChangeType.CREATE, "공유 일정 생성",
                 null, saved.getStartDate(), null, saved.getEndDate());
+
+        sendScheduleInvite(saved, distinctMemberIds);
 
         return EventResponse.from(saved);
     }
@@ -257,6 +264,13 @@ public class CalendarServiceImpl implements CalendarService {
                 beforeStart, event.getStartDate(),
                 beforeEnd, event.getEndDate());
 
+        if (event.getEventType() == EventType.PUBLIC) {
+            List<Long> targetUserIds = (request.getMemberUserIds() != null)
+                    ? distinct(request.getMemberUserIds())
+                    : getPublicMemberIds(event.getId());
+            sendScheduleChange(event, targetUserIds);
+        }
+
         return EventResponse.from(event);
     }
 
@@ -387,6 +401,37 @@ public class CalendarServiceImpl implements CalendarService {
                 .afterEndDate(afterEnd)
                 .build();
         eventsLogRepository.save(log);
+    }
+
+    private void sendScheduleInvite(Events event, List<Long> targetUserIds) {
+        sendScheduleNotification(event, targetUserIds, AlarmTemplateType.SCHEDULE_INVITE);
+    }
+
+    private void sendScheduleChange(Events event, List<Long> targetUserIds) {
+        sendScheduleNotification(event, targetUserIds, AlarmTemplateType.SCHEDULE_CHANGE);
+    }
+
+    private void sendScheduleNotification(Events event, List<Long> targetUserIds, AlarmTemplateType templateType) {
+        if (targetUserIds == null || targetUserIds.isEmpty()) {
+            return;
+        }
+        InternalNotificationCommand command = InternalNotificationCommand.builder()
+                .templateType(templateType)
+                .targetUserIds(targetUserIds)
+                .variables(Map.of("eventName", event.getEventName()))
+                .targetType(TargetType.CALENDAR)
+                .targetId(event.getId())
+                .linkUrl("/projects/" + event.getProjectId() + "/calendar/events/" + event.getId())
+                .build();
+        notificationPort.notify(command);
+    }
+
+    private List<Long> getPublicMemberIds(Long eventId) {
+        return publicEventsMemberRepository.findByEventId(eventId).stream()
+                .map(PublicEventsMember::getUserId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
     }
 
     /** null/blank description을 빈 문자열로 정규화 */
