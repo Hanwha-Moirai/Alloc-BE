@@ -5,6 +5,7 @@ import com.moirai.alloc.management.command.dto.AssignCandidateDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.domain.entity.FinalDecision;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
+import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.policy.CandidateSelectionService;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScore;
 import com.moirai.alloc.management.domain.policy.scoring.CandidateScoringService;
@@ -24,6 +25,7 @@ import com.moirai.alloc.project.command.domain.Project;
 import com.moirai.alloc.user.command.domain.User;
 import com.moirai.alloc.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class GetAssignmentCandidates {
 //    1) 프로젝트 및 직군 요구 사항 조회
 //    2) policy 기반 후보 계산 조회 (읽기 전용)
@@ -51,6 +54,7 @@ public class GetAssignmentCandidates {
     private final CandidateScoringService candidateScoringService;
     private final WeightPolicy weightPolicy;
     private final ScoreWeightAdjuster scoreWeightAdjuster;
+    private final AssignmentShortageCalculator shortageCalculator;
 
     public AssignmentCandidatePageView getAssignmentCandidates(
             Long projectId,
@@ -60,12 +64,21 @@ public class GetAssignmentCandidates {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        Map<Long, Integer> requiredCountByJobId =
-                project.getJobRequirements().stream()
-                        .collect(Collectors.toMap(
-                                JobRequirement::getJobId,
-                                JobRequirement::getRequiredCount
-                        ));
+        Map<Long, Integer> shortageMap = shortageCalculator.calculate(project);
+
+        Map<Long, Integer> requiredCountByJobId;
+        if (shortageMap != null && !shortageMap.isEmpty()) {
+            requiredCountByJobId = shortageMap; // 추가 선발용
+            log.info("[GetAssignmentCandidates] projectId={} additionalMode=TRUE shortageMap={}", projectId, shortageMap);
+        } else {
+            requiredCountByJobId = project.getJobRequirements().stream()
+                    .collect(Collectors.toMap(
+                            JobRequirement::getJobId,
+                            JobRequirement::getRequiredCount
+                    )); // 최초 선발용
+            log.info("[GetAssignmentCandidates] projectId={} additionalMode=FALSE requiredMap={}", projectId, requiredCountByJobId);
+        }
+
 
         AssignCandidateDTO recommended =
                 candidateSelectionService.select(project, requiredCountByJobId);
@@ -83,7 +96,7 @@ public class GetAssignmentCandidates {
         allUserIds.addAll(recommendedUserIds);
 
         Map<Long, Employee> employeeMap =
-                employeeRepository.findAllById(allUserIds).stream()
+                employeeRepository.findAllById(recommendedUserIds).stream()
                         .collect(Collectors.toMap(
                                 Employee::getUserId,
                                 Function.identity()

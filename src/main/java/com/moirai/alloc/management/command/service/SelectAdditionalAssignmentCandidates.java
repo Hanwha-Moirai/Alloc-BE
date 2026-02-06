@@ -17,6 +17,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -45,10 +47,17 @@ public class SelectAdditionalAssignmentCandidates {
 
         AssignCandidateDTO additionalCandidates =
                 candidateSelectionService.select(project, shortageByJobId);
+        List<JobAssignmentDTO> assignments =
+                (additionalCandidates == null || additionalCandidates.getAssignments() == null)
+                        ? Collections.emptyList()
+                        : additionalCandidates.getAssignments();
 
         for (JobAssignmentDTO assignment : additionalCandidates.getAssignments()) {
+            if (assignment == null || assignment.getCandidates() == null) continue;
 
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
+
+                if (candidate == null || candidate.getUserId() == null) continue;
 
                 Long userId = candidate.getUserId();
 

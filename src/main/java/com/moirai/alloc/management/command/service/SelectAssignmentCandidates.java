@@ -5,6 +5,7 @@ import com.moirai.alloc.management.command.dto.JobAssignmentDTO;
 import com.moirai.alloc.management.command.dto.ScoredCandidateDTO;
 import com.moirai.alloc.management.command.event.ProjectTempAssignmentEvent;
 import com.moirai.alloc.management.domain.entity.SquadAssignment;
+import com.moirai.alloc.management.domain.policy.AssignmentShortageCalculator;
 import com.moirai.alloc.management.domain.repo.ProjectRepository;
 import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.management.domain.vo.JobRequirement;
@@ -17,6 +18,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,24 +38,34 @@ public class SelectAssignmentCandidates {
     private final ProjectRepository projectRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final GetAssignmentCandidates getAssignmentCandidates;
+    private final AssignmentShortageCalculator shortageCalculator;
 
     public SelectAssignmentCandidates(
             SquadAssignmentRepository assignmentRepository,
             ProjectRepository projectRepository,
             ApplicationEventPublisher eventPublisher,
-            GetAssignmentCandidates getAssignmentCandidates
+            GetAssignmentCandidates getAssignmentCandidates,
+            AssignmentShortageCalculator shortageCalculator
     ) {
         this.assignmentRepository = assignmentRepository;
         this.projectRepository = projectRepository;
         this.eventPublisher = eventPublisher;
         this.getAssignmentCandidates = getAssignmentCandidates;
+        this.shortageCalculator = shortageCalculator;
     }
 
     public void selectAssignmentCandidates(AssignCandidateDTO command) {
 
+        if (command == null) {
+            log.warn("selectasssignmentcandidates called with null command");
+            return;
+        }
         // 1) 프로젝트 조회
         Project project = projectRepository.findById(command.getProjectId())
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        List<JobAssignmentDTO> commandAssignments =
+                command.getAssignments() == null ? Collections.emptyList() : command.getAssignments();
 
         // 2) 직군별 선택 인원 검증 (정확히 requiredCount만큼 선택했는지)
         validateSelectedCounts(project, command);
@@ -61,6 +73,9 @@ public class SelectAssignmentCandidates {
         // 3) 신규 후보 생성
         for (JobAssignmentDTO assignment : command.getAssignments()) {
             for (ScoredCandidateDTO candidate : assignment.getCandidates()) {
+
+                if (candidate == null || candidate.getUserId() == null) continue;
+
                 Long userId = candidate.getUserId();
 
                 if (assignmentRepository.existsByProjectIdAndUserId(
@@ -91,7 +106,10 @@ public class SelectAssignmentCandidates {
      * userIds → AssignCandidateDTO 재구성
      */
     public void selectByUserIds(Long projectId, List<Long> userIds) {
-
+        if (userIds == null || userIds.isEmpty()) {
+            log.warn("selectByUserIds called with empty userIds projectId={}", projectId);
+            return;
+        }
         // 1) 프로젝트 조회
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
@@ -100,9 +118,15 @@ public class SelectAssignmentCandidates {
         AssignmentCandidatePageView page =
                 getAssignmentCandidates.getAssignmentCandidates(projectId, null);
 
+        if (page == null || page.getCandidates() == null) {
+            log.warn("selectByUserIds page or candidates is null projectId={}", projectId);
+            return;
+        }
+
         // 3) userId 기준 필터 + jobId 기준 그룹핑
         Map<Long, List<ScoredCandidateDTO>> groupedByJob =
                 page.getCandidates().stream()
+                        .filter(item -> item != null)
                         .filter(item -> userIds.contains(item.getUserId()))
                         .collect(Collectors.groupingBy(
                                 AssignmentCandidateItemDTO::getJobId,
@@ -135,34 +159,50 @@ public class SelectAssignmentCandidates {
             Project project,
             AssignCandidateDTO command
     ) {
+        List<JobAssignmentDTO> commandAssignments =
+                command.getAssignments() == null ? Collections.emptyList() : command.getAssignments();
 
         Map<Long, JobAssignmentDTO> selectionMap =
-                command.getAssignments().stream()
+                commandAssignments.stream()
+                        .filter(a -> a != null)
                         .collect(Collectors.toMap(
                                 JobAssignmentDTO::getJobId,
-                                Function.identity()
+                                Function.identity(),
+                                (a, b) -> a
                         ));
+
+        Map<Long, Integer> shortageMap =
+                shortageCalculator.calculate(project);
+
+        boolean isAdditionalSelection = !shortageMap.isEmpty();
 
         for (JobRequirement requirement : project.getJobRequirements()) {
 
-            JobAssignmentDTO selection =
-                    selectionMap.get(requirement.getJobId());
+            Long jobId = requirement.getJobId();
 
-            if (selection == null) {
-                throw new IllegalArgumentException(
-                        "No candidates selected for jobId=" + requirement.getJobId()
-                );
-            }
+            JobAssignmentDTO selection = selectionMap.get(jobId);
 
-            if (selection.getCandidates().size() != requirement.getRequiredCount()) {
+            int actual =
+                    selection == null || selection.getCandidates() == null
+                            ? 0
+                            : selection.getCandidates().size();
+
+            int expected = isAdditionalSelection
+                    ? shortageMap.getOrDefault(jobId, 0)
+                    : requirement.getRequiredCount();
+
+
+            if (actual != expected) {
                 throw new IllegalArgumentException(
                         "Must select exactly "
-                                + requirement.getRequiredCount()
+                                + expected
                                 + " candidates for jobId="
-                                + requirement.getJobId()
+                                + jobId
                 );
             }
+            log.info("ShortageMap = {}", shortageMap);
+            log.info("jobId={} expected={} actual={}", jobId, expected, actual);
         }
-    }
 
+    }
 }
