@@ -60,7 +60,7 @@ auth:
     secure: false
     path: /
   sync:
-    base-url: ${AUTH_SYNC_BASE_URL:http://localhost:8082}
+    base-url: ${AUTH_SYNC_BASE_URL:http://moirai-auth-service:8082}
 
 #ALB 헬스체크용
 management:

@@ -1,0 +1,89 @@
+name: Build & Deploy core service dev
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "feature/msa-gateway" ]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    outputs:
+      img-tag: ${{ steps.tag.outputs.this }}
+      img-uri: ${{ steps.image.outputs.uri }}
+
+    steps:
+      - name: Generate image tag
+        id: tag
+        run: echo "this=$(date +'%y%m%d%H%M')-${GITHUB_SHA:0:4}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 코어 서비스가 Gradle 빌드가 필요하면 유지
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: corretto
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Gradle build
+        run: ./gradlew build -x test --stacktrace
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECR login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compose image URI
+        id: image
+        run: echo "uri=${{ steps.login-ecr.outputs.registry }}/moirai-core-service-dev" >> "$GITHUB_OUTPUT"
+
+      - name: Set up buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push
+        env:
+          IMG_URI: ${{ steps.image.outputs.uri }}
+          IMG_TAG: ${{ steps.tag.outputs.this }}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ env.IMG_URI }}:${{ env.IMG_TAG }}
+          # ECS가 Graviton(arm) 쓰는 중이면 arm64 유지. x86이면 linux/amd64로 바꿔.
+          platforms: linux/arm64
+          cache-to: type=registry,ref=${{ env.IMG_URI }}:cache,mode=max
+          cache-from: type=registry,ref=${{ env.IMG_URI }}:cache
+
+      - name: Summary
+        env:
+          IMG_URI: ${{ steps.image.outputs.uri }}
+          IMG_TAG: ${{ steps.tag.outputs.this }}
+        run: |
+          echo "# Image pushed" >> $GITHUB_STEP_SUMMARY
+          echo "image: \`${{ env.IMG_URI }}:${{ env.IMG_TAG }}\`" >> $GITHUB_STEP_SUMMARY
