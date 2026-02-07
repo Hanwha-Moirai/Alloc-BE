@@ -32,13 +32,21 @@ public class NotificationQueryController {
     public SseEmitter stream(@AuthenticationPrincipal UserPrincipal principal) {
         Long userId = requireUserId(principal);
 
+        // 초기 unread 카운트 1회 전송(실패해도 구독 자체는 유지)
+        Long unread = null;
+        try {
+            unread = queryService.getMyUnreadCount(userId);
+        } catch (Exception ignored) {
+            unread = null;
+        }
+
         SseEmitter emitter = emitters.add(userId);
 
-        // 초기 unread 카운트 1회 전송(실패해도 구독 자체는 유지)
-        try {
-            long unread = queryService.getMyUnreadCount(userId);
-            emitters.sendToUser(userId, "UNREAD_COUNT", unread);
-        } catch (Exception ignored) {}
+        if (unread != null) {
+            try {
+                emitters.sendToUser(userId, "UNREAD_COUNT", unread);
+            } catch (Exception ignored) {}
+        }
 
         return emitter;
     }

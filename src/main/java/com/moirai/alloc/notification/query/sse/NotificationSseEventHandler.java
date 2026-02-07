@@ -5,6 +5,8 @@ import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.*;
 
 @Component
@@ -20,6 +22,7 @@ public class NotificationSseEventHandler {
      * - UNREAD_COUNT: 갱신된 미읽음 개수 push (UI 뱃지 즉시 반영)
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public void onAlarmCreated(AlarmCreatedEvent event) {
         emitters.sendToUser(event.userId(), "NOTIFICATION", event);
 
@@ -32,6 +35,7 @@ public class NotificationSseEventHandler {
      * - UNREAD_COUNT만 push하여 UI 카운트 동기화
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public void onUnreadChanged(AlarmUnreadChangedEvent event) {
         long unread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(event.userId());
         emitters.sendToUser(event.userId(), "UNREAD_COUNT", unread);

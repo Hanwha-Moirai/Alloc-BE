@@ -8,6 +8,7 @@ import com.moirai.alloc.notification.query.dto.response.NotificationSummaryRespo
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class NotificationQueryService {
      * - createdAt DESC 정렬
      * - 반환: notifications + pagination(current/totalPages/totalItems)
      */
+    @Transactional(readOnly = true)
     public NotificationPageResponse getMyNotifications(Long userId, int page, Integer size) {
         int pageSize = resolveSize(size);
         PageRequest pageable = PageRequest.of(
@@ -59,6 +61,7 @@ public class NotificationQueryService {
      * - read=false AND deleted=false
      * - UI 뱃지/헤더 카운트 등에 사용
      */
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public long getMyUnreadCount(Long userId) {
         return alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(userId);
     }
