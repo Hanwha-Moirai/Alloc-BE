@@ -42,16 +42,12 @@ mybatis:
 
 notification:
   sse:
-    timeout-ms: 3600000
-    max-emitters-per-user: 3
-    max-total-emitters: 10000
     heartbeat:
       enabled: true
-      fixed-delay-ms: 60000
+      fixed-delay-ms: 25000
       initial-delay-ms: 5000
       event-name: PING
       data: ok
-      batch-size: 500
   sqs:
     queue-name: ${NOTIFICATION_SQS_QUEUE_NAME:alloc-notification}
 

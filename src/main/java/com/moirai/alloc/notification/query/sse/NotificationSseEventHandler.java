@@ -1,59 +1,44 @@
 package com.moirai.alloc.notification.query.sse;
 
+import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
 import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.*;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class NotificationSseEventHandler {
 
     private final NotificationSseEmitters emitters;
-    private final UnreadCountDebouncer unreadCountDebouncer;
+    private final AlarmLogRepository alarmLogRepository;
 
     /**
-     * 알림 생성 이벤트(커밋 이후)
-     * - (1) NOTIFICATION 전송
-     * - (2) UNREAD_COUNT는 userId 단위로 디바운스/집계하여 1회만 전송
-     * 주의:
-     * - UNREAD_COUNT를 항상 즉시 원하면 디바운스 시간을 더 낮추거나 0으로 조정
+     * 알림 생성 이벤트 수신(커밋 이후)
+     * - NOTIFICATION: 알림 payload push
+     * - UNREAD_COUNT: 갱신된 미읽음 개수 push (UI 뱃지 즉시 반영)
      */
-    @Async("notificationExecutor")
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onAlarmCreated(AlarmCreatedEvent event) {
-        try {
-            // NOTIFICATION 전송
-            emitters.sendToUser(event.userId(), "NOTIFICATION", event);
+        emitters.sendToUser(event.userId(), "NOTIFICATION", event);
 
-            // unread count는 디바운스
-            unreadCountDebouncer.requestFlush(event.userId());
-        } catch (Exception e) {
-            log.warn("Failed to handle AlarmCreatedEvent. userId={}, alarmId={}",
-                    event.userId(), safeAlarmId(event), e);
-        }
+        long unread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(event.userId());
+        emitters.sendToUser(event.userId(), "UNREAD_COUNT", unread);
     }
 
     /**
-     * 읽음/삭제 등 미읽음 상태 변경(커밋 이후)
-     * - UNREAD_COUNT는 userId 단위로 디바운스/집계
+     * 읽음/삭제 등으로 미읽음 상태가 바뀐 경우(커밋 이후)
+     * - UNREAD_COUNT만 push하여 UI 카운트 동기화
      */
-    @Async("notificationExecutor")
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onUnreadChanged(AlarmUnreadChangedEvent event) {
-        try {
-            unreadCountDebouncer.requestFlush(event.userId());
-        } catch (Exception e) {
-            log.warn("Failed to handle AlarmUnreadChangedEvent. userId={}", event.userId(), e);
-        }
-    }
-
-    private Object safeAlarmId(AlarmCreatedEvent e) {
-        try { return e.alarmId(); } catch (Exception ex) { return "n/a"; }
+        long unread = alarmLogRepository.countByUserIdAndReadFalseAndDeletedFalse(event.userId());
+        emitters.sendToUser(event.userId(), "UNREAD_COUNT", unread);
     }
 }
