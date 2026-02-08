@@ -21,7 +21,6 @@ public class NotificationSseEventHandler {
      * 알림 생성 이벤트(커밋 이후)
      * - (1) NOTIFICATION 전송
      * - (2) UNREAD_COUNT는 userId 단위로 디바운스/집계하여 1회만 전송
-     *
      * 주의:
      * - UNREAD_COUNT를 항상 즉시 원하면 디바운스 시간을 더 낮추거나 0으로 조정
      */
@@ -29,10 +28,10 @@ public class NotificationSseEventHandler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onAlarmCreated(AlarmCreatedEvent event) {
         try {
-            // 알림 payload 먼저 보내도 되지만, 전송이 느려도 DB 커넥션 점유는 없게 만들었음(트랜잭션 제거)
+            // NOTIFICATION 전송
             emitters.sendToUser(event.userId(), "NOTIFICATION", event);
 
-            // 이벤트 폭주 대비 userId 단위로 unread count 조회를 디바운스
+            // unread count는 디바운스
             unreadCountDebouncer.requestFlush(event.userId());
         } catch (Exception e) {
             log.warn("Failed to handle AlarmCreatedEvent. userId={}, alarmId={}",

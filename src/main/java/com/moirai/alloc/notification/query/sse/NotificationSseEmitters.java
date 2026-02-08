@@ -1,48 +1,86 @@
 package com.moirai.alloc.notification.query.sse;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
+@RequiredArgsConstructor
 public class NotificationSseEmitters {
 
-    /** SSE 연결 타임아웃(1시간). 주기적 heartbeat로 중간 끊김 완화 */
-    private static final long TIMEOUT_MS = 60L * 60 * 1000;
+    private final NotificationSseProperties props;
 
-    /** userId → (해당 유저의 다중 연결 emitter set) */
+    /** userId → emitter set */
     private final Map<Long, Set<SseEmitter>> emittersByUser = new ConcurrentHashMap<>();
+
+    /** 전체 emitter 개수(빠른 상한 체크용) */
+    private final AtomicInteger totalEmitters = new AtomicInteger(0);
 
     /**
      * 유저 SSE 연결 등록
-     * - 다중 탭/다중 디바이스를 고려해 Set으로 관리
-     * - completion/timeout/error 콜백에서 자동 제거
-     * - 최초 INIT 이벤트 1회 전송(클라이언트 연결 확인 용도)
+     * - 콜백에서는 detach만 수행(complete 재진입/중복 호출 위험 제거)
+     * - close는 timeout/error/init-fail/send-fail 시점에만 수행
      */
     public SseEmitter add(Long userId) {
-        SseEmitter emitter = new SseEmitter(TIMEOUT_MS);
-        emittersByUser.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet()).add(emitter);
 
-        emitter.onCompletion(() -> remove(userId, emitter));
-        emitter.onTimeout(() -> remove(userId, emitter));
-        emitter.onError(e -> remove(userId, emitter));
+        // user set 준비
+        Set<SseEmitter> set = emittersByUser.computeIfAbsent(userId, k -> ConcurrentHashMap.newKeySet());
 
+        // user별 상한(초과분은 가장 오래된/임의 하나 제거)
+        enforcePerUserLimit(userId, set);
+
+        // emitter 생성
+        SseEmitter emitter = new SseEmitter(props.getTimeoutMs());
+
+        // ---- (2) total 상한 체크 원자화 ----
+        int after = totalEmitters.incrementAndGet();
+        if (after > props.getMaxTotalEmitters()) {
+            totalEmitters.decrementAndGet();
+            // 굳이 complete 호출할 필요는 없지만 안전하게 정리
+            try { emitter.complete(); } catch (Exception ignored) {}
+            throw new IllegalStateException("SSE capacity exceeded (total).");
+        }
+
+        // set에 등록 (상한 통과 후)
+        set.add(emitter);
+
+        // 콜백은 detach만 (close는 재진입 위험)
+        emitter.onCompletion(() -> detach(userId, emitter));
+        emitter.onTimeout(() -> {
+            detach(userId, emitter);
+            closeQuietly(emitter);
+        });
+        emitter.onError(e -> {
+            detach(userId, emitter);
+            closeWithErrorQuietly(emitter, e);
+        });
+
+        // INIT 이벤트로 연결 유효성 확인
         try {
-            emitter.send(SseEmitter.event().name("INIT").data("ok", MediaType.TEXT_PLAIN));
-        } catch (Exception ignored) {}
+            emitter.send(SseEmitter.event()
+                    .name("INIT")
+                    .data("ok", MediaType.TEXT_PLAIN));
+        } catch (Exception e) {
+            // INIT 실패면 즉시 정리
+            closeOne(userId, emitter, e);
+        }
 
         return emitter;
     }
 
     /**
      * 특정 유저에게 SSE 이벤트 전송
-     * - 전송 실패 emitter는 dead로 간주하고 제거(리소스 누수 방지)
+     * - 전송 실패 emitter는 dead로 간주하고 detach + close
      */
     public void sendToUser(Long userId, String eventName, Object data) {
-        Set<SseEmitter> set = emittersByUser.getOrDefault(userId, Set.of());
+        Set<SseEmitter> set = emittersByUser.get(userId);
+        if (set == null || set.isEmpty()) return;
+
         List<SseEmitter> dead = new ArrayList<>();
 
         for (SseEmitter em : set) {
@@ -50,52 +88,104 @@ public class NotificationSseEmitters {
                 em.send(SseEmitter.event().name(eventName).data(data));
             } catch (Exception e) {
                 dead.add(em);
+                closeWithErrorQuietly(em, e);
             }
         }
-        dead.forEach(em -> remove(userId, em));
+
+        for (SseEmitter em : dead) {
+            detach(userId, em);
+        }
     }
 
     /**
-     * 전체 emitter에 heartbeat 전송
-     * - 프록시/로드밸런서 환경에서 유휴 연결 종료를 막기 위한 keep-alive 성격
-     * - touched: 이번 실행에서 실제 전송 시도한 emitter 수(운영 지표)
+     * heartbeat용: 전체 emitter snapshot을 반환 (배치 전송에 사용)
+     * - 원본을 직접 노출하지 않기 위해 snapshot 리스트로 제공
      */
-    public int broadcastHeartbeat(String eventName, Object data) {
-        int touched = 0;
-
-        Map<Long, Set<SseEmitter>> snapshot = new HashMap<>(emittersByUser);
-
-        for (Map.Entry<Long, Set<SseEmitter>> entry : snapshot.entrySet()) {
-            Long userId = entry.getKey();
-            Set<SseEmitter> set = entry.getValue();
+    public List<UserEmitter> snapshotAllEmitters() {
+        List<UserEmitter> list = new ArrayList<>();
+        for (Map.Entry<Long, Set<SseEmitter>> e : emittersByUser.entrySet()) {
+            Long userId = e.getKey();
+            Set<SseEmitter> set = e.getValue();
             if (set == null || set.isEmpty()) continue;
-
-            List<SseEmitter> emitters = new ArrayList<>(set);
-            List<SseEmitter> dead = new ArrayList<>();
-
-            for (SseEmitter em : emitters) {
-                try {
-                    em.send(SseEmitter.event().name(eventName).data(data));
-                    touched++;
-                } catch (Exception e) {
-                    dead.add(em);
-                }
+            for (SseEmitter em : set) {
+                list.add(new UserEmitter(userId, em));
             }
-
-            dead.forEach(em -> remove(userId, em));
         }
+        return list;
+    }
 
-        return touched;
+    /** 관측용: 연결 중인 유저 수 */
+    public int connectedUsers() {
+        return emittersByUser.size();
+    }
+
+    /** 관측용: 총 emitter 수 */
+    public int totalEmitters() {
+        return totalEmitters.get();
+    }
+
+    // --------------------
+    // 핵심 추가: closeOne
+    // --------------------
+
+    /**
+     * (1) 외부(heartbeat sender 등)에서 실패 emitter를 확실히 정리하기 위한 API
+     * - 반드시 detach까지 수행해서 Map/Set에 남는 누수를 막는다.
+     */
+    public void closeOne(Long userId, SseEmitter emitter, Throwable cause) {
+        detach(userId, emitter);
+        closeWithErrorQuietly(emitter, cause);
+    }
+
+    // --------------------
+    // internal helpers
+    // --------------------
+
+    private void enforcePerUserLimit(Long userId, Set<SseEmitter> set) {
+        int limit = Math.max(1, props.getMaxEmittersPerUser());
+        if (set.size() < limit) return;
+
+        Iterator<SseEmitter> it = set.iterator();
+        if (it.hasNext()) {
+            SseEmitter victim = it.next();
+            detach(userId, victim);
+            closeQuietly(victim);
+        }
     }
 
     /**
-     * emitter 제거(유저의 set이 비면 map에서도 제거)
+     * detach: Map/Set에서만 제거 (콜백에서도 안전)
      */
-    private void remove(Long userId, SseEmitter emitter) {
+    private void detach(Long userId, SseEmitter emitter) {
+        boolean removed = false;
+
         Set<SseEmitter> set = emittersByUser.get(userId);
         if (set != null) {
-            set.remove(emitter);
-            if (set.isEmpty()) emittersByUser.remove(userId);
+            removed = set.remove(emitter);
+            if (set.isEmpty()) {
+                emittersByUser.remove(userId, set);
+            }
+        }
+
+        if (removed) {
+            totalEmitters.decrementAndGet();
         }
     }
+
+    private void closeQuietly(SseEmitter emitter) {
+        try {
+            emitter.complete();
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void closeWithErrorQuietly(SseEmitter emitter, Throwable t) {
+        try {
+            emitter.completeWithError(t);
+        } catch (Exception ignored) {
+            closeQuietly(emitter);
+        }
+    }
+
+    public record UserEmitter(Long userId, SseEmitter emitter) {}
 }

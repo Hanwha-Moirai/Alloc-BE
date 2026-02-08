@@ -6,6 +6,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @EnableScheduling
-@EnableConfigurationProperties(NotificationSseHeartbeatProperties.class)
+@EnableConfigurationProperties(NotificationSseProperties.class)
 public class NotificationSseSchedulingConfig {
 }
