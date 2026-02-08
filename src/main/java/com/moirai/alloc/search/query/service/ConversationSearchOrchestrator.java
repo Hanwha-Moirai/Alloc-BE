@@ -7,7 +7,6 @@ import com.moirai.alloc.search.query.infra.openSearch.OpenSearchPersonSearcher;
 import com.moirai.alloc.search.query.infra.openSearch.PersonDocument;
 import com.moirai.alloc.search.query.presentation.dto.ConversationSearchResponse;
 import com.moirai.alloc.search.query.presentation.mapper.PersonViewMapper;
-import jakarta.persistence.Embeddable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
