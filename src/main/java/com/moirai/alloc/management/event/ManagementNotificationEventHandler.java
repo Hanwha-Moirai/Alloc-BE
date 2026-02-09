@@ -25,7 +25,7 @@ public class ManagementNotificationEventHandler {
     private final NotificationPort notificationPort;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onProjectTempAssignment(ProjectTempAssignmentEvent event) {
         log.info("Handling ProjectTempAssignmentEvent projectId={} userId={} projectName={}",
                 event.projectId(), event.userId(), event.projectName());
@@ -35,13 +35,13 @@ public class ManagementNotificationEventHandler {
                 .variables(Map.of("projectName", event.projectName()))
                 .targetType(TargetType.POST)
                 .targetId(event.projectId())
-                .linkUrl("/projects/" + event.projectId() + "/assignments")
+                .linkUrl("/projects/" + event.projectId() + "/members")
                 .build();
         notificationPort.notify(command);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onProjectFinalAssignment(ProjectFinalAssignmentEvent event) {
         log.info("Handling ProjectFinalAssignmentEvent projectId={} userId={} projectName={}",
                 event.projectId(), event.userId(), event.projectName());
@@ -51,7 +51,7 @@ public class ManagementNotificationEventHandler {
                 .variables(Map.of("projectName", event.projectName()))
                 .targetType(TargetType.POST)
                 .targetId(event.projectId())
-                .linkUrl("/projects/" + event.projectId() + "/assignments")
+                .linkUrl("/projects/" + event.projectId() + "/members")
                 .build();
         notificationPort.notify(command);
     }
