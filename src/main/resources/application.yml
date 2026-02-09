@@ -32,6 +32,10 @@ spring:
     init:
       mode: always
       data-locations: classpath:data.sql
+  cloud:
+    aws:
+      sqs:
+        enabled: false
 
 mail:
   appName: ALLOC
