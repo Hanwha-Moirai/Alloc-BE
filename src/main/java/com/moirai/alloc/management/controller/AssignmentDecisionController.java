@@ -26,6 +26,7 @@ public class AssignmentDecisionController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/response")
     public void respondAssignment(
+            @PathVariable Long projectId,
             @PathVariable Long assignmentId,
             @RequestParam AssignmentStatus status,
             @AuthenticationPrincipal UserPrincipal principal
@@ -45,6 +46,7 @@ public class AssignmentDecisionController {
     @PreAuthorize("hasRole('PM')")
     @PostMapping("/decision")
     public void decideAssignment(
+            @PathVariable Long projectId,
             @PathVariable Long assignmentId,
             @RequestParam FinalDecision decision,
             @AuthenticationPrincipal UserPrincipal principal
