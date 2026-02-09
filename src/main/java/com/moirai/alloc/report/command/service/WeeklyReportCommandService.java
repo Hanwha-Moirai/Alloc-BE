@@ -6,12 +6,14 @@ import com.moirai.alloc.gantt.query.dto.projection.TaskProjection;
 import com.moirai.alloc.gantt.query.mapper.TaskQueryMapper;
 import com.moirai.alloc.report.command.domain.entity.IssueBlocker;
 import com.moirai.alloc.report.command.domain.entity.WeeklyReport;
+import com.moirai.alloc.report.command.domain.entity.WeeklyReportLog;
 import com.moirai.alloc.report.command.domain.entity.WeeklyTask;
 import com.moirai.alloc.report.command.dto.request.IncompleteTaskRequest;
 import com.moirai.alloc.report.command.dto.request.UpdateWeeklyReportRequest;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportSaveResponse;
 import com.moirai.alloc.report.command.repository.IssueBlockerCommandRepository;
 import com.moirai.alloc.report.command.repository.WeeklyReportCommandRepository;
+import com.moirai.alloc.report.command.repository.WeeklyReportLogRepository;
 import com.moirai.alloc.report.command.repository.WeeklyTaskCommandRepository;
 import com.moirai.alloc.report.command.dto.response.WeeklyReportCreateResponse;
 import com.moirai.alloc.report.query.dto.WeeklyReportDetailResponse;
@@ -26,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -36,6 +40,7 @@ public class WeeklyReportCommandService {
     private final IssueBlockerCommandRepository issueBlockerCommandRepository;
     private final ReportMembershipRepository membershipRepository;
     private final WeeklyReportQueryRepository weeklyReportQueryRepository;
+    private final WeeklyReportLogRepository weeklyReportLogRepository;
     private final NotificationCommandService notificationCommandService;
     private final TaskQueryMapper taskQueryMapper;
 
@@ -47,6 +52,7 @@ public class WeeklyReportCommandService {
                                       IssueBlockerCommandRepository issueBlockerCommandRepository,
                                       ReportMembershipRepository membershipRepository,
                                       WeeklyReportQueryRepository weeklyReportQueryRepository,
+                                      WeeklyReportLogRepository weeklyReportLogRepository,
                                       NotificationCommandService notificationCommandService,
                                       TaskQueryMapper taskQueryMapper) {
         this.weeklyReportCommandRepository = weeklyReportCommandRepository;
@@ -54,6 +60,7 @@ public class WeeklyReportCommandService {
         this.issueBlockerCommandRepository = issueBlockerCommandRepository;
         this.membershipRepository = membershipRepository;
         this.weeklyReportQueryRepository = weeklyReportQueryRepository;
+        this.weeklyReportLogRepository = weeklyReportLogRepository;
         this.notificationCommandService = notificationCommandService;
         this.taskQueryMapper = taskQueryMapper;
     }
@@ -75,6 +82,8 @@ public class WeeklyReportCommandService {
         saveWeeklyTasksSnapshot(saved);
         WeeklyReportDetailResponse detail = weeklyReportQueryRepository.findDetail(saved.getReportId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "주간 보고를 찾을 수 없습니다."));
+        logWeeklyReportChange(saved, principal.userId(), WeeklyReportLog.ActionType.CREATE,
+                formatCreateMessage(detail.weekStartDate(), detail.weekEndDate(), detail.weekLabel()));
         //notifyWeeklyReportCreated(detail.reportId(), detail.projectId(), detail.reporterName(), principal.userId());
         return new WeeklyReportCreateResponse(
                 detail.reportId(),
@@ -104,6 +113,8 @@ public class WeeklyReportCommandService {
         }
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
+
+        String updateMessage = buildWeeklyReportUpdateMessage(report, request);
 
         report.updateReport(request.reportStatus(), request.changeOfPlan(), null);
 
@@ -158,6 +169,8 @@ public class WeeklyReportCommandService {
             });
         }
 
+        logWeeklyReportChange(report, principal.userId(), WeeklyReportLog.ActionType.UPDATE, updateMessage);
+
         return new WeeklyReportSaveResponse(report.getReportId(), report.getUpdatedAt());
     }
 
@@ -171,6 +184,63 @@ public class WeeklyReportCommandService {
         validateMembership(report.getProjectId(), principal.userId());
         validateOwnerOrPm(report, principal);
         report.markDeleted();
+        logWeeklyReportChange(report, principal.userId(), WeeklyReportLog.ActionType.DELETE,
+                "주간보고 삭제");
+    }
+
+    private void logWeeklyReportChange(WeeklyReport report, Long actorUserId,
+                                       WeeklyReportLog.ActionType actionType, String message) {
+        WeeklyReportLog log = WeeklyReportLog.builder()
+                .projectId(report.getProjectId())
+                .reportId(report.getReportId())
+                .actorUserId(actorUserId)
+                .actionType(actionType)
+                .logMessage(message)
+                .build();
+        weeklyReportLogRepository.save(log);
+    }
+
+    private String formatCreateMessage(LocalDate start, LocalDate end, String weekLabel) {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        String period = String.format("%s~%s", start.format(fmt), end.format(fmt));
+        return "주간보고 생성: " + weekLabel + " (" + period + ")";
+    }
+
+    private String buildWeeklyReportUpdateMessage(WeeklyReport report, UpdateWeeklyReportRequest request) {
+        List<String> parts = new ArrayList<>();
+
+        if (request.reportStatus() != null && request.reportStatus() != report.getReportStatus()) {
+            parts.add("상태 " + report.getReportStatus() + " → " + request.reportStatus());
+        }
+
+        if (request.changeOfPlan() != null) {
+            String before = report.getChangeOfPlan();
+            String after = request.changeOfPlan();
+            if (before == null || before.isBlank()) {
+                if (!after.isBlank()) {
+                    parts.add("변경사항 추가");
+                }
+            } else if (after == null || after.isBlank()) {
+                parts.add("변경사항 삭제");
+            } else if (!before.equals(after)) {
+                parts.add("변경사항 수정");
+            }
+        }
+
+        Integer completed = request.completedTasks() != null ? request.completedTasks().size() : null;
+        Integer incomplete = request.incompleteTasks() != null ? request.incompleteTasks().size() : null;
+        Integer nextWeek = request.nextWeekTasks() != null ? request.nextWeekTasks().size() : null;
+        if (completed != null || incomplete != null || nextWeek != null) {
+            parts.add("태스크 " +
+                    "완료 " + (completed == null ? "-" : completed) + ", " +
+                    "미완료 " + (incomplete == null ? "-" : incomplete) + ", " +
+                    "다음주 " + (nextWeek == null ? "-" : nextWeek));
+        }
+
+        if (parts.isEmpty()) {
+            return "주간보고 수정";
+        }
+        return "주간보고 수정: " + String.join(", ", parts);
     }
 
     private void createIssueBlocker(WeeklyTask weeklyTask, IncompleteTaskRequest request) {
