@@ -121,6 +121,8 @@ class CalendarProjectSummaryControllerWebMvcTest {
                 .andExpect(jsonPath("$.data.projectId").value(1))
                 .andExpect(jsonPath("$.data.items[0].label").value("공유 일정"))
                 .andExpect(jsonPath("$.data.items[0].eventType").value("PUBLIC"))
+                .andExpect(jsonPath("$.data.items[0].startDate").value("2026-01-22T10:00:00"))
+                .andExpect(jsonPath("$.data.items[0].endDate").value("2026-01-22T11:00:00"))
                 .andExpect(jsonPath("$.timestamp").exists());
 
         // limit default=20 확인
