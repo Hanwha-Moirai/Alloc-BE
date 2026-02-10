@@ -1,7 +1,7 @@
-package com.moirai.alloc.report.query.controller;
+package com.moirai.alloc.meeting.query.controller;
 
 import com.moirai.alloc.common.dto.ApiResponse;
-import com.moirai.alloc.report.query.service.WeeklyReportLogQueryService;
+import com.moirai.alloc.meeting.query.service.MeetingRecordLogQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +14,10 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/projects/{project_id}/docs/report/logs")
-public class LogController {
+@RequestMapping("/api/projects/{project_id}/docs/meeting_record/logs")
+public class MeetingRecordLogController {
 
-    private final WeeklyReportLogQueryService logQueryService;
+    private final MeetingRecordLogQueryService logQueryService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<String>>> getLogs(
