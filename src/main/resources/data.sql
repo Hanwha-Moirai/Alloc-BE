@@ -48,19 +48,19 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- 2-1. 직급 (title_standard) - 5개
 INSERT INTO title_standard (title_standard_id, title_name, monthly_cost, created_at, updated_at) VALUES
-(99001, '사원', 3500000, NOW(), NOW()),
-(99002, '대리', 4500000, NOW(), NOW()),
-(99003, '과장', 5500000, NOW(), NOW()),
-(99004, '차장', 6500000, NOW(), NOW()),
-(99005, '부장', 8000000, NOW(), NOW());
+                                                                                                     (99001, '사원', 3500000, NOW(), NOW()),
+                                                                                                     (99002, '대리', 4500000, NOW(), NOW()),
+                                                                                                     (99003, '과장', 5500000, NOW(), NOW()),
+                                                                                                     (99004, '차장', 6500000, NOW(), NOW()),
+                                                                                                     (99005, '부장', 8000000, NOW(), NOW());
 
 -- 2-2. 직군 (job_standard) - 5개
 INSERT INTO job_standard (job_id, job_name, created_at, updated_at) VALUES
-(99001, 'Backend', NOW(), NOW()),
-(99002, 'Frontend', NOW(), NOW()),
-(99003, 'DevOps', NOW(), NOW()),
-(99004, 'QA', NOW(), NOW()),
-(99005, 'Designer', NOW(), NOW());
+                                                                        (99001, 'Backend', NOW(), NOW()),
+                                                                        (99002, 'Frontend', NOW(), NOW()),
+                                                                        (99003, 'DevOps', NOW(), NOW()),
+                                                                        (99004, 'QA', NOW(), NOW()),
+                                                                        (99005, 'Designer', NOW(), NOW());
 
 -- 2-3. 기술스택 (tech_standard) - 20개
 INSERT INTO tech_standard (tech_id, tech_name, created_at, updated_at) VALUES
@@ -136,12 +136,12 @@ INSERT INTO users (user_id, login_id, password, user_name, birthday, email, phon
 -- manager_id는 반드시 users에 존재해야 함
 
 INSERT INTO department (dept_id, dept_name, manager_id, is_active, parent_dept_id, created_at, updated_at) VALUES
-(99001, '경영지원본부', 77001, TRUE, NULL, NOW(), NOW()),
-(99002, '개발1팀', 77002, TRUE, NULL, NOW(), NOW()),
-(99003, '개발2팀', 77003, TRUE, NULL, NOW(), NOW()),
-(99004, '인프라팀', 77004, TRUE, NULL, NOW(), NOW()),
-(99005, 'QA팀', 77001, TRUE, NULL, NOW(), NOW()),
-(99006, '디자인팀', 77001, TRUE, NULL, NOW(), NOW());
+                                                                                                               (99001, '경영지원본부', 77001, TRUE, NULL, NOW(), NOW()),
+                                                                                                               (99002, '개발1팀', 77002, TRUE, NULL, NOW(), NOW()),
+                                                                                                               (99003, '개발2팀', 77003, TRUE, NULL, NOW(), NOW()),
+                                                                                                               (99004, '인프라팀', 77004, TRUE, NULL, NOW(), NOW()),
+                                                                                                               (99005, 'QA팀', 77001, TRUE, NULL, NOW(), NOW()),
+                                                                                                               (99006, '디자인팀', 77001, TRUE, NULL, NOW(), NOW());
 
 -- =========================================
 -- 5. 직원 (employee) - users와 1:1 매핑

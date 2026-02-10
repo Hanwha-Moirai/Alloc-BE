@@ -3,12 +3,10 @@ package com.moirai.alloc.search.query.domain.intent;
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.vocabulary.ExperienceDomain;
 import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import java.util.List;
+import lombok.*;
 
+import java.util.List;
+@Setter
 @Getter
 @Builder
 @NoArgsConstructor
@@ -16,6 +14,7 @@ import java.util.List;
 public class SearchIntent {
     // GPT가 해석한 의미 결과; 고정된 json 구조
     private String freeText; // 검색 보조용
+    private float[] queryEmbedding; //유사도 검색용
 
     private Integer activeProjectCount;
     private ComparisonType projectCountcomparisonType;

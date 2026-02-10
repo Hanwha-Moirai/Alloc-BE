@@ -5,4 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WeeklyTaskCommandRepository extends JpaRepository<WeeklyTask, Long> {
     void deleteByReportReportId(Long reportId);
+
+    void deleteByReportReportIdAndTaskType(Long reportId, WeeklyTask.TaskType taskType);
+
+    long countByReportReportIdAndTaskType(Long reportId, WeeklyTask.TaskType taskType);
 }

@@ -4,7 +4,9 @@ import com.moirai.alloc.management.domain.repo.SquadAssignmentRepository;
 import com.moirai.alloc.profile.command.domain.entity.Employee;
 import com.moirai.alloc.profile.command.repository.EmployeeRepository;
 import com.moirai.alloc.profile.command.repository.EmployeeSkillRepository;
+import com.moirai.alloc.search.command.infra.builder.ProfileEmbeddingTextBuilder;
 import com.moirai.alloc.search.command.infra.builder.ProfileSummaryBuilder;
+import com.moirai.alloc.search.command.infra.embedding.EmbeddingGenerator;
 import com.moirai.alloc.search.query.domain.vocabulary.JobGrade;
 import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
 import com.moirai.alloc.search.query.domain.vocabulary.SeniorityLevel;
@@ -30,6 +32,7 @@ public class EmployeeSearchDocumentIndexer {
     private final EmployeeSkillRepository employeeSkillRepository;
     private final SquadAssignmentRepository squadAssignmentRepository;
     private final RestHighLevelClient client;
+    private final EmbeddingGenerator embeddingGenerator;
 
     @Transactional(readOnly = true)
     public void reindex(Long employeeId) {
@@ -59,8 +62,6 @@ public class EmployeeSearchDocumentIndexer {
                                 row -> row.getProficiency().ordinal() + 1
                         ));
 
-
-
         int activeProjectCount =
                 squadAssignmentRepository.countActiveProjects(employeeId);
 
@@ -68,6 +69,18 @@ public class EmployeeSearchDocumentIndexer {
         JobGrade jobGrade =
                 JobGrade.fromTitleName(employee.getTitleStandard().getTitleName());
         JobRole jobRole = resolveJobRole(employee);
+
+
+        String embeddingText =
+                ProfileEmbeddingTextBuilder.build(
+                        employee,
+                        techSkills,
+                        buildExperienceText(employee.getUserId())
+                );
+
+        float[] embedding =
+                embeddingGenerator.generate(embeddingText);
+
         PersonDocument document = PersonDocument.builder()
                 .personId(employee.getUserId())
                 .name(employee.getUser().getUserName())
@@ -79,12 +92,9 @@ public class EmployeeSearchDocumentIndexer {
                 .techSkills(techSkills)
                 .techSkillNumericLevels(techSkillLevels)
                 .activeProjectCount(activeProjectCount)
-                .profileSummary(
-                        ProfileSummaryBuilder.build(employee, techSkills)
-                )
-                .experienceDomainText(
-                        buildExperienceText(employee.getUserId())
-                )
+                .profileSummary(ProfileSummaryBuilder.build(employee, techSkills))
+                .experienceDomainText(buildExperienceText(employee.getUserId()))
+                .profileEmbedding(embedding)
                 .build();
 
         save(document);
@@ -111,6 +121,7 @@ public class EmployeeSearchDocumentIndexer {
             source.put("activeProjectCount", document.getActiveProjectCount());
             source.put("profileSummary", document.getProfileSummary());
             source.put("experienceDomainText", document.getExperienceDomainText());
+            source.put("profileEmbedding", document.getProfileEmbedding());
 
             if (!document.getTechSkills().isEmpty()) {
                 source.put("techSkills", document.getTechSkills());
