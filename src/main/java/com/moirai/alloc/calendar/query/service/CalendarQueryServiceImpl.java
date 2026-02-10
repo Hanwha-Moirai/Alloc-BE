@@ -217,7 +217,7 @@ public class CalendarQueryServiceImpl implements CalendarQueryService {
         boolean hasNext = fetched.size() > pageSize;
         List<Events> page = hasNext ? fetched.subList(0, pageSize) : fetched;
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = now.toLocalDate();
 
         List<ProjectUpcomingEventItemResponse> items = page.stream()
                 .map(e -> new ProjectUpcomingEventItemResponse(
