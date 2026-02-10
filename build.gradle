@@ -76,6 +76,9 @@ repositories {
 }
 
 dependencies {
+    implementation "software.amazon.awssdk:auth"
+    implementation "software.amazon.awssdk:regions"
+    implementation "software.amazon.awssdk:sts"
     implementation "org.opensearch.client:opensearch-rest-high-level-client:2.11.1"
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'

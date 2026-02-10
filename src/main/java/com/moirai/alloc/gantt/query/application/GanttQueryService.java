@@ -183,4 +183,12 @@ public class GanttQueryService {
                 tasks
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<TaskResponse> findIncompleteTasksByUserId(Long userId) {
+        List<TaskProjection> tasks = taskQueryMapper.findIncompleteTasksByUserId(userId);
+        return tasks.stream()
+                .map(this::toTaskResponse)
+                .toList();
+    }
 }

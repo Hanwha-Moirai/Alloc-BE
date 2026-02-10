@@ -32,7 +32,7 @@ public class GanttNotificationEventHandler {
                 .variables(Map.of("taskName", event.taskName()))
                 .targetType(TargetType.TASK)
                 .targetId(event.taskId())
-                .linkUrl("/projects/" + event.projectId() + "/tasks/" + event.taskId())
+                .linkUrl("/projects/" + event.projectId() + "/tasks")
                 .build();
         notificationPort.notify(command);
     }
@@ -52,7 +52,7 @@ public class GanttNotificationEventHandler {
                 .variables(Map.of("milestoneName", event.milestoneName()))
                 .targetType(TargetType.MILESTONE)
                 .targetId(event.milestoneId())
-                .linkUrl("/projects/" + event.projectId() + "/milestones/" + event.milestoneId())
+                .linkUrl("/projects/" + event.projectId() + "/gantt")
                 .build();
         notificationPort.notify(command);
     }

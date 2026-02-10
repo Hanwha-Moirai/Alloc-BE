@@ -27,4 +27,6 @@ public interface TaskQueryMapper {
             @Param("projectId") Long projectId,
             @Param("milestoneId") Long milestoneId
     );
+
+    List<TaskProjection> findIncompleteTasksByUserId(@Param("userId") Long userId);
 }

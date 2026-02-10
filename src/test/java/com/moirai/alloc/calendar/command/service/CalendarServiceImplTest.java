@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -43,6 +44,7 @@ class CalendarServiceImplTest {
     @Mock private EventsLogRepository eventsLogRepository;
     @Mock private SquadAssignmentRepository squadAssignmentRepository;
     @Mock private UserRepository userRepository;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @Mock private UserPrincipal principal;
 

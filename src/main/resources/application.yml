@@ -41,13 +41,6 @@ mybatis:
 
 
 notification:
-  sse:
-    heartbeat:
-      enabled: true
-      fixed-delay-ms: 25000
-      initial-delay-ms: 5000
-      event-name: PING
-      data: ok
   sqs:
     queue-name: ${NOTIFICATION_SQS_QUEUE_NAME:alloc-notification}
 
@@ -80,8 +73,6 @@ opensearch:
   host: ${OPENSEARCH_HOST:localhost}
   port: ${OPENSEARCH_PORT:9200}
   scheme: ${OPENSEARCH_SCHEME:http}
-  username: ${OPENSEARCH_USERNAME:}
-  password: ${OPENSEARCH_PASSWORD:}
   ssl:
     enabled: ${OPENSEARCH_SSL_ENABLED:false}
     trustAll: ${OPENSEARCH_SSL_TRUST_ALL:false}
