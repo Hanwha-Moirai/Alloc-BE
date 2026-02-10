@@ -118,36 +118,44 @@ public class WeeklyReportCommandService {
 
         report.updateReport(request.reportStatus(), request.changeOfPlan(), null);
 
-        issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
-        weeklyTaskCommandRepository.deleteByReportReportId(report.getReportId());
-
-        // request의 완수 task 목록이 비어 있는 것이 아니라면
+        // request의 완수 task 목록이 null이 아니라면 해당 카테고리만 갱신
         if (request.completedTasks() != null) {
+            weeklyTaskCommandRepository.deleteByReportReportIdAndTaskType(
+                    report.getReportId(),
+                    WeeklyTask.TaskType.COMPLETED
+            );
             request.completedTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
+                boolean isCompleted = true;
                 WeeklyTask weeklyTask = WeeklyTask.create(
                         report,
                         task,
                         WeeklyTask.TaskType.COMPLETED,
                         null,
                         null,
-                        task.getIsCompleted()
+                        isCompleted
                 );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
         }
 
-        // request의 미완수 task 목록이 비어 있다면
+        // request의 미완수 task 목록이 null이 아니라면 해당 카테고리만 갱신
         if (request.incompleteTasks() != null) {
+            issueBlockerCommandRepository.deleteByWeeklyTaskReportReportId(report.getReportId());
+            weeklyTaskCommandRepository.deleteByReportReportIdAndTaskType(
+                    report.getReportId(),
+                    WeeklyTask.TaskType.INCOMPLETE
+            );
             request.incompleteTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
+                boolean isCompleted = false;
                 WeeklyTask weeklyTask = WeeklyTask.create(
                         report,
                         task,
                         WeeklyTask.TaskType.INCOMPLETE,
                         null,
                         null,
-                        task.getIsCompleted()
+                        isCompleted
                 );
                 WeeklyTask savedTask = weeklyTaskCommandRepository.save(weeklyTask);
                 createIssueBlocker(savedTask, taskRequest);
@@ -155,15 +163,21 @@ public class WeeklyReportCommandService {
         }
 
         if (request.nextWeekTasks() != null) {
+            weeklyTaskCommandRepository.deleteByReportReportIdAndTaskType(
+                    report.getReportId(),
+                    WeeklyTask.TaskType.NEXT_WEEK
+            );
             request.nextWeekTasks().forEach(taskRequest -> {
                 Task task = entityManager.getReference(Task.class, taskRequest.taskId());
+                boolean isCompleted = Task.TaskStatus.DONE.equals(task.getTaskStatus())
+                        || Boolean.TRUE.equals(task.getIsCompleted());
                 WeeklyTask weeklyTask = WeeklyTask.create(
                         report,
                         task,
                         WeeklyTask.TaskType.NEXT_WEEK,
                         taskRequest.plannedStartDate(),
                         taskRequest.plannedEndDate(),
-                        task.getIsCompleted()
+                        isCompleted
                 );
                 weeklyTaskCommandRepository.save(weeklyTask);
             });
@@ -276,7 +290,8 @@ public class WeeklyReportCommandService {
         );
         for (TaskProjection projection : tasks) {
             Task task = entityManager.getReference(Task.class, projection.taskId());
-            boolean isCompleted = Boolean.TRUE.equals(projection.isCompleted());
+            boolean isCompleted = Boolean.TRUE.equals(projection.isCompleted())
+                    || Task.TaskStatus.DONE.equals(projection.taskStatus());
             WeeklyTask.TaskType taskType = isCompleted
                     ? WeeklyTask.TaskType.COMPLETED
                     : WeeklyTask.TaskType.INCOMPLETE;
