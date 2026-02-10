@@ -76,3 +76,5 @@ opensearch:
   ssl:
     enabled: ${OPENSEARCH_SSL_ENABLED:false}
     trustAll: ${OPENSEARCH_SSL_TRUST_ALL:false}
+openai:
+  api-key: ${OPENAI_API_KEY}

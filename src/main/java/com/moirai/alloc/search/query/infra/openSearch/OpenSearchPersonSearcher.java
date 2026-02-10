@@ -1,5 +1,7 @@
 package com.moirai.alloc.search.query.infra.openSearch;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moirai.alloc.search.query.domain.condition.*;
 import com.moirai.alloc.search.query.domain.intent.SearchIntent;
 import com.moirai.alloc.search.query.domain.vocabulary.JobRole;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 public class OpenSearchPersonSearcher {
 
     private final RestHighLevelClient client;
+    private final ObjectMapper objectMapper;
 
     public List<PersonDocument> search(SearchIntent intent) {
         // 1. SearchCondition 확인
@@ -35,13 +38,15 @@ public class OpenSearchPersonSearcher {
         // 3. OpenSearch 호출 (아직 구현 X)
         // 4. PersonDocument 리스트 반환
         BoolQueryBuilder bool = QueryBuilders.boolQuery();
+
+        //1. 구조화된 조건 -> filter
         applyJobGradeRange(intent, bool);
         applyJobRole(intent, bool);
         applySkillConditions(intent, bool);
         applySeniorityRange(intent, bool);
         applyProjectCount(intent, bool);
 
-
+        //2. 키워드 기반 검색
         if (intent.getFreeText() != null && !intent.getFreeText().isBlank()) {
             bool.should(
                     QueryBuilders.multiMatchQuery(intent.getFreeText())
@@ -51,15 +56,39 @@ public class OpenSearchPersonSearcher {
                             .field("name")
             );
         }
+        // 3. 유사도 기반 검색
+        if (intent.getQueryEmbedding() != null) {
+            try {
+
+                Map<String, Object> knn = Map.of(
+                        "knn", Map.of(
+                                "profileEmbedding", Map.of(
+                                        "vector", intent.getQueryEmbedding(),
+                                        "k", 5
+                                )
+                        )
+                );
+
+                bool.should(
+                        QueryBuilders.wrapperQuery(
+                                objectMapper.writeValueAsString(knn)
+                        )
+                );
+
+            } catch (Exception e) {
+                throw new RuntimeException("KNN query build failed", e);
+            }
+        }
         bool.should(QueryBuilders.matchAllQuery().boost(0.1f));
-        // search request 생성
+        bool.minimumShouldMatch(0);
+
         SearchSourceBuilder source = new SearchSourceBuilder()
                 .query(bool)
                 .size(10);
 
-        // open search 호출
         return executeSearch(source);
     }
+
     private static final Map<String, String> TECH_KEY_TO_INDEX_KEY = Map.ofEntries(
             Map.entry("JAVA", "JAVA"),
             Map.entry("SPRING", "SPRING_BOOT"),

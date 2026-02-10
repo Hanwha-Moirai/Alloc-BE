@@ -36,4 +36,6 @@ public class PersonDocument {
 
     private String profileSummary; // 직원 한 문자 설명, experienceDomainText의 놓친 것 커버 (낮은 가중치)
 
+    //임베딩용
+    private float[] profileEmbedding;
 }
