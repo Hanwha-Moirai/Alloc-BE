@@ -3,6 +3,7 @@ package com.moirai.alloc.meeting.command.service;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.meeting.command.domain.command.domain.entity.Agenda;
 import com.moirai.alloc.meeting.command.domain.command.domain.entity.MeetingRecord;
+import com.moirai.alloc.meeting.command.domain.command.domain.entity.MeetingRecordLog;
 import com.moirai.alloc.meeting.command.domain.command.domain.entity.Participant;
 import com.moirai.alloc.meeting.command.dto.request.AgendaRequest;
 import com.moirai.alloc.meeting.command.dto.request.CreateMeetingRecordRequest;
@@ -10,6 +11,7 @@ import com.moirai.alloc.meeting.command.dto.request.ParticipantRequest;
 import com.moirai.alloc.meeting.command.dto.request.UpdateMeetingRecordRequest;
 import com.moirai.alloc.meeting.command.repository.AgendaCommandRepository;
 import com.moirai.alloc.meeting.command.repository.MeetingRecordCommandRepository;
+import com.moirai.alloc.meeting.command.repository.MeetingRecordLogRepository;
 import com.moirai.alloc.meeting.command.repository.ParticipantCommandRepository;
 import com.moirai.alloc.meeting.query.repository.MeetingMembershipRepository;
 import com.moirai.alloc.user.command.domain.User;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +33,7 @@ public class MeetingRecordCommandService {
     private final AgendaCommandRepository agendaCommandRepository;
     private final ParticipantCommandRepository participantCommandRepository;
     private final MeetingMembershipRepository membershipRepository;
+    private final MeetingRecordLogRepository meetingRecordLogRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -36,11 +41,13 @@ public class MeetingRecordCommandService {
     public MeetingRecordCommandService(MeetingRecordCommandRepository meetingRecordCommandRepository,
                                        AgendaCommandRepository agendaCommandRepository,
                                        ParticipantCommandRepository participantCommandRepository,
-                                       MeetingMembershipRepository membershipRepository) {
+                                       MeetingMembershipRepository membershipRepository,
+                                       MeetingRecordLogRepository meetingRecordLogRepository) {
         this.meetingRecordCommandRepository = meetingRecordCommandRepository;
         this.agendaCommandRepository = agendaCommandRepository;
         this.participantCommandRepository = participantCommandRepository;
         this.membershipRepository = membershipRepository;
+        this.meetingRecordLogRepository = meetingRecordLogRepository;
     }
 
     @Transactional
@@ -59,6 +66,8 @@ public class MeetingRecordCommandService {
         MeetingRecord saved = meetingRecordCommandRepository.save(meetingRecord);
         saveAgendas(saved, request.agendas());
         saveParticipants(saved, request.participants());
+        logMeetingRecordChange(saved, principal.userId(), MeetingRecordLog.ActionType.CREATE,
+                buildMeetingCreateMessage(saved));
         return saved.getMeetingId();
     }
 
@@ -70,6 +79,8 @@ public class MeetingRecordCommandService {
         }
         validateMembership(meetingRecord.getProjectId(), principal.userId());
         validateOwnerOrPm(meetingRecord, principal);
+
+        String updateMessage = buildMeetingUpdateMessage(meetingRecord, request);
 
         meetingRecord.updateMeetingInfo(
                 request.progress(),
@@ -85,6 +96,8 @@ public class MeetingRecordCommandService {
             participantCommandRepository.deleteByMeetingMeetingId(meetingRecord.getMeetingId());
             saveParticipants(meetingRecord, request.participants());
         }
+
+        logMeetingRecordChange(meetingRecord, principal.userId(), MeetingRecordLog.ActionType.UPDATE, updateMessage);
     }
 
     @Transactional
@@ -96,6 +109,70 @@ public class MeetingRecordCommandService {
         validateMembership(meetingRecord.getProjectId(), principal.userId());
         validateOwnerOrPm(meetingRecord, principal);
         meetingRecord.markDeleted();
+        logMeetingRecordChange(meetingRecord, principal.userId(), MeetingRecordLog.ActionType.DELETE, "회의록 삭제");
+    }
+
+    private void logMeetingRecordChange(MeetingRecord record, Long actorUserId,
+                                        MeetingRecordLog.ActionType actionType, String message) {
+        MeetingRecordLog log = MeetingRecordLog.builder()
+                .projectId(record.getProjectId())
+                .meetingId(record.getMeetingId())
+                .actorUserId(actorUserId)
+                .actionType(actionType)
+                .logMessage(message)
+                .build();
+        meetingRecordLogRepository.save(log);
+    }
+
+    private String buildMeetingCreateMessage(MeetingRecord record) {
+        String datePart = formatMeetingDateTime(record.getMeetingDate(), record.getMeetingTime());
+        String progressPart = (record.getProgress() != null) ? ("진행률 " + record.getProgress()) : null;
+        List<String> parts = new ArrayList<>();
+        if (datePart != null) parts.add(datePart);
+        if (progressPart != null) parts.add(progressPart);
+        if (parts.isEmpty()) {
+            return "회의록 생성";
+        }
+        return "회의록 생성: " + String.join(", ", parts);
+    }
+
+    private String buildMeetingUpdateMessage(MeetingRecord record, UpdateMeetingRecordRequest request) {
+        List<String> parts = new ArrayList<>();
+
+        if (request.progress() != null && !request.progress().equals(record.getProgress())) {
+            String before = record.getProgress() == null ? "-" : record.getProgress().toString();
+            parts.add("진행률 " + before + " → " + request.progress());
+        }
+
+        if (request.meetingDate() != null && !request.meetingDate().equals(record.getMeetingDate())) {
+            parts.add("회의일 변경");
+        }
+        if (request.meetingTime() != null && !request.meetingTime().equals(record.getMeetingTime())) {
+            parts.add("회의시간 변경");
+        }
+
+        if (request.agendas() != null) {
+            long before = agendaCommandRepository.countByMeetingMeetingId(record.getMeetingId());
+            parts.add("안건 " + before + " → " + request.agendas().size());
+        }
+        if (request.participants() != null) {
+            long before = participantCommandRepository.countByMeetingMeetingId(record.getMeetingId());
+            parts.add("참석자 " + before + " → " + request.participants().size());
+        }
+
+        if (parts.isEmpty()) {
+            return "회의록 수정";
+        }
+        return "회의록 수정: " + String.join(", ", parts);
+    }
+
+    private String formatMeetingDateTime(java.time.LocalDateTime meetingDate, java.time.LocalDateTime meetingTime) {
+        if (meetingDate == null && meetingTime == null) return null;
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
+        String datePart = meetingDate == null ? "-" : meetingDate.format(dateFmt);
+        String timePart = meetingTime == null ? "-" : meetingTime.format(timeFmt);
+        return "일시 " + datePart + " " + timePart;
     }
 
     private MeetingRecord findMeetingRecord(Long meetingId) {

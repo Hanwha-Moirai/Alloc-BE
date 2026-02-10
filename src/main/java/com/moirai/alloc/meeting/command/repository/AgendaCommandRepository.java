@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AgendaCommandRepository extends JpaRepository<Agenda, Long> {
     void deleteByMeetingMeetingId(Long meetingId);
+
+    long countByMeetingMeetingId(Long meetingId);
 }
