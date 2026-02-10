@@ -77,7 +77,9 @@ public interface EventsRepository extends JpaRepository<Events, Long> {
                 )
               )
               or (
-                (e.eventType = com.moirai.alloc.calendar.command.domain.entity.EventType.PRIVATE or e.eventType is null)
+                (e.eventType = com.moirai.alloc.calendar.command.domain.entity.EventType.PRIVATE
+                                  or e.eventType = com.moirai.alloc.calendar.command.domain.entity.EventType.VACATION
+                                  or e.eventType is null)
                 and e.ownerUserId = :userId
               )
           )
@@ -142,7 +144,7 @@ public interface EventsRepository extends JpaRepository<Events, Long> {
         from Events e
         where e.deleted = false
           and e.projectId = :projectId
-          and e.endDate > :now
+          and e.startDate >= :now
           and (
                 :cursorStart is null
                 or e.startDate > :cursorStart
