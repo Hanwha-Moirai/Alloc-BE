@@ -12,6 +12,24 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 1. 기존 더미데이터 정리 (Clean Up)
 -- =========================================
 
+-- report / meeting / calendar / gantt 정리
+DELETE FROM issue_blockers WHERE issue_blockers_id BETWEEN 99001 AND 99100;
+DELETE FROM weekly_tasks WHERE weekly_tasks_id BETWEEN 99001 AND 99100;
+DELETE FROM weekly_report_log WHERE project_id BETWEEN 99001 AND 99100;
+DELETE FROM weekly_report WHERE report_id BETWEEN 99001 AND 99100;
+
+DELETE FROM participants WHERE participants_id BETWEEN 99001 AND 99100;
+DELETE FROM agenda WHERE agenda_id BETWEEN 99001 AND 99100;
+DELETE FROM meeting_record_log WHERE project_id BETWEEN 99001 AND 99100;
+DELETE FROM meeting_record WHERE meeting_id BETWEEN 99001 AND 99100;
+
+DELETE FROM public_events_member WHERE public_event_id BETWEEN 99001 AND 99100;
+DELETE FROM events_log WHERE event_log_id BETWEEN 99001 AND 99100;
+DELETE FROM events WHERE event_id BETWEEN 99001 AND 99100;
+
+DELETE FROM task WHERE task_id BETWEEN 99001 AND 99100;
+DELETE FROM milestone WHERE milestone_id BETWEEN 99001 AND 99100;
+
 -- squad_assignment 정리
 DELETE FROM squad_assignment WHERE user_id BETWEEN 77001 AND 77100;
 DELETE FROM squad_assignment WHERE project_id BETWEEN 99001 AND 99100;
@@ -512,6 +530,119 @@ INSERT INTO squad_assignment (project_id, user_id, proposed_at, assignment_statu
 (99020, 77015, '2023-04-05', 'ACCEPTED', 'ASSIGNED', '2023-04-10', 85);
 
 -- =========================================
+-- 11. 마일스톤 (milestone) - 2개
+-- =========================================
+
+INSERT INTO milestone (milestone_id, project_id, milestone_name, start_date, end_date, achievement_rate, is_deleted, is_completed, created_at, updated_at) VALUES
+(99001, 99001, '요구사항 정의', '2025-04-01', '2025-05-31', 20, FALSE, FALSE, NOW(), NOW()),
+(99002, 99001, '핵심 모듈 개발', '2025-06-01', '2025-07-31', 0, FALSE, FALSE, NOW(), NOW());
+
+-- =========================================
+-- 12. 태스크 (task) - 4개
+-- =========================================
+
+INSERT INTO task (task_id, milestone_id, user_id, task_category, task_name, task_description, task_status, start_date, end_date, is_completed, is_deleted, created_at, updated_at) VALUES
+(99001, 99001, 77005, 'DEVELOPMENT', '요구사항 수집', '현업 부서 인터뷰 및 요구사항 수집', 'DONE', '2025-04-01', '2025-04-15', TRUE, FALSE, NOW(), NOW()),
+(99002, 99001, 77006, 'DEVELOPMENT', '업무 프로세스 분석', '현행 프로세스 분석 및 개선점 도출', 'INPROGRESS', '2025-04-10', '2025-04-25', FALSE, FALSE, NOW(), NOW()),
+(99003, 99002, 77010, 'DEVELOPMENT', '프론트 화면 설계', 'ERP 핵심 화면 와이어프레임 작성', 'TODO', '2025-06-01', '2025-06-30', FALSE, FALSE, NOW(), NOW()),
+(99004, 99002, 77007, 'TESTING', '모듈 통합 테스트', '핵심 모듈 통합 테스트 계획 수립', 'TODO', '2025-07-01', '2025-07-15', FALSE, FALSE, NOW(), NOW());
+
+-- =========================================
+-- 13. 주간보고 (weekly_report) - 1개
+-- =========================================
+
+INSERT INTO weekly_report (report_id, user_id, project_id, week_start_date, week_end_date, report_status, change_of_plan, summary_text, task_completion_rate, is_deleted, created_at, updated_at) VALUES
+(99001, 77002, 99001, '2025-04-07', '2025-04-13', 'REVIEWED', '일부 기능 범위가 확정 전이라 일정 재조정 필요', '1주차 요구사항 수집 진행', 0.50, FALSE, NOW(), NOW());
+
+-- =========================================
+-- 14. 주간 태스크 (weekly_tasks) - 3개
+-- =========================================
+
+INSERT INTO weekly_tasks (weekly_tasks_id, report_id, task_id, task_type, planned_start_date, planned_end_date, is_completed) VALUES
+(99001, 99001, 99001, 'COMPLETED', '2025-04-01', '2025-04-15', TRUE),
+(99002, 99001, 99002, 'INCOMPLETE', '2025-04-10', '2025-04-25', FALSE),
+(99003, 99001, 99003, 'NEXT_WEEK', '2025-06-01', '2025-06-30', FALSE);
+
+-- =========================================
+-- 15. 이슈/블로커 (issue_blockers) - 1개
+-- =========================================
+
+INSERT INTO issue_blockers (issue_blockers_id, weekly_tasks_id, cause_of_delay, dependency_summary, delayed_dates) VALUES
+(99001, 99002, '의사결정 지연', '현업 승인 대기', 3);
+
+-- =========================================
+-- 16. 회의록 (meeting_record) - 2개
+-- =========================================
+
+INSERT INTO meeting_record (meeting_id, project_id, created_by, progress, meeting_date, meeting_time, is_deleted, created_at, updated_at) VALUES
+(99001, 99001, '이프로', 35.0, '2025-04-10 00:00:00', '2025-04-10 10:00:00', FALSE, NOW(), NOW()),
+(99002, 99001, '김관리', 40.0, '2025-04-17 00:00:00', '2025-04-17 14:00:00', FALSE, NOW(), NOW());
+
+-- =========================================
+-- 17. 회의 안건 (agenda) - 3개
+-- =========================================
+
+INSERT INTO agenda (agenda_id, meeting_id, discussion_title, discussion_content, discussion_result, agenda_type) VALUES
+(99001, 99001, '요구사항 확정', '주요 기능 목록 검토', '핵심 3개 기능 우선 확정', 'DECISION'),
+(99002, 99001, '리스크 점검', '외부 시스템 연동 일정 확인', '연동 담당자 지정', 'RISK'),
+(99003, 99002, '개발 일정 조정', '일정 단축 가능 여부 논의', '1주 단축 합의', 'SCHEDULE');
+
+-- =========================================
+-- 18. 회의 참가자 (participants) - 5명
+-- =========================================
+
+INSERT INTO participants (participants_id, meeting_id, user_id, is_host) VALUES
+(99001, 99001, 77002, TRUE),
+(99002, 99001, 77005, FALSE),
+(99003, 99001, 77010, FALSE),
+(99004, 99002, 77001, TRUE),
+(99005, 99002, 77006, FALSE);
+
+-- =========================================
+-- 19. 일정 (events) - 3개
+-- =========================================
+
+INSERT INTO events (event_id, project_id, user_id, event_name, event_state, start_date, end_date, event_type, event_place, event_description, is_deleted, created_at, updated_at) VALUES
+(99001, 99001, 77002, '주간보고 작성', 'IN_PROGRESS', '2025-04-07 09:00:00', '2025-04-07 18:00:00', 'PRIVATE', '온라인', '1주차 주간보고 작성', FALSE, NOW(), NOW()),
+(99002, 99001, 77001, '정기 회의', 'SUCCESS', '2025-04-10 10:00:00', '2025-04-10 11:00:00', 'PUBLIC', '회의실 A', '주간 정기 회의', FALSE, NOW(), NOW()),
+(99003, 99001, 77002, '공유 일정: 데이터 정합성 점검', 'IN_PROGRESS', '2025-04-12 13:00:00', '2025-04-12 15:00:00', 'PUBLIC', '회의실 B', '테스트 데이터 검토', FALSE, NOW(), NOW());
+
+-- =========================================
+-- 20. 공개 일정 참가자 (public_events_member) - 4명
+-- =========================================
+
+INSERT INTO public_events_member (public_event_id, event_id, user_id) VALUES
+(99001, 99002, 77005),
+(99002, 99002, 77006),
+(99003, 99003, 77010),
+(99004, 99003, 77011);
+
+-- =========================================
+-- 21. 일정 로그 (events_log) - 3개
+-- =========================================
+
+INSERT INTO events_log (event_log_id, event_id, actor_user_id, change_type, log_description, before_start_date, after_start_date, before_end_date, after_end_date, created_at) VALUES
+(99001, 99001, 77002, 'CREATE', '주간보고 일정 생성', NULL, '2025-04-07 09:00:00', NULL, '2025-04-07 18:00:00', NOW()),
+(99002, 99002, 77001, 'UPDATE', '회의 장소 변경', '2025-04-10 10:00:00', '2025-04-10 10:00:00', '2025-04-10 11:00:00', '2025-04-10 11:00:00', NOW()),
+(99003, 99003, 77002, 'CREATE', '공유 일정 생성', NULL, '2025-04-12 13:00:00', NULL, '2025-04-12 15:00:00', NOW());
+
+-- =========================================
+-- 22. 주간보고 로그 (weekly_report_log) - 2개
+-- =========================================
+
+INSERT INTO weekly_report_log (report_log_id, project_id, report_id, actor_user_id, action_type, log_message, created_at, updated_at) VALUES
+(99001, 99001, 99001, 77002, 'CREATE', '주간보고 작성', NOW(), NOW()),
+(99002, 99001, 99001, 77002, 'UPDATE', '금주 진행사항 1건, 미완수 1건, 다음주 계획 1건으로 정리', NOW(), NOW());
+
+-- =========================================
+-- 23. 회의록 로그 (meeting_record_log) - 2개
+-- =========================================
+
+INSERT INTO meeting_record_log (meeting_log_id, project_id, meeting_id, actor_user_id, action_type, log_message, created_at, updated_at) VALUES
+(99001, 99001, 99001, 77002, 'CREATE', '회의록 작성', NOW(), NOW()),
+(99002, 99001, 99002, 77001, 'UPDATE', '회의 진행률 35.0% -> 40.0%로 변경', NOW(), NOW());
+
+-- =========================================
 -- 완료! 데이터 확인용 쿼리
 -- =========================================
 
@@ -526,4 +657,17 @@ UNION ALL SELECT 'employee_skill', COUNT(*) FROM employee_skill WHERE user_id BE
 UNION ALL SELECT 'project', COUNT(*) FROM project WHERE project_id BETWEEN 99001 AND 99100
 UNION ALL SELECT 'project_tech_requirement', COUNT(*) FROM project_tech_requirement WHERE project_id BETWEEN 99001 AND 99100
 UNION ALL SELECT 'project_job_requirement', COUNT(*) FROM project_job_requirement WHERE project_id BETWEEN 99001 AND 99100
-UNION ALL SELECT 'squad_assignment', COUNT(*) FROM squad_assignment WHERE project_id BETWEEN 99001 AND 99100;
+UNION ALL SELECT 'squad_assignment', COUNT(*) FROM squad_assignment WHERE project_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'milestone', COUNT(*) FROM milestone WHERE milestone_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'task', COUNT(*) FROM task WHERE task_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'weekly_report', COUNT(*) FROM weekly_report WHERE report_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'weekly_tasks', COUNT(*) FROM weekly_tasks WHERE weekly_tasks_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'issue_blockers', COUNT(*) FROM issue_blockers WHERE issue_blockers_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'meeting_record', COUNT(*) FROM meeting_record WHERE meeting_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'agenda', COUNT(*) FROM agenda WHERE agenda_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'participants', COUNT(*) FROM participants WHERE participants_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'events', COUNT(*) FROM events WHERE event_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'public_events_member', COUNT(*) FROM public_events_member WHERE public_event_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'events_log', COUNT(*) FROM events_log WHERE event_log_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'weekly_report_log', COUNT(*) FROM weekly_report_log WHERE report_log_id BETWEEN 99001 AND 99100
+UNION ALL SELECT 'meeting_record_log', COUNT(*) FROM meeting_record_log WHERE meeting_log_id BETWEEN 99001 AND 99100;
