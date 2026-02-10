@@ -37,7 +37,13 @@ public class OpenSearchConfig {
         Region region = Region.AP_NORTHEAST_2;
 
         HttpRequestInterceptor interceptor =
-                new AwsRequestSigningApacheInterceptor(serviceName, signer, credentialsProvider, region);
+                new AwsRequestSigningApacheInterceptor(
+                        serviceName,
+                        signer,
+                        credentialsProvider,
+                        region,
+                        host,
+                        scheme);
 
         RestClientBuilder builder = RestClient.builder(new HttpHost(host, port, scheme))
                 .setHttpClientConfigCallback(httpClientBuilder ->
