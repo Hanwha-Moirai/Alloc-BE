@@ -22,22 +22,32 @@ public class AwsRequestSigningApacheInterceptor implements HttpRequestIntercepto
     private final AwsCredentialsProvider credentialsProvider;
     private final Region region;
 
+    private final String host;
+    private final String scheme;
+
     public AwsRequestSigningApacheInterceptor(
             String service,
             Aws4Signer signer,
             AwsCredentialsProvider credentialsProvider,
-            Region region
+            Region region,
+            String host,
+            String scheme
     ) {
         this.service = service;
         this.signer = signer;
         this.credentialsProvider = credentialsProvider;
         this.region = region;
+        this.host = host;
+        this.scheme = scheme;
     }
 
     @Override
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         try {
-            URI uri = URI.create(request.getRequestLine().getUri());
+            URI uri = URI.create(
+                    scheme + "://" + host + request.getRequestLine().getUri()
+            );
+
             SdkHttpFullRequest sdkRequest = toSdkRequest(request, uri);
 
             Aws4SignerParams params = Aws4SignerParams.builder()
