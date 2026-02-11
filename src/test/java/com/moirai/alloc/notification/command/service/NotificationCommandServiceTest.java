@@ -8,13 +8,10 @@ import com.moirai.alloc.notification.command.repository.AlarmLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmSendLogRepository;
 import com.moirai.alloc.notification.command.repository.AlarmTemplateRepository;
 import com.moirai.alloc.notification.common.contract.TargetType;
-import com.moirai.alloc.notification.common.event.AlarmCreatedEvent;
-import com.moirai.alloc.notification.common.event.AlarmUnreadChangedEvent;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,7 +30,6 @@ class NotificationCommandServiceTest {
     @Mock AlarmLogRepository alarmLogRepository;
     @Mock AlarmTemplateRepository alarmTemplateRepository;
     @Mock AlarmSendLogRepository alarmSendLogRepository;
-    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks NotificationCommandService service;
 
@@ -47,8 +43,8 @@ class NotificationCommandServiceTest {
     class CreateInternalNotifications {
 
         @Test
-        @DisplayName("성공: 템플릿 조회 → alarm_log N건 + alarm_send_log N건 생성 → AlarmCreatedEvent N회 발행 → 응답(createdCount, alarmIds) 반환")
-        void success_createsLogsSendLogs_andPublishesEvents() {
+        @DisplayName("성공: 템플릿 조회 → alarm_log N건 + alarm_send_log N건 생성 → 응답(createdCount, alarmIds) 반환")
+        void success_createsLogsSendLogs() {
             // given
             AlarmTemplate template = AlarmTemplate.builder()
                     .alarmTemplateType(AlarmTemplateType.TASK_ASSIGN)
@@ -129,27 +125,10 @@ class NotificationCommandServiceTest {
             assertEquals(10L, byUser.get(101L).getTemplateId());
             assertEquals(SendLogStatus.SUCCESS, byUser.get(101L).getLogStatus());
             assertEquals("태스크 API 구현 담당자로 지정되었습니다.", byUser.get(101L).getTemplateContext());
-
-            // then - 이벤트 publish (AlarmCreatedEvent 2번)
-            verify(eventPublisher, times(2)).publishEvent(isA(AlarmCreatedEvent.class));
-
-            ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-            verify(eventPublisher, times(2)).publishEvent(eventCaptor.capture());
-
-            List<AlarmCreatedEvent> createdEvents = eventCaptor.getAllValues().stream()
-                    .filter(e -> e instanceof AlarmCreatedEvent)
-                    .map(e -> (AlarmCreatedEvent) e)
-                    .toList();
-
-            assertEquals(2, createdEvents.size());
-            assertEquals(Set.of(101L, 102L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::userId).toList()));
-            assertEquals(Set.of(1L, 2L), new HashSet<>(createdEvents.stream().map(AlarmCreatedEvent::alarmId).toList()));
-            assertEquals("태스크 API 구현 담당자 배정", createdEvents.get(0).title());
-            assertEquals("태스크 API 구현 담당자로 지정되었습니다.", createdEvents.get(0).content());
         }
 
         @Test
-        @DisplayName("실패: 템플릿이 없으면 404 예외(ResponseStatusException) + 저장/이벤트 발행 없음")
+        @DisplayName("실패: 템플릿이 없으면 404 예외(ResponseStatusException) + 저장 없음")
         void templateNotFound_throws404() {
             // given
             when(alarmTemplateRepository.findTopByAlarmTemplateTypeAndDeletedFalseOrderByIdDesc(any()))
@@ -172,7 +151,6 @@ class NotificationCommandServiceTest {
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
             verifyNoInteractions(alarmLogRepository);
             verifyNoInteractions(alarmSendLogRepository);
-            verify(eventPublisher, never()).publishEvent(any());
         }
     }
 
@@ -184,26 +162,24 @@ class NotificationCommandServiceTest {
     class MarkRead {
 
         @Test
-        @DisplayName("성공: 업데이트 1건 이상이면 UNREAD 변경 이벤트 발행")
-        void success_publishesUnreadChangedEvent() {
+        @DisplayName("성공: 업데이트 1건 이상이면 정상 처리")
+        void success_updates() {
             when(alarmLogRepository.markRead(1L, 10L)).thenReturn(1);
 
             assertDoesNotThrow(() -> service.markRead(1L, 10L));
 
             verify(alarmLogRepository, times(1)).markRead(1L, 10L);
-            verify(eventPublisher, times(1)).publishEvent(isA(AlarmUnreadChangedEvent.class));
         }
 
         @Test
-        @DisplayName("실패: 업데이트 0건이면 404 예외 + 이벤트 발행 없음")
-        void notFound_throws404_andDoesNotPublishEvent() {
+        @DisplayName("실패: 업데이트 0건이면 404 예외")
+        void notFound_throws404() {
             when(alarmLogRepository.markRead(1L, 10L)).thenReturn(0);
 
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                     () -> service.markRead(1L, 10L));
 
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-            verify(eventPublisher, never()).publishEvent(any());
         }
     }
 
@@ -215,14 +191,13 @@ class NotificationCommandServiceTest {
     class MarkAllRead {
 
         @Test
-        @DisplayName("성공: bulk update 실행 후 UNREAD 변경 이벤트 발행")
-        void publishesUnreadChangedEvent() {
+        @DisplayName("성공: bulk update 실행")
+        void updatesAllRead() {
             when(alarmLogRepository.markAllRead(1L)).thenReturn(3);
 
             service.markAllRead(1L);
 
             verify(alarmLogRepository, times(1)).markAllRead(1L);
-            verify(eventPublisher, times(1)).publishEvent(isA(AlarmUnreadChangedEvent.class));
         }
     }
 
@@ -234,26 +209,24 @@ class NotificationCommandServiceTest {
     class DeleteNotification {
 
         @Test
-        @DisplayName("성공: 업데이트 1건 이상이면 UNREAD 변경 이벤트 발행")
-        void success_publishesUnreadChangedEvent() {
+        @DisplayName("성공: 업데이트 1건 이상이면 정상 처리")
+        void success_updates() {
             when(alarmLogRepository.softDeleteOne(1L, 10L)).thenReturn(1);
 
             service.deleteNotification(1L, 10L);
 
             verify(alarmLogRepository, times(1)).softDeleteOne(1L, 10L);
-            verify(eventPublisher, times(1)).publishEvent(isA(AlarmUnreadChangedEvent.class));
         }
 
         @Test
-        @DisplayName("실패: 업데이트 0건이면 404 예외 + 이벤트 발행 없음")
-        void notFound_throws404_andDoesNotPublishEvent() {
+        @DisplayName("실패: 업데이트 0건이면 404 예외")
+        void notFound_throws404() {
             when(alarmLogRepository.softDeleteOne(1L, 10L)).thenReturn(0);
 
             ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                     () -> service.deleteNotification(1L, 10L));
 
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-            verify(eventPublisher, never()).publishEvent(any());
         }
     }
 
@@ -265,14 +238,13 @@ class NotificationCommandServiceTest {
     class DeleteAllRead {
 
         @Test
-        @DisplayName("성공: bulk delete 실행 후 UNREAD 변경 이벤트 발행")
-        void publishesUnreadChangedEvent() {
+        @DisplayName("성공: bulk delete 실행")
+        void deletesAllRead() {
             when(alarmLogRepository.softDeleteAllRead(1L)).thenReturn(5);
 
             service.deleteAllRead(1L);
 
             verify(alarmLogRepository, times(1)).softDeleteAllRead(1L);
-            verify(eventPublisher, times(1)).publishEvent(isA(AlarmUnreadChangedEvent.class));
         }
     }
 

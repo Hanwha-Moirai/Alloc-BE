@@ -93,4 +93,29 @@
           AND t.is_deleted = false
         ORDER BY t.start_date ASC, t.task_id ASC
     </select>
+
+    <select id="findIncompleteTasksByUserId" resultType="com.moirai.alloc.gantt.query.dto.projection.TaskProjection">
+        SELECT
+            t.task_id AS taskId,
+            t.milestone_id AS milestoneId,
+            u.user_name AS userName,
+            t.task_category AS taskCategory,
+            t.task_name AS taskName,
+            t.task_description AS taskDescription,
+            t.task_status AS taskStatus,
+            t.created_at AS createdAt,
+            t.updated_at AS updatedAt,
+            t.start_date AS startDate,
+            t.end_date AS endDate,
+            t.is_completed AS isCompleted,
+            t.is_deleted AS isDeleted
+        FROM task t
+        JOIN milestone m ON m.milestone_id = t.milestone_id
+        LEFT JOIN users u ON u.user_id = t.user_id
+        WHERE t.user_id = #{userId}
+          AND t.is_deleted = false
+          AND t.is_completed = false
+          AND m.is_deleted = false
+        ORDER BY t.end_date ASC, t.task_id ASC
+    </select>
 </mapper>

@@ -8,8 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 @Service
 @Transactional(readOnly = true)
 public class GetProjectList {
@@ -20,22 +18,19 @@ public class GetProjectList {
         this.squadAssignmentRepository = squadAssignmentRepository;
     }
 
-    public List<ProjectListItemDTO> getProjectList(Long userId) {
+    public Page<ProjectListItemDTO> getProjectList(Long userId, Pageable pageable) {
+        Page<Project> projects =
+                squadAssignmentRepository.findProjectsByUserId(userId, pageable);
 
-        List<Project> projects =
-                squadAssignmentRepository.findProjectsByUserId(userId);
-
-        return projects.stream()
-                .map(project -> new ProjectListItemDTO(
-                        project.getProjectId(),
-                        project.getName(),
-                        project.getStartDate(),
-                        project.getEndDate(),
-                        project.getProjectStatus(),
-                        null,   // progressRate
-                        null,   // documentStatus
-                        null    // riskLevel
-                ))
-                .toList();
+        return projects.map(project -> new ProjectListItemDTO(
+                project.getProjectId(),
+                project.getName(),
+                project.getStartDate(),
+                project.getEndDate(),
+                project.getProjectStatus(),
+                null,   // progressRate
+                null,   // documentStatus
+                null    // riskLevel
+        ));
     }
 }

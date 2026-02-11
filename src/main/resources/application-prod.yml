@@ -4,6 +4,9 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      leak-detection-threshold: 10000  # 10초 이상 점유 시 스택 로깅
+      connection-timeout: 10000
 
   mail:
     host: smtp.gmail.com

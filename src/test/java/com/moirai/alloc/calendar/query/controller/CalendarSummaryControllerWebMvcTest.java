@@ -119,6 +119,7 @@ class CalendarSummaryControllerWebMvcTest {
                 .andExpect(jsonPath("$.data.weekStart").value("2026-01-19"))
                 .andExpect(jsonPath("$.data.weekEnd").value("2026-01-25"))
                 .andExpect(jsonPath("$.data.total").value(12))
+                .andExpect(jsonPath("$.data.count").value(12))
                 .andExpect(jsonPath("$.timestamp").exists());
 
         verify(calendarQueryService, times(1)).getMyWeeklyEventCount(any(UserPrincipal.class));

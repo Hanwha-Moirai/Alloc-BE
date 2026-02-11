@@ -41,13 +41,6 @@ mybatis:
 
 
 notification:
-  sse:
-    heartbeat:
-      enabled: true
-      fixed-delay-ms: 25000
-      initial-delay-ms: 5000
-      event-name: PING
-      data: ok
   sqs:
     queue-name: ${NOTIFICATION_SQS_QUEUE_NAME:alloc-notification}
 
@@ -87,3 +80,5 @@ opensearch:
   ssl:
     enabled: ${OPENSEARCH_SSL_ENABLED:false}
     trustAll: ${OPENSEARCH_SSL_TRUST_ALL:false}
+openai:
+  api-key: ${OPENAI_API_KEY}
