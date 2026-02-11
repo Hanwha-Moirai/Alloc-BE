@@ -30,7 +30,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 코어 서비스가 Gradle 빌드가 필요하면 유지
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -75,7 +74,6 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ env.IMG_URI }}:${{ env.IMG_TAG }}
-          # ECS가 Graviton(arm) 쓰는 중이면 arm64 유지. x86이면 linux/amd64로 바꿔.
           platforms: linux/arm64
           cache-to: type=registry,ref=${{ env.IMG_URI }}:cache,mode=max
           cache-from: type=registry,ref=${{ env.IMG_URI }}:cache
@@ -87,3 +85,52 @@ jobs:
         run: |
           echo "# Image pushed" >> $GITHUB_STEP_SUMMARY
           echo "image: \`${{ env.IMG_URI }}:${{ env.IMG_TAG }}\`" >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: AWS credentials 를 구성한다
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECS 태스크 정의를 다운로드한다
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition moirai-core-service-dev-task \
+            --query taskDefinition \
+          | jq 'del(
+              .taskDefinitionArn,
+              .revision,
+              .status,
+              .requiresAttributes,
+              .compatibilities,
+              .registeredAt,
+              .registeredBy
+            )' > task-definition.json
+
+      - name: 새로운 이미지로 태스크 정의를 업데이트한다
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: moirai-core-service-dev
+          image: ${{ needs.build.outputs.img-uri }}:${{ needs.build.outputs.img-tag }}
+
+      - name: ECS 서비스를 배포한다
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: moirai-core-service-dev
+          cluster: app-ecs-fargate-cluster
+          wait-for-service-stability: true
+
+      - name: 배포 완료
+        run: |
+          echo "# ECS 배포 완료" >> $GITHUB_STEP_SUMMARY
+          echo "서비스: moirai-core-service-dev" >> $GITHUB_STEP_SUMMARY
+          echo "이미지: ${{ needs.build.outputs.img-uri }}:${{ needs.build.outputs.img-tag }}" >> $GITHUB_STEP_SUMMARY
