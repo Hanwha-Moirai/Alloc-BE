@@ -10,8 +10,6 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
 
     Page<AlarmLog> findByUserIdAndDeletedFalseOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Page<AlarmLog> findByUserIdAndDeletedFalseAndIdGreaterThan(Long userId, Long id, Pageable pageable);
-
     long countByUserIdAndReadFalseAndDeletedFalse(Long userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

@@ -3,9 +3,9 @@ package com.moirai.alloc.notification.query.controller;
 import com.moirai.alloc.common.dto.pagination.Pagination;
 import com.moirai.alloc.common.security.auth.UserPrincipal;
 import com.moirai.alloc.notification.query.dto.response.NotificationPageResponse;
-import com.moirai.alloc.notification.query.dto.response.NotificationPollResponse;
 import com.moirai.alloc.notification.query.dto.response.NotificationSummaryResponse;
 import com.moirai.alloc.notification.query.service.NotificationQueryService;
+import com.moirai.alloc.notification.query.sse.NotificationSseEmitters;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,6 +19,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import jakarta.annotation.Resource;
 
@@ -45,10 +47,13 @@ class NotificationQueryControllerWebMvcTest {
     @org.springframework.boot.test.mock.mockito.MockBean
     NotificationQueryService queryService;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    NotificationSseEmitters emitters;
+
     @AfterEach
     void resetMocks() {
         // 테스트 간 Mock 호출/스텁이 누적되지 않도록 격리
-        Mockito.reset(queryService);
+        Mockito.reset(queryService, emitters);
     }
 
     @TestConfiguration
@@ -172,42 +177,35 @@ class NotificationQueryControllerWebMvcTest {
     }
 
     @Nested
-    @DisplayName("GET /api/notifications/poll")
-    class Poll {
+    @DisplayName("GET /api/notifications/stream (SSE)")
+    class Stream {
 
         @Test
-        @DisplayName("200 OK - sinceId/size 파라미터 매핑 및 서비스 호출 검증")
-        void ok_poll_with_params() throws Exception {
-            var item = NotificationSummaryResponse.builder()
-                    .notificationId(11L)
-                    .title("새 알림")
-                    .content("새 알림 내용")
-                    .read(false)
-                    .createdAt(LocalDateTime.now())
-                    .targetType(null)
-                    .targetId(2L)
-                    .linkUrl("/tasks/2")
-                    .build();
+        @DisplayName("200 OK - emitter 등록 + 초기 UNREAD_COUNT push 호출 검증")
+        void ok_stream_register_and_push_unread() throws Exception {
+            // SSE는 비동기 응답이므로, complete()로 종료시킨 뒤 asyncDispatch로 최종 응답을 검증한다.
+            SseEmitter emitter = new SseEmitter(10_000L);
 
-            var pollRes = NotificationPollResponse.builder()
-                    .notifications(List.of(item))
-                    .unreadCount(3L)
-                    .latestNotificationId(11L)
-                    .build();
+            given(emitters.add(1L)).willReturn(emitter);
+            given(queryService.getMyUnreadCount(1L)).willReturn(2L);
 
-            given(queryService.pollMyNotifications(1L, 5L, 30)).willReturn(pollRes);
-
-            mockMvc.perform(get("/api/notifications/poll")
-                            .param("sinceId", "5")
-                            .param("size", "30")
+            MvcResult mvcResult = mockMvc.perform(get("/api/notifications/stream")
+                            .accept(MediaType.TEXT_EVENT_STREAM)
                             .with(user(principal(1L, "USER"))))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(content().string(containsString("notifications")))
-                    .andExpect(content().string(containsString("unreadCount")))
-                    .andExpect(content().string(containsString("latestNotificationId")));
+                    .andExpect(request().asyncStarted()) // SSE는 async 처리 시작이 정상
+                    .andReturn();
 
-            verify(queryService, times(1)).pollMyNotifications(1L, 5L, 30);
+            // async 처리를 완료시켜 Content-Type 등 응답 메타데이터 검증이 가능하게 함
+            emitter.complete();
+
+            mockMvc.perform(asyncDispatch(mvcResult))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
+
+            verify(emitters, times(1)).add(1L);
+            verify(queryService, times(1)).getMyUnreadCount(1L);
+            verify(emitters, times(1)).sendToUser(eq(1L), eq("UNREAD_COUNT"), eq(2L));
         }
     }
 }
